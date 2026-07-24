@@ -1,1 +1,40 @@
-export {};
+import { RowId } from '@/kernel';
+
+export type AccountId = string & { __brand: 'AccountId' };
+
+export interface AccountVersion {
+  rowId: RowId;
+  accountId: AccountId;
+  version: string;
+  deviceId: string;
+  isDeleted: boolean;
+  name: string;
+  currency: string;
+  note?: string;
+  createdAt?: string;
+}
+
+export interface AccountRepo {
+  listCurrent(): Promise<AccountVersion[]>;
+  append(v: AccountVersion): Promise<void>;
+}
+
+export function resolveAccountCurrent(versions: AccountVersion[]): AccountVersion[] {
+  const latestByAccount = new Map<AccountId, AccountVersion>();
+
+  for (const version of versions) {
+    const existing = latestByAccount.get(version.accountId);
+    if (!existing || version.version > existing.version) {
+      latestByAccount.set(version.accountId, version);
+    }
+  }
+
+  const current: AccountVersion[] = [];
+  for (const version of latestByAccount.values()) {
+    if (!version.isDeleted) {
+      current.push(version);
+    }
+  }
+
+  return current;
+}
