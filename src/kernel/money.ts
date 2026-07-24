@@ -6,19 +6,23 @@ export interface CurrencyConfig {
 }
 
 export function minorFromDigits(digits: string): Minor {
-  if (!/^\d*$/.test(digits)) {
-    throw new Error('minorFromDigits: Input must contain only digits');
-  }
-  
-  if (digits === '') {
+  if (digits === '' || digits === '.') {
     return 0 as Minor;
   }
 
-  const value = parseInt(digits, 10);
+  if (!/^\d*(\.\d{0,2})?$/.test(digits)) {
+    throw new Error('minorFromDigits: Input must be a valid amount');
+  }
+
+  const [wholeStr = '0', decimalStr = ''] = digits.split('.');
+  const whole = parseInt(wholeStr || '0', 10);
+  const decimal = parseInt(decimalStr.padEnd(2, '0'), 10);
+
+  const value = whole * 100 + decimal;
   if (!Number.isSafeInteger(value)) {
     throw new Error('minorFromDigits: Unsafe integer');
   }
-  
+
   return value as Minor;
 }
 

@@ -4,20 +4,21 @@ import { addMinor, formatMinor, Minor, minorFromDigits, negateMinor } from './mo
 describe('money kernel', () => {
   describe('minorFromDigits', () => {
     it('converts valid digit strings to Minor', () => {
-      expect(minorFromDigits('010')).toBe(10);
-      expect(minorFromDigits('1234')).toBe(1234);
+      expect(minorFromDigits('10')).toBe(1000);
+      expect(minorFromDigits('12.34')).toBe(1234);
+      expect(minorFromDigits('0.5')).toBe(50);
       expect(minorFromDigits('0')).toBe(0);
       expect(minorFromDigits('')).toBe(0);
     });
 
-    it('throws on float inputs', () => {
-      expect(() => minorFromDigits('12.34')).toThrow(/digits/);
-      expect(() => minorFromDigits('1,23')).toThrow(/digits/);
+    it('throws on invalid float inputs', () => {
+      expect(() => minorFromDigits('12.345')).toThrow(/amount/);
+      expect(() => minorFromDigits('1,23')).toThrow(/amount/);
     });
 
     it('throws on non-numeric inputs', () => {
-      expect(() => minorFromDigits('abc')).toThrow(/digits/);
-      expect(() => minorFromDigits('12a3')).toThrow(/digits/);
+      expect(() => minorFromDigits('abc')).toThrow(/amount/);
+      expect(() => minorFromDigits('12a3')).toThrow(/amount/);
     });
   });
 
