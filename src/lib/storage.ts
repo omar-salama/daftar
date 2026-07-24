@@ -77,7 +77,7 @@ export function outboxRemove(rowIds: ReadonlyArray<string>): void {
 // Meta — deviceId (generated once, persisted forever)
 // ---------------------------------------------------------------------------
 
-function generateUuid(): string {
+export function generateUuid(): string {
   // RFC 4122 v4 UUID — crypto.randomUUID() is available in Hermes / RN 0.73+
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();

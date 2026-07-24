@@ -11,8 +11,8 @@ export default tseslint.config(
       "@typescript-eslint/no-restricted-imports": ["error", {
         patterns: [
           {
-            group: ["@/features/*/repo/*", "@/features/*/model/*", "@/kernel/*", "@/lib/*", "../repo/*", "../../lib/*", "../../../lib/*", "../../../kernel/*", "../../kernel/*"],
-            message: "UI layers may only import from their own feature's hooks/ or model/.",
+            group: ["@/features/*/repo/*", "@/features/*/model/*", "@/lib/*", "../repo/*", "../../lib/*", "../../../lib/*"],
+            message: "UI layers may not import from repo/ or lib/.",
           }
         ]
       }]

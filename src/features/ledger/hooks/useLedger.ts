@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TxVersion, resolveCurrent } from '@/kernel';
-import { localLedgerRepo } from '../repo/localLedgerRepo';
+import { localLedgerRepo, createTxVersion } from '../repo/localLedgerRepo';
 
 export const ledgerKeys = {
   all: ['ledger'] as const,
@@ -11,6 +11,10 @@ export function useLedger() {
     queryKey: ledgerKeys.all,
     queryFn: () => localLedgerRepo.listCurrent(),
   });
+}
+
+export function useCreateTx() {
+  return createTxVersion;
 }
 
 export function useAppendTx() {
