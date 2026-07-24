@@ -278,10 +278,12 @@ How to actually run the agent sessions, day one to shipped APK.
               tests modified to pass. Any of these → reject that part, re-prompt.
 6. VALIDATE   Run the stage checklist items this prompt enables. Tick them in
               PLAN.md itself.
-7. COMMIT     "stage2: keypad + split editor (PROMPT 2)". Close the chat. Done.
+7. COMMIT     "feat(entry): keypad + split editor". Close the chat. Done.
 ```
 
 One prompt = one session = one commit. Never carry a chat into the next prompt — even a successful one. The 7 steps take ~5 minutes of your attention around each session; that overhead IS the quality control.
+
+**Commit message format:** `feat(feat_name): short description` — one commit per prompt; `feat_name` = the slice touched (`kernel`, `storage`, `ledger`, `entry`, `sync`, `auth`, `dashboard`). Use `test(integration):` for integration-only sessions. Keep descriptions imperative and under ~72 chars.
 
 ### When a session goes wrong
 
@@ -407,7 +409,7 @@ That last line is the highest-leverage sentence in the file — it converts sile
 
 - `git init` at Stage 0 even though it's a solo project. The agent WILL eventually produce a diff you want to throw away wholesale; `git checkout .` is how you do that in one second instead of an hour of un-picking.
 - **Never let the agent work on a dirty tree.** Commit (or stash) before every agent session so each session = exactly one reviewable diff.
-- Commit after every green validation-checklist item, with the stage in the message (`stage1: HLC monotonic under clock rollback`). One branch per stage if you want extra insulation; merge when the stage checklist is fully green.
+- Commit after every green validation-checklist item using `feat(feat_name): description` (e.g. `feat(kernel): money, HLC, tx types and vitest`). One branch per stage if you want extra insulation; merge when the stage checklist is fully green.
 - Read every diff before committing. Vibe coding fails when it becomes "accept-all coding" — the 60 seconds of diff-reading per session is the entire quality-control budget, spend it.
 
 ### 3. Tests are the acceptance gate, not decoration
