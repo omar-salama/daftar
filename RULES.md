@@ -175,9 +175,9 @@ Bottom-heavy test pyramid. Kernel and repo logic get exhaustive unit tests. UI g
 
 - **Clean tree before every agent session.** Commit or stash first. No dirty working directories.
 - **One prompt = one session = one commit.** Never carry a chat into the next prompt.
-- **Commit message format:** `stage<N>: <concise description> (PROMPT <M>)`
-  - Example: `stage1: HLC kernel with monotonicity tests (PROMPT 1)`
-- **Branch per stage:** `stage-<N>-<name>` (e.g., `stage-1-kernel`). Merge to `main` only when the stage's full validation checklist is green. Tag: `v0.<N>`.
+- **Commit message format:** `feat/fix/chore(feat_name): desc`
+  - Example: `feat(ledger): add repo and optimistic hooks`
+- **Branch naming:** `feat/<feat_name>`, `fix/<feat_name>`, etc. (e.g., `feat/ledger`). Merge to `dev` only when the stage's full validation checklist is green. Tag: `v0.<N>`.
 - **Never commit generated native directories** (`ios/`, `android/`). Regenerate with `npx expo prebuild`. Add to `.gitignore`.
 - **Read every diff before committing.** Review checklist:
   - [ ] No new dependencies added without approval
