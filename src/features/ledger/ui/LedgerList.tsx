@@ -1,16 +1,16 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, Pressable, Alert, Modal } from 'react-native';
+import { Minor, TxVersion } from '@/kernel';
+import { formatMinor } from '@/kernel/money';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import { useLedger, useLedgerAllVersions, useAppendTx, useCreateTx } from '../hooks/useLedger';
-import { TxVersion, Minor } from '@/kernel';
-import { formatMinor } from '@/kernel/money';
+import { useMemo, useState } from 'react';
+import { Alert, Modal, Pressable, Text, View } from 'react-native';
+import { useAppendTx, useCreateTx, useLedger, useLedgerAllVersions } from '../hooks/useLedger';
 
 // We need a generic currency config for formatting.
 const CURRENCY_CONFIG = { symbol: '$', decimals: 2 };
 
 type ListItem = 
-  | { type: 'header'; date: string; totalMinor: Minor }
+  | { type: 'header'; date: string; expenseTotalMinor: Minor; incomeTotalMinor: Minor }
   | { type: 'row'; tx: TxVersion; versionCount: number };
 
 export function LedgerList() {
@@ -41,24 +41,37 @@ export function LedgerList() {
 
     const items: ListItem[] = [];
     let currentDate = '';
-    let currentDayTotal = 0 as Minor;
+    let currentExpenseTotal = 0 as Minor;
+    let currentIncomeTotal = 0 as Minor;
     let currentDayStartIndex = -1;
 
     for (const tx of sorted) {
+      const isIncome = tx.type === 'income';
       if (tx.occurredAt !== currentDate) {
         if (currentDayStartIndex !== -1) {
           items[currentDayStartIndex] = { 
             type: 'header', 
             date: currentDate, 
-            totalMinor: currentDayTotal 
+            expenseTotalMinor: currentExpenseTotal,
+            incomeTotalMinor: currentIncomeTotal,
           };
         }
         currentDate = tx.occurredAt;
-        currentDayTotal = tx.totalMinor;
+        currentExpenseTotal = isIncome ? (0 as Minor) : tx.totalMinor;
+        currentIncomeTotal = isIncome ? tx.totalMinor : (0 as Minor);
         currentDayStartIndex = items.length;
-        items.push({ type: 'header', date: currentDate, totalMinor: 0 as Minor });
+        items.push({ 
+          type: 'header', 
+          date: currentDate, 
+          expenseTotalMinor: 0 as Minor,
+          incomeTotalMinor: 0 as Minor,
+        });
       } else {
-        currentDayTotal = (currentDayTotal + tx.totalMinor) as Minor;
+        if (isIncome) {
+          currentIncomeTotal = (currentIncomeTotal + tx.totalMinor) as Minor;
+        } else {
+          currentExpenseTotal = (currentExpenseTotal + tx.totalMinor) as Minor;
+        }
       }
       items.push({ type: 'row', tx, versionCount: versionCounts.get(tx.txId) || 1 });
     }
@@ -67,7 +80,8 @@ export function LedgerList() {
       items[currentDayStartIndex] = { 
         type: 'header', 
         date: currentDate, 
-        totalMinor: currentDayTotal 
+        expenseTotalMinor: currentExpenseTotal,
+        incomeTotalMinor: currentIncomeTotal,
       };
     }
 
@@ -104,12 +118,20 @@ export function LedgerList() {
 
   const renderItem = ({ item }: { item: ListItem }) => {
     if (item.type === 'header') {
+      const hasIncome = item.incomeTotalMinor > 0;
+      const hasExpense = item.expenseTotalMinor > 0;
+
       return (
         <View className="flex-row justify-between items-center px-4 py-2 bg-surface-elevated border-b border-border-strong mt-2">
-          <Text className="text-foreground-secondary font-semibold">{item.date}</Text>
-          <Text className="text-foreground-secondary font-semibold">
-            {formatMinor(item.totalMinor, CURRENCY_CONFIG)}
-          </Text>
+          <Text className="text-foreground-secondary font-medium text-xs">{item.date}</Text>
+          <View className="flex-row items-center">
+            <Text className={`font-medium w-24 text-right text-xs ${hasIncome ? 'text-success' : 'text-foreground-muted'}`}>
+              +{formatMinor(item.incomeTotalMinor, CURRENCY_CONFIG)}
+            </Text>
+            <Text className={`font-medium w-24 text-right text-xs ${hasExpense ? 'text-foreground-secondary' : 'text-foreground-muted'}`}>
+              {formatMinor(item.expenseTotalMinor, CURRENCY_CONFIG)}
+            </Text>
+          </View>
         </View>
       );
     }
