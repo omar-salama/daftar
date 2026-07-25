@@ -24,33 +24,33 @@ export function SplitEditor({ totalMinor, onSave, onCancel }: SplitEditorProps) 
   };
 
   return (
-    <View className="flex-1 p-4 bg-zinc-950 border-t border-zinc-900">
-      <Text className="text-zinc-100 text-lg font-medium mb-4">
+    <View className="flex-1 p-4 bg-surface border-t border-border">
+      <Text className="text-foreground text-lg font-medium mb-4">
         Split Transaction
       </Text>
       <ScrollView className="flex-1">
         {lines.map((l, i) => (
           <View 
             key={i} 
-            className="flex-row justify-between py-2 border-b border-zinc-900"
+            className="flex-row justify-between py-2 border-b border-border"
           >
-            <Text className="text-zinc-300">{DUMMY_CATEGORIES.find(c => c.id === l.categoryId)?.name}</Text>
-            <Text className="text-zinc-100">{formatMinor(l.amountMinor, { symbol: '$', decimals: 2 })}</Text>
+            <Text className="text-foreground-secondary">{DUMMY_CATEGORIES.find(c => c.id === l.categoryId)?.name}</Text>
+            <Text className="text-foreground">{formatMinor(l.amountMinor, { symbol: '$', decimals: 2 })}</Text>
           </View>
         ))}
       </ScrollView>
       <View className="flex-row mt-4 gap-2">
         <Pressable 
           onPress={onCancel} 
-          className="flex-1 p-4 bg-zinc-800 rounded-xl items-center min-h-[44px]"
+          className="flex-1 p-4 bg-surface-hover rounded-xl items-center min-h-[44px]"
         >
-          <Text className="text-zinc-100 font-medium">Cancel</Text>
+          <Text className="text-foreground font-medium">Cancel</Text>
         </Pressable>
         <Pressable 
           onPress={handleSave} 
-          className="flex-1 p-4 bg-blue-600 rounded-xl items-center min-h-[44px]"
+          className="flex-1 p-4 bg-brand rounded-xl items-center min-h-[44px] active:bg-brand-active"
         >
-          <Text className="text-white font-medium">Save Split</Text>
+          <Text className="text-foreground font-medium">Save Split</Text>
         </Pressable>
       </View>
     </View>

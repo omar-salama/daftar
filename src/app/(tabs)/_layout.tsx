@@ -1,3 +1,4 @@
+import { tokens } from '@/theme';
 import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
@@ -6,13 +7,13 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#09090b',
-          borderTopColor: '#18181b',
+          backgroundColor: tokens.colors.surface.DEFAULT,
+          borderTopColor: tokens.colors.border.DEFAULT,
           borderTopWidth: 1,
           elevation: 0,
         },
-        tabBarActiveTintColor: '#f4f4f5',
-        tabBarInactiveTintColor: '#71717a',
+        tabBarActiveTintColor: tokens.colors.foreground.DEFAULT,
+        tabBarInactiveTintColor: tokens.colors.foreground.muted,
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Ledger', tabBarIcon: () => <></> }} />

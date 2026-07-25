@@ -1,6 +1,7 @@
 import { useAppendTx, useCreateTx } from '@/features/ledger/hooks/useLedger';
 import type { TxId, TxLine } from '@/kernel';
 import { minorFromDigits } from '@/kernel/money';
+import { tokens } from '@/theme';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -112,10 +113,10 @@ export function EntryScreen() {
 
   return (
     <SafeAreaView 
-      className="flex-1 bg-zinc-950" 
+      className="flex-1 bg-surface" 
       edges={['top', 'left', 'right']}
     >
-      <View className="flex-1 bg-zinc-950">
+      <View className="flex-1 bg-surface">
         <AmountDisplay amount={amountMinor} />
 
         {/* Date and Details Controls below Amount */}
@@ -124,9 +125,9 @@ export function EntryScreen() {
             <View className="flex-row items-center justify-between">
               <Pressable 
                 onPress={() => setShowDatePicker(true)}
-                className="bg-zinc-900 px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
+                className="bg-surface-elevated px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
               >
-                <Text className="text-zinc-300 font-medium text-sm">
+                <Text className="text-foreground-secondary font-medium text-sm">
                   📅 {displayDateStr}
                 </Text>
               </Pressable>
@@ -135,7 +136,7 @@ export function EntryScreen() {
                 onPress={() => setShowDetails(!showDetails)} 
                 className="py-2 min-h-[36px] justify-center" 
               >
-                <Text className="text-zinc-400 font-medium text-sm">
+                <Text className="text-foreground-muted font-medium text-sm">
                   {showDetails ? '- hide details' : '+ details'}
                 </Text>
               </Pressable>
@@ -144,16 +145,16 @@ export function EntryScreen() {
             {showDetails && (
               <View className="mt-3 gap-y-2">
                 <TextInput 
-                  className="bg-zinc-900 text-zinc-100 p-3 rounded-xl min-h-[44px]"
+                  className="bg-surface-elevated text-foreground p-3 rounded-xl min-h-[44px]"
                   placeholder="Payee" 
-                  placeholderTextColor="#52525b"
+                  placeholderTextColor={tokens.colors.foreground.placeholder}
                   value={payee}
                   onChangeText={setPayee}
                 />
                 <TextInput 
-                  className="bg-zinc-900 text-zinc-100 p-3 rounded-xl min-h-[44px]"
+                  className="bg-surface-elevated text-foreground p-3 rounded-xl min-h-[44px]"
                   placeholder="Note" 
-                  placeholderTextColor="#52525b"
+                  placeholderTextColor={tokens.colors.foreground.placeholder}
                   value={note}
                   onChangeText={setNote}
                 />
@@ -188,11 +189,11 @@ export function EntryScreen() {
       {showDatePicker && (
         <Modal transparent animationType="fade" visible={showDatePicker} onRequestClose={() => setShowDatePicker(false)}>
           <Pressable 
-            className="flex-1 bg-black/60 justify-center items-center" 
+            className="flex-1 bg-surface-overlay justify-center items-center" 
             onPress={() => setShowDatePicker(false)}
           >
-            <View className="w-[80%] bg-zinc-900 rounded-2xl p-4 gap-3 border border-zinc-800">
-              <Text className="text-zinc-100 text-lg font-semibold text-center mb-1">Select Date</Text>
+            <View className="w-[80%] bg-surface-elevated rounded-2xl p-4 gap-3 border border-border-strong">
+              <Text className="text-foreground text-lg font-semibold text-center mb-1">Select Date</Text>
               {getQuickDates().map((d) => (
                 <Pressable
                   key={d.value}
@@ -200,9 +201,9 @@ export function EntryScreen() {
                     setDate(d.value);
                     setShowDatePicker(false);
                   }}
-                  className="bg-zinc-800 p-3.5 rounded-lg items-center"
+                  className="bg-surface-hover p-3.5 rounded-lg items-center"
                 >
-                  <Text className="text-zinc-100 text-base font-medium">{d.label} ({d.value})</Text>
+                  <Text className="text-foreground text-base font-medium">{d.label} ({d.value})</Text>
                 </Pressable>
               ))}
             </View>
