@@ -1,6 +1,6 @@
 import { useAppendTx, useCreateTx, useLedger } from '@/features/ledger/hooks/useLedger';
 import { useAccounts } from '@/features/accounts/hooks/useAccounts';
-import type { TxId, TxLine, TxType } from '@/kernel';
+import type { TxId, TxLine, TxType, TxVersion } from '@/kernel';
 import { minorFromDigits } from '@/kernel/money';
 
 import * as Haptics from 'expo-haptics';
@@ -18,56 +18,55 @@ export function EntryScreen() {
   const { data: ledgerTxs } = useLedger();
   const { data: accounts = [] } = useAccounts();
   
-  const [initialized, setInitialized] = useState(false);
-  const [editingTxId, setEditingTxId] = useState<string | null>(null);
+  const tx = txId && ledgerTxs ? ledgerTxs.find(t => t.txId === txId) : undefined;
 
-  const [digits, setDigits] = useState('');
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  return (
+    <EntryForm 
+      key={txId || 'new'} 
+      editingTx={tx} 
+      editingTxId={txId}
+      accounts={accounts} 
+    />
+  );
+}
+
+function EntryForm({ 
+  editingTx, 
+  editingTxId, 
+  accounts 
+}: { 
+  editingTx?: TxVersion; 
+  editingTxId?: string;
+  accounts: NonNullable<ReturnType<typeof useAccounts>['data']>
+}) {
+  const router = useRouter();
+  
+  const [digits, setDigits] = useState(() => {
+    if (!editingTx) return '';
+    const isWhole = editingTx.totalMinor % 100 === 0;
+    return isWhole ? (editingTx.totalMinor / 100).toString() : (editingTx.totalMinor / 100).toFixed(2);
+  });
+  const [date, setDate] = useState(() => editingTx?.occurredAt || new Date().toISOString().split('T')[0]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showAccountPicker, setShowAccountPicker] = useState(false);
-  const [accountId, setAccountId] = useState<string>('');
-  const [isSplit, setIsSplit] = useState(false);
-  const [txType, setTxType] = useState<TxType>('expense');
+  const [accountId, setAccountId] = useState<string>(() => editingTx?.accountId || '');
+  const [isSplit, setIsSplit] = useState(() => (editingTx?.lines?.length ?? 0) > 1);
+  const [txType, setTxType] = useState<TxType>(() => editingTx?.type ?? 'expense');
+  const [showDetails, setShowDetails] = useState(() => !!(editingTx?.payee || editingTx?.note));
+  const [payee, setPayee] = useState(() => editingTx?.payee || '');
+  const [note, setNote] = useState(() => editingTx?.note || '');
 
+  // Select default account if none is set
   useEffect(() => {
-    if (!accountId && accounts.length > 0) {
+    if (!accountId && accounts && accounts.length > 0) {
       setAccountId(accounts.sort((a, b) => a.order - b.order)[0].accountId);
     }
   }, [accounts, accountId]);
-  
-  const [showDetails, setShowDetails] = useState(false);
-  const [payee, setPayee] = useState('');
-  const [note, setNote] = useState('');
 
   const amountMinor = minorFromDigits(digits);
-
-  // Prefill if editing
-  useEffect(() => {
-    if (txId && ledgerTxs && !initialized) {
-      const tx = ledgerTxs.find(t => t.txId === txId);
-      if (tx) {
-        const isWhole = tx.totalMinor % 100 === 0;
-        setDigits(isWhole ? (tx.totalMinor / 100).toString() : (tx.totalMinor / 100).toFixed(2));
-        setDate(tx.occurredAt);
-        setPayee(tx.payee || '');
-        setNote(tx.note || '');
-        setTxType(tx.type ?? 'expense');
-        setAccountId(tx.accountId);
-        if (tx.lines.length > 1) {
-          setIsSplit(true);
-        }
-        if (tx.payee || tx.note) {
-          setShowDetails(true);
-        }
-        setEditingTxId(tx.txId);
-        setInitialized(true);
-      }
-    }
-  }, [txId, ledgerTxs, initialized]);
   
   const appendTx = useAppendTx();
   const createTx = useCreateTx();
-  const router = useRouter();
 
   const handleDigit = (d: string) => {
     if (d === '.') {
@@ -139,8 +138,6 @@ export function EntryScreen() {
         setNote('');
         setIsSplit(false);
         setTxType('expense');
-        setEditingTxId(null);
-        setInitialized(false);
         if (router.canGoBack()) {
           router.back();
         } else {
