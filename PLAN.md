@@ -158,10 +158,21 @@ PROMPT 3 — ledger list UI. /(tabs)/index: FlashList of tx_current grouped by d
 ```
 
 ```
-PROMPT 4 — configurable categories. Extend Stage 2 to include full CRUD for categories (both expense and income).
+PROMPT 4 — settings tab. Add a new "Settings" tab in src/app/(tabs)/settings.tsx. This will serve as the main configuration menu. Create a simple list layout with links/placeholders for "Manage Accounts", "Expense Categories", and "Income Categories".
+```
+
+```
+PROMPT 5 — accounts CRUD. Implement full CRUD for Accounts.
+1. features/accounts/repo: Manage accounts in MMKV (like ledger). Accounts have {id, name, type (e.g. 'cash'|'bank')}.
+2. Provide a default seed set on first open (e.g. "Cash" and "Bank").
+3. UI: Create the management screens under src/app/settings/accounts/ using components from features/accounts/ui. Wire EntryScreen to use the live accounts instead of hardcoded ones.
+```
+
+```
+PROMPT 6 — configurable categories. Extend Stage 2 to include full CRUD for categories (both expense and income).
 1. features/categories/repo: Manage categories in MMKV (like ledger). Categories have {id, name, icon, type: 'expense'|'income', parentId?: string}.
 2. Provide a default seed set on first open (simple categories, no subcategories).
-3. UI: Category management screens to add/edit/delete categories and subcategories, choose icons/colors. Wire CategoryGrid to use the live categories instead of hardcoded ones.
+3. UI: Category management screens in src/app/settings/categories/ to add/edit/delete categories and subcategories, choose icons/colors. Wire CategoryGrid to use the live categories instead of hardcoded ones.
 
 **Keep-It-Zero Guardrails:**
 - Still zero cloud usage — the entire stage runs against MMKV. Your daily-driver app is usable from this point even if you never finish Stage 3.
