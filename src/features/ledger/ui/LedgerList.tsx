@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { Alert, FlatList, Modal, Pressable, Text, View } from 'react-native';
 import { useAppendTx, useCreateTx, useLedger, useLedgerAllVersions } from '../hooks/useLedger';
 import { useAccounts } from '@/features/accounts/hooks/useAccounts';
+import { useCategories } from '@/features/categories/hooks';
 
 // We need a generic currency config for formatting.
 const CURRENCY_CONFIG = { symbol: '$', decimals: 2 };
@@ -17,6 +18,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
   const { data: currentTxs = [] } = useLedger();
   const { data: allVersions = [] } = useLedgerAllVersions();
   const { data: accounts = [] } = useAccounts();
+  const { data: categories = [] } = useCategories();
   const appendTx = useAppendTx();
   const createTx = useCreateTx();
   const router = useRouter();
@@ -161,7 +163,8 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
     }
 
     const { tx, versionCount } = item;
-    const categoryName = tx.lines[0]?.categoryId || 'Unknown';
+    const catObj = categories.find(c => c.categoryId === tx.lines[0]?.categoryId);
+    const categoryName = catObj ? catObj.name : (tx.lines[0]?.categoryId || 'Unknown');
     const isSplit = tx.lines.length > 1;
     const isIncome = tx.type === 'income';
 
@@ -233,7 +236,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
                 {selectedTx.type === 'income' ? '+' : ''}{formatMinor(selectedTx.totalMinor, CURRENCY_CONFIG)}
               </Text>
               <Text className="text-foreground-secondary text-sm mb-8 text-center">
-                {accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} • {selectedTx.occurredAt} • {selectedTx.type === 'income' ? '💰 ' : ''}{selectedTx.lines.length > 1 ? 'Split' : selectedTx.lines[0]?.categoryId}
+                {accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} • {selectedTx.occurredAt} • {selectedTx.type === 'income' ? '💰 ' : ''}{selectedTx.lines.length > 1 ? 'Split' : (categories.find(c => c.categoryId === selectedTx.lines[0]?.categoryId)?.name || selectedTx.lines[0]?.categoryId)}
               </Text>
 
               <View className="gap-3">

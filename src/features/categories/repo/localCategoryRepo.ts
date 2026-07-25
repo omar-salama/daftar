@@ -32,15 +32,15 @@ export const localCategoryRepo: CategoryRepo = {
       const now = Date.now();
       
       const seeds = [
-        createSeedCategory('cat-1', 'Groceries', '🛒', 'expense', now, 0),
-        createSeedCategory('cat-2', 'Dining', '🍽', 'expense', now, 1),
-        createSeedCategory('cat-3', 'Transport', '🚕', 'expense', now, 2),
-        createSeedCategory('cat-4', 'Coffee', '☕️', 'expense', now, 3),
-        createSeedCategory('cat-5', 'Shopping', '🛍', 'expense', now, 4),
-        createSeedCategory('cat-6', 'Bills', '💡', 'expense', now, 5),
-        createSeedCategory('cat-7', 'Entertainment', '🎬', 'expense', now, 6),
-        createSeedCategory('inc-1', 'Salary', '💰', 'income', now, 0),
-        createSeedCategory('inc-2', 'Other', '💵', 'income', now, 1),
+        createSeedCategory('groceries', 'Groceries', '🛒', 'expense', now, 0),
+        createSeedCategory('dining', 'Dining', '🍽', 'expense', now, 1),
+        createSeedCategory('transport', 'Transport', '🚕', 'expense', now, 2),
+        createSeedCategory('coffee', 'Coffee', '☕️', 'expense', now, 3),
+        createSeedCategory('shopping', 'Shopping', '🛍', 'expense', now, 4),
+        createSeedCategory('bills', 'Bills', '💡', 'expense', now, 5),
+        createSeedCategory('entertainment', 'Entertainment', '🎬', 'expense', now, 6),
+        createSeedCategory('salary', 'Salary', '💰', 'income', now, 0),
+        createSeedCategory('other', 'Other', '💵', 'income', now, 1),
       ];
       
       versions = seeds;

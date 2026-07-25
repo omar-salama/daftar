@@ -4,7 +4,7 @@ import { nextHLC, RowId } from '@/kernel';
 import { generateUuid, getDeviceId, getHlcState, setHlcState } from '@/lib/storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CategoryFormScreen() {
@@ -29,7 +29,31 @@ export default function CategoryFormScreen() {
   }, [existingCategory]);
 
   const handleSave = () => {
-    if (!name.trim() || !icon.trim()) return;
+    const trimmedName = name.trim();
+    if (!trimmedName || !icon.trim()) return;
+
+    // Slugify category name for categoryId
+    const generatedSlug = trimmedName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    const targetCategoryId = (generatedSlug || 'category') as CategoryId;
+
+    // Validate uniqueness across active categories
+    const isDuplicate = categories.some(
+      c => !c.isDeleted && 
+           (c.categoryId === targetCategoryId || c.name.toLowerCase() === trimmedName.toLowerCase()) && 
+           c.categoryId !== categoryId
+    );
+
+    if (isDuplicate) {
+      Alert.alert(
+        'Category Exists',
+        `A category with the name "${trimmedName}" already exists. Please enter a unique name.`
+      );
+      return;
+    }
 
     const now = Date.now();
     const deviceId = getDeviceId();
@@ -48,7 +72,7 @@ export default function CategoryFormScreen() {
     if (isEditing && existingCategory) {
       appendCategory.mutate({
         ...existingCategory,
-        name: name.trim(),
+        name: trimmedName,
         icon: icon.trim(),
         version,
       }, {
@@ -57,11 +81,11 @@ export default function CategoryFormScreen() {
     } else {
       appendCategory.mutate({
         rowId: generateUuid() as RowId,
-        categoryId: generateUuid() as CategoryId,
+        categoryId: targetCategoryId,
         version,
         deviceId,
         isDeleted: false,
-        name: name.trim(),
+        name: trimmedName,
         type,
         icon: icon.trim(),
         order: maxOrder + 1,
