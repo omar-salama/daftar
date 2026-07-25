@@ -172,11 +172,13 @@ export function LedgerList() {
               <Text className="text-brand text-sm font-bold">*</Text>
             )}
           </View>
-          {(tx.payee || tx.note) && (
-            <Text className="text-foreground-muted text-sm mt-0.5" numberOfLines={1}>
-              {[tx.payee, tx.note].filter(Boolean).join(' • ')}
-            </Text>
-          )}
+          <Text className="text-foreground-muted text-sm mt-0.5" numberOfLines={1}>
+            {[
+              tx.accountId === 'cash' ? 'Cash' : tx.accountId === 'bank' ? 'Bank' : tx.accountId,
+              tx.payee, 
+              tx.note
+            ].filter(Boolean).join(' • ')}
+          </Text>
         </View>
         <Text className={`text-base ${isIncome ? 'text-success' : 'text-foreground'}`}>
           {isIncome ? '+' : ''}{formatMinor(tx.totalMinor, CURRENCY_CONFIG)}
@@ -224,7 +226,7 @@ export function LedgerList() {
                 {selectedTx.type === 'income' ? '+' : ''}{formatMinor(selectedTx.totalMinor, CURRENCY_CONFIG)}
               </Text>
               <Text className="text-foreground-secondary text-sm mb-8 text-center">
-                {selectedTx.occurredAt} • {selectedTx.type === 'income' ? '💰 ' : ''}{selectedTx.lines.length > 1 ? 'Split' : selectedTx.lines[0]?.categoryId}
+                {selectedTx.accountId === 'cash' ? 'Cash' : selectedTx.accountId === 'bank' ? 'Bank' : selectedTx.accountId} • {selectedTx.occurredAt} • {selectedTx.type === 'income' ? '💰 ' : ''}{selectedTx.lines.length > 1 ? 'Split' : selectedTx.lines[0]?.categoryId}
               </Text>
 
               <View className="gap-3">

@@ -22,6 +22,8 @@ export function EntryScreen() {
   const [digits, setDigits] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showAccountPicker, setShowAccountPicker] = useState(false);
+  const [accountId, setAccountId] = useState('cash');
   const [isSplit, setIsSplit] = useState(false);
   const [txType, setTxType] = useState<TxType>('expense');
   
@@ -42,6 +44,7 @@ export function EntryScreen() {
         setPayee(tx.payee || '');
         setNote(tx.note || '');
         setTxType(tx.type ?? 'expense');
+        setAccountId(tx.accountId);
         if (tx.lines.length > 1) {
           setIsSplit(true);
         }
@@ -115,7 +118,7 @@ export function EntryScreen() {
       txId: (editingTxId || uuidStr) as TxId,
       type: txType,
       occurredAt: date,
-      accountId: 'default-account',
+      accountId,
       payee: payee || undefined,
       note: note || undefined,
       lines,
@@ -197,14 +200,25 @@ export function EntryScreen() {
         {!isSplit && (
           <View className="px-6 py-2">
             <View className="flex-row items-center justify-between">
-              <Pressable 
-                onPress={() => setShowDatePicker(true)}
-                className="bg-surface-elevated px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
-              >
-                <Text className="text-foreground-secondary font-medium text-sm">
-                  📅 {displayDateStr}
-                </Text>
-              </Pressable>
+              <View className="flex-row items-center gap-2">
+                <Pressable 
+                  onPress={() => setShowDatePicker(true)}
+                  className="bg-surface-elevated px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
+                >
+                  <Text className="text-foreground-secondary font-medium text-sm">
+                    📅 {displayDateStr}
+                  </Text>
+                </Pressable>
+                
+                <Pressable 
+                  onPress={() => setShowAccountPicker(true)}
+                  className="bg-surface-elevated px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
+                >
+                  <Text className="text-foreground-secondary font-medium text-sm">
+                    🏦 {accountId === 'cash' ? 'Cash' : accountId === 'bank' ? 'Bank' : accountId}
+                  </Text>
+                </Pressable>
+              </View>
 
               <Pressable 
                 onPress={() => setShowDetails(!showDetails)} 
@@ -277,6 +291,35 @@ export function EntryScreen() {
                   className="bg-surface-hover p-3.5 rounded-lg items-center"
                 >
                   <Text className="text-foreground text-base font-medium">{d.label} ({d.value})</Text>
+                </Pressable>
+              ))}
+            </View>
+          </Pressable>
+        </Modal>
+      )}
+
+      {/* Account Picker Modal */}
+      {showAccountPicker && (
+        <Modal transparent animationType="fade" visible={showAccountPicker} onRequestClose={() => setShowAccountPicker(false)}>
+          <Pressable 
+            className="flex-1 bg-surface-overlay justify-center items-center" 
+            onPress={() => setShowAccountPicker(false)}
+          >
+            <View className="w-[80%] bg-surface-elevated rounded-2xl p-4 gap-3 border border-border-strong">
+              <Text className="text-foreground text-lg font-semibold text-center mb-1">Select Account</Text>
+              {[
+                { label: 'Cash', value: 'cash' },
+                { label: 'Bank', value: 'bank' }
+              ].map((acc) => (
+                <Pressable
+                  key={acc.value}
+                  onPress={() => {
+                    setAccountId(acc.value);
+                    setShowAccountPicker(false);
+                  }}
+                  className="bg-surface-hover p-3.5 rounded-lg items-center"
+                >
+                  <Text className="text-foreground text-base font-medium">{acc.label}</Text>
                 </Pressable>
               ))}
             </View>
