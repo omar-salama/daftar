@@ -1,11 +1,6 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View, ActivityIndicator } from 'react-native';
 import type { TxType } from '@/kernel';
-
-interface Category {
-  id: string;
-  name: string;
-  icon: string;
-}
+import { useCategories } from '../../categories/hooks';
 
 interface CategoryGridProps {
   txType: TxType;
@@ -13,31 +8,28 @@ interface CategoryGridProps {
   onSplit: () => void;
 }
 
-export const EXPENSE_CATEGORIES: Category[] = [
-  { id: 'cat-1', name: 'Groceries', icon: '🛒' },
-  { id: 'cat-2', name: 'Dining', icon: '🍽' },
-  { id: 'cat-3', name: 'Transport', icon: '🚕' },
-  { id: 'cat-4', name: 'Coffee', icon: '☕️' },
-  { id: 'cat-5', name: 'Shopping', icon: '🛍' },
-  { id: 'cat-6', name: 'Bills', icon: '💡' },
-  { id: 'cat-7', name: 'Entertainment', icon: '🎬' },
-];
-
-export const INCOME_CATEGORIES: Category[] = [
-  { id: 'inc-1', name: 'Salary', icon: '💰' },
-  { id: 'inc-2', name: 'Other', icon: '💵' },
-];
-
 export function CategoryGrid({ txType, onSelectCategory, onSplit }: CategoryGridProps) {
-  const categories = txType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const { data: categories, isLoading } = useCategories();
+
+  if (isLoading || !categories) {
+    return (
+      <View className="p-4 items-center justify-center border-t border-border bg-surface">
+        <ActivityIndicator size="small" />
+      </View>
+    );
+  }
+
+  const activeCategories = categories
+    .filter(c => c.type === txType)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   return (
     <View className="flex-row flex-wrap p-2 border-t border-border bg-surface">
-      {categories.map(c => (
-        <View key={c.id} className="w-1/4 p-1">
+      {activeCategories.map(c => (
+        <View key={c.categoryId} className="w-1/4 p-1">
           <Pressable 
-            onPress={() => onSelectCategory(c.id)}
-            testID={`category-${c.id}`}
+            onPress={() => onSelectCategory(c.categoryId)}
+            testID={`category-${c.categoryId}`}
             className="bg-surface-elevated items-center justify-center rounded-xl p-3 min-h-[44px] active:bg-surface-hover"
           >
             <Text className="text-xl mb-0.5">{c.icon}</Text>

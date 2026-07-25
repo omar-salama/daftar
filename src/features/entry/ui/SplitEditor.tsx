@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { Minor, formatMinor } from '@/kernel/money';
-import { EXPENSE_CATEGORIES } from './CategoryGrid';
 import { TxLine } from '@/kernel';
+import { useCategories } from '../../categories/hooks';
 
 interface SplitEditorProps {
   totalMinor: Minor;
@@ -11,17 +11,29 @@ interface SplitEditorProps {
 }
 
 export function SplitEditor({ totalMinor, onSave, onCancel }: SplitEditorProps) {
+  const { data: categories, isLoading } = useCategories();
+  
   const half = Math.floor(totalMinor / 2) as Minor;
   const remainder = (totalMinor - half) as Minor;
 
+  const expenseCategories = categories?.filter(c => c.type === 'expense') || [];
+
   const [lines] = useState<TxLine[]>([
-    { categoryId: EXPENSE_CATEGORIES[0]?.id || 'cat-1', amountMinor: half },
-    { categoryId: EXPENSE_CATEGORIES[1]?.id || 'cat-2', amountMinor: remainder },
+    { categoryId: expenseCategories[0]?.categoryId || 'cat-1', amountMinor: half },
+    { categoryId: expenseCategories[1]?.categoryId || 'cat-2', amountMinor: remainder },
   ]);
 
   const handleSave = () => {
     onSave(lines);
   };
+
+  if (isLoading || !categories) {
+    return (
+      <View className="flex-1 p-4 bg-surface border-t border-border items-center justify-center">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 p-4 bg-surface border-t border-border">
@@ -34,7 +46,7 @@ export function SplitEditor({ totalMinor, onSave, onCancel }: SplitEditorProps) 
             key={i} 
             className="flex-row justify-between py-2 border-b border-border"
           >
-            <Text className="text-foreground-secondary">{EXPENSE_CATEGORIES.find(c => c.id === l.categoryId)?.name}</Text>
+            <Text className="text-foreground-secondary">{categories.find(c => c.categoryId === l.categoryId)?.name || 'Unknown'}</Text>
             <Text className="text-foreground">{formatMinor(l.amountMinor, { symbol: '$', decimals: 2 })}</Text>
           </View>
         ))}
