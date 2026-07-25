@@ -1,9 +1,8 @@
 import { Minor, TxVersion } from '@/kernel';
 import { formatMinor } from '@/kernel/money';
-import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Alert, Modal, Pressable, Text, View } from 'react-native';
+import { Alert, FlatList, Modal, Pressable, Text, View } from 'react-native';
 import { useAppendTx, useCreateTx, useLedger, useLedgerAllVersions } from '../hooks/useLedger';
 
 // We need a generic currency config for formatting.
@@ -88,6 +87,16 @@ export function LedgerList() {
     return items;
   }, [currentTxs, versionCounts]);
 
+  const stickyHeaderIndices = useMemo(() => {
+    const indices: number[] = [];
+    listData.forEach((item, index) => {
+      if (item.type === 'header') {
+        indices.push(index);
+      }
+    });
+    return indices;
+  }, [listData]);
+
   const handleDelete = (tx: TxVersion) => {
     Alert.alert('Delete Transaction', 'Are you sure you want to delete this transaction?', [
       { text: 'Cancel', style: 'cancel' },
@@ -122,13 +131,21 @@ export function LedgerList() {
       const hasExpense = item.expenseTotalMinor > 0;
 
       return (
-        <View className="flex-row justify-between items-center px-4 py-2 bg-surface-elevated border-b border-border-strong mt-2">
+        <View className="flex-row justify-between items-center px-4 py-2.5 bg-surface-elevated border-b border-border-strong">
           <Text className="text-foreground-secondary font-medium text-xs">{item.date}</Text>
           <View className="flex-row items-center">
-            <Text className={`font-medium w-24 text-right text-xs ${hasIncome ? 'text-success' : 'text-foreground-muted'}`}>
+            <Text
+              className={`w-24 text-right font-medium text-sm ${hasIncome ? 'text-success' : 'text-foreground-muted'}`}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
               +{formatMinor(item.incomeTotalMinor, CURRENCY_CONFIG)}
             </Text>
-            <Text className={`font-medium w-24 text-right text-xs ${hasExpense ? 'text-foreground-secondary' : 'text-foreground-muted'}`}>
+            <Text
+              className={`w-24 text-right font-medium text-sm pl-2 ${hasExpense ? 'text-foreground-secondary' : 'text-foreground-muted'}`} 
+              numberOfLines={1} 
+              adjustsFontSizeToFit
+            >
               {formatMinor(item.expenseTotalMinor, CURRENCY_CONFIG)}
             </Text>
           </View>
@@ -147,19 +164,12 @@ export function LedgerList() {
         className="flex-row justify-between items-center px-4 py-3 bg-surface border-b border-border active:bg-surface-hover"
       >
         <View className="flex-1">
-          <View className="flex-row items-center gap-2">
-            <Text className="text-foreground font-medium text-base">
+          <View className="flex-row items-center gap-1.5">
+            <Text className="text-foreground text-base">
               {isSplit ? 'Split' : categoryName}
             </Text>
-            {isIncome && (
-              <View className="bg-success/20 px-1.5 py-0.5 rounded">
-                <Text className="text-success text-xs font-medium">income</Text>
-              </View>
-            )}
             {versionCount > 1 && (
-              <View className="bg-brand/20 px-1.5 py-0.5 rounded">
-                <Text className="text-brand text-xs font-medium">edited</Text>
-              </View>
+              <Text className="text-brand text-sm font-bold">*</Text>
             )}
           </View>
           {(tx.payee || tx.note) && (
@@ -168,7 +178,7 @@ export function LedgerList() {
             </Text>
           )}
         </View>
-        <Text className={`font-semibold text-base ${isIncome ? 'text-success' : 'text-foreground'}`}>
+        <Text className={`text-base ${isIncome ? 'text-success' : 'text-foreground'}`}>
           {isIncome ? '+' : ''}{formatMinor(tx.totalMinor, CURRENCY_CONFIG)}
         </Text>
       </Pressable>
@@ -177,10 +187,13 @@ export function LedgerList() {
 
   return (
     <View className="flex-1 bg-surface w-full h-full">
-      <FlashList
+      <FlatList
         data={listData}
         renderItem={renderItem}
-        getItemType={(item) => item.type}
+        keyExtractor={(item, index) =>
+          item.type === 'header' ? `header-${item.date}` : `tx-${item.tx.rowId}-${index}`
+        }
+        stickyHeaderIndices={stickyHeaderIndices}
         ListEmptyComponent={
           <View className="flex-1 items-center justify-center p-8 mt-10">
             <Text className="text-foreground-muted">No transactions yet.</Text>
