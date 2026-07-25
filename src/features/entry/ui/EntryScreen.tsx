@@ -1,4 +1,5 @@
 import { useAppendTx, useCreateTx, useLedger } from '@/features/ledger/hooks/useLedger';
+import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 import type { TxId, TxLine, TxType } from '@/kernel';
 import { minorFromDigits } from '@/kernel/money';
 
@@ -15,6 +16,7 @@ import { SplitEditor } from './SplitEditor';
 export function EntryScreen() {
   const { txId } = useLocalSearchParams<{ txId?: string }>();
   const { data: ledgerTxs } = useLedger();
+  const { data: accounts = [] } = useAccounts();
   
   const [initialized, setInitialized] = useState(false);
   const [editingTxId, setEditingTxId] = useState<string | null>(null);
@@ -23,9 +25,15 @@ export function EntryScreen() {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showAccountPicker, setShowAccountPicker] = useState(false);
-  const [accountId, setAccountId] = useState('cash');
+  const [accountId, setAccountId] = useState<string>('');
   const [isSplit, setIsSplit] = useState(false);
   const [txType, setTxType] = useState<TxType>('expense');
+
+  useEffect(() => {
+    if (!accountId && accounts.length > 0) {
+      setAccountId(accounts.sort((a, b) => a.order - b.order)[0].accountId);
+    }
+  }, [accounts, accountId]);
   
   const [showDetails, setShowDetails] = useState(false);
   const [payee, setPayee] = useState('');
@@ -215,7 +223,7 @@ export function EntryScreen() {
                   className="bg-surface-elevated px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
                 >
                   <Text className="text-foreground-secondary font-medium text-sm">
-                    🏦 {accountId === 'cash' ? 'Cash' : accountId === 'bank' ? 'Bank' : accountId}
+                    🏦 {accounts.find(a => a.accountId === accountId)?.name || 'Select Account'}
                   </Text>
                 </Pressable>
               </View>
@@ -307,19 +315,16 @@ export function EntryScreen() {
           >
             <View className="w-[80%] bg-surface-elevated rounded-2xl p-4 gap-3 border border-border-strong">
               <Text className="text-foreground text-lg font-semibold text-center mb-1">Select Account</Text>
-              {[
-                { label: 'Cash', value: 'cash' },
-                { label: 'Bank', value: 'bank' }
-              ].map((acc) => (
+              {accounts.sort((a, b) => a.order - b.order).map((acc) => (
                 <Pressable
-                  key={acc.value}
+                  key={acc.accountId}
                   onPress={() => {
-                    setAccountId(acc.value);
+                    setAccountId(acc.accountId);
                     setShowAccountPicker(false);
                   }}
                   className="bg-surface-hover p-3.5 rounded-lg items-center"
                 >
-                  <Text className="text-foreground text-base font-medium">{acc.label}</Text>
+                  <Text className="text-foreground text-base font-medium">{acc.name}</Text>
                 </Pressable>
               ))}
             </View>

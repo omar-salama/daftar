@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, FlatList, Modal, Pressable, Text, View } from 'react-native';
 import { useAppendTx, useCreateTx, useLedger, useLedgerAllVersions } from '../hooks/useLedger';
+import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 
 // We need a generic currency config for formatting.
 const CURRENCY_CONFIG = { symbol: '$', decimals: 2 };
@@ -12,9 +13,10 @@ type ListItem =
   | { type: 'header'; date: string; expenseTotalMinor: Minor; incomeTotalMinor: Minor }
   | { type: 'row'; tx: TxVersion; versionCount: number };
 
-export function LedgerList() {
+export function LedgerList({ accountId }: { accountId?: string } = {}) {
   const { data: currentTxs = [] } = useLedger();
   const { data: allVersions = [] } = useLedgerAllVersions();
+  const { data: accounts = [] } = useAccounts();
   const appendTx = useAppendTx();
   const createTx = useCreateTx();
   const router = useRouter();
@@ -29,9 +31,14 @@ export function LedgerList() {
     return counts;
   }, [allVersions]);
 
+  const filteredTxs = useMemo(() => {
+    if (!accountId) return currentTxs;
+    return currentTxs.filter(tx => tx.accountId === accountId || tx.transferAccountId === accountId);
+  }, [currentTxs, accountId]);
+
   const listData = useMemo(() => {
     // Sort transactions descending by date, then by HLC version
-    const sorted = [...currentTxs].sort((a, b) => {
+    const sorted = [...filteredTxs].sort((a, b) => {
       if (a.occurredAt !== b.occurredAt) {
         return b.occurredAt.localeCompare(a.occurredAt);
       }
@@ -174,7 +181,7 @@ export function LedgerList() {
           </View>
           <Text className="text-foreground-muted text-sm mt-0.5" numberOfLines={1}>
             {[
-              tx.accountId === 'cash' ? 'Cash' : tx.accountId === 'bank' ? 'Bank' : tx.accountId,
+              accounts.find(a => a.accountId === tx.accountId)?.name || tx.accountId,
               tx.payee, 
               tx.note
             ].filter(Boolean).join(' • ')}
@@ -226,7 +233,7 @@ export function LedgerList() {
                 {selectedTx.type === 'income' ? '+' : ''}{formatMinor(selectedTx.totalMinor, CURRENCY_CONFIG)}
               </Text>
               <Text className="text-foreground-secondary text-sm mb-8 text-center">
-                {selectedTx.accountId === 'cash' ? 'Cash' : selectedTx.accountId === 'bank' ? 'Bank' : selectedTx.accountId} • {selectedTx.occurredAt} • {selectedTx.type === 'income' ? '💰 ' : ''}{selectedTx.lines.length > 1 ? 'Split' : selectedTx.lines[0]?.categoryId}
+                {accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} • {selectedTx.occurredAt} • {selectedTx.type === 'income' ? '💰 ' : ''}{selectedTx.lines.length > 1 ? 'Split' : selectedTx.lines[0]?.categoryId}
               </Text>
 
               <View className="gap-3">

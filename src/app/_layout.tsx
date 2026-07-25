@@ -18,6 +18,7 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="account-form" options={{ presentation: 'modal' }} />
       </Stack>
     </PersistQueryClientProvider>
   );

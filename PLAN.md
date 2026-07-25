@@ -158,14 +158,18 @@ PROMPT 3 — ledger list UI. /(tabs)/index: FlashList of tx_current grouped by d
 ```
 
 ```
-PROMPT 4 — settings tab. Add a new "Settings" tab in src/app/(tabs)/settings.tsx. This will serve as the main configuration menu. Create a simple list layout with links/placeholders for "Manage Accounts", "Expense Categories", and "Income Categories".
+PROMPT 4 — settings tab. Add a new "Settings" tab in src/app/(tabs)/settings.tsx. This will serve as the main configuration menu. Create a simple list layout with links/placeholders for "Expense Categories", and "Income Categories".
 ```
 
 ```
-PROMPT 5 — accounts CRUD. Implement full CRUD for Accounts.
-1. features/accounts/repo: Manage accounts in MMKV (like ledger). Accounts have {id, name, type (e.g. 'cash'|'bank')}.
-2. Provide a default seed set on first open (e.g. "Cash" and "Bank").
-3. UI: Create the management screens under src/app/settings/accounts/ using components from features/accounts/ui. Wire EntryScreen to use the live accounts instead of hardcoded ones.
+PROMPT 5 — accounts tab & CRUD. Elevate Accounts to its own main tab.
+1. features/accounts/repo: Manage accounts in MMKV. Accounts have {id, name, type: 'cash' | 'credit' | 'bank' | 'prepaid' | 'savings' | 'investment' | 'others', order: number}.
+2. Provide a default seed set (e.g., "Cash" (cash), "Main" (bank)) with sequential order.
+3. UI - Accounts Tab (src/app/(tabs)/accounts.tsx):
+   - Header Dashboard: Total Assets (sum of positive-asset types), Total Liabilities (sum of credit balances), and Net Worth.
+   - List: Grouped by type. Use react-native-draggable-flatlist to allow drag-and-drop reordering of accounts. The custom `order` here dictates the display order on the EntryScreen.
+4. UI - Account Details (src/app/accounts/[id].tsx): Tap an account to view its specific balances and a filtered ledger list (reuse existing ledger components). Include an "Edit Account" button.
+5. Wire EntryScreen to display the live accounts in a flat list sorted by their custom `order`.
 ```
 
 ```

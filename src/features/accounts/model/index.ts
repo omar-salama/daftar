@@ -2,6 +2,8 @@ import { RowId } from '@/kernel';
 
 export type AccountId = string & { __brand: 'AccountId' };
 
+export type AccountType = 'cash' | 'credit' | 'bank' | 'prepaid' | 'savings' | 'investment' | 'others';
+
 export interface AccountVersion {
   rowId: RowId;
   accountId: AccountId;
@@ -9,8 +11,11 @@ export interface AccountVersion {
   deviceId: string;
   isDeleted: boolean;
   name: string;
+  type: AccountType;
+  order: number;
   currency: string;
   note?: string;
+  initialBalance?: number;
   createdAt?: string;
 }
 

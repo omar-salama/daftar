@@ -20,6 +20,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Ledger', tabBarIcon: () => <></> }} />
+      <Tabs.Screen name="accounts" options={{ title: 'Accounts', tabBarIcon: () => <></> }} />
       <Tabs.Screen name="entry" options={{ title: 'Entry', tabBarIcon: () => <></> }} />
     </Tabs>
   );
