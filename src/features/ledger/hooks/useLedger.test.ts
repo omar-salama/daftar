@@ -8,6 +8,7 @@ describe('optimistic resolver', () => {
       txId: 'tx1' as TxId,
       version: '000000000000100-0001-deviceA',
       deviceId: 'deviceA',
+      type: 'expense',
       isDeleted: false,
       occurredAt: '2023-01-01',
       accountId: 'acc1',

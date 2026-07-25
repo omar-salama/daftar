@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Minor, formatMinor } from '@/kernel/money';
-import { DUMMY_CATEGORIES } from './CategoryGrid';
+import { EXPENSE_CATEGORIES } from './CategoryGrid';
 import { TxLine } from '@/kernel';
 
 interface SplitEditorProps {
@@ -15,8 +15,8 @@ export function SplitEditor({ totalMinor, onSave, onCancel }: SplitEditorProps) 
   const remainder = (totalMinor - half) as Minor;
 
   const [lines] = useState<TxLine[]>([
-    { categoryId: DUMMY_CATEGORIES[0]?.id || 'cat-1', amountMinor: half },
-    { categoryId: DUMMY_CATEGORIES[1]?.id || 'cat-2', amountMinor: remainder },
+    { categoryId: EXPENSE_CATEGORIES[0]?.id || 'cat-1', amountMinor: half },
+    { categoryId: EXPENSE_CATEGORIES[1]?.id || 'cat-2', amountMinor: remainder },
   ]);
 
   const handleSave = () => {
@@ -34,7 +34,7 @@ export function SplitEditor({ totalMinor, onSave, onCancel }: SplitEditorProps) 
             key={i} 
             className="flex-row justify-between py-2 border-b border-border"
           >
-            <Text className="text-foreground-secondary">{DUMMY_CATEGORIES.find(c => c.id === l.categoryId)?.name}</Text>
+            <Text className="text-foreground-secondary">{EXPENSE_CATEGORIES.find(c => c.id === l.categoryId)?.name}</Text>
             <Text className="text-foreground">{formatMinor(l.amountMinor, { symbol: '$', decimals: 2 })}</Text>
           </View>
         ))}

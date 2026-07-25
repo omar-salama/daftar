@@ -1,11 +1,19 @@
 import { Pressable, Text, View } from 'react-native';
+import type { TxType } from '@/kernel';
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+}
 
 interface CategoryGridProps {
+  txType: TxType;
   onSelectCategory: (id: string) => void;
   onSplit: () => void;
 }
 
-export const DUMMY_CATEGORIES = [
+export const EXPENSE_CATEGORIES: Category[] = [
   { id: 'cat-1', name: 'Groceries', icon: '🛒' },
   { id: 'cat-2', name: 'Dining', icon: '🍽' },
   { id: 'cat-3', name: 'Transport', icon: '🚕' },
@@ -15,10 +23,17 @@ export const DUMMY_CATEGORIES = [
   { id: 'cat-7', name: 'Entertainment', icon: '🎬' },
 ];
 
-export function CategoryGrid({ onSelectCategory, onSplit }: CategoryGridProps) {
+export const INCOME_CATEGORIES: Category[] = [
+  { id: 'inc-1', name: 'Salary', icon: '💰' },
+  { id: 'inc-2', name: 'Other', icon: '💵' },
+];
+
+export function CategoryGrid({ txType, onSelectCategory, onSplit }: CategoryGridProps) {
+  const categories = txType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
   return (
     <View className="flex-row flex-wrap p-2 border-t border-border bg-surface">
-      {DUMMY_CATEGORIES.map(c => (
+      {categories.map(c => (
         <View key={c.id} className="w-1/4 p-1">
           <Pressable 
             onPress={() => onSelectCategory(c.id)}
@@ -30,15 +45,17 @@ export function CategoryGrid({ onSelectCategory, onSplit }: CategoryGridProps) {
           </Pressable>
         </View>
       ))}
-      <View className="w-1/4 p-1">
-        <Pressable 
-          onPress={onSplit}
-          className="bg-surface-elevated items-center justify-center rounded-xl p-3 min-h-[44px] border border-border-strong active:bg-surface-hover"
-        >
-          <Text className="text-lg mb-0.5">➗</Text>
-          <Text className="text-foreground-secondary text-[10px] font-medium">Split</Text>
-        </Pressable>
-      </View>
+      {txType === 'expense' && (
+        <View className="w-1/4 p-1">
+          <Pressable 
+            onPress={onSplit}
+            className="bg-surface-elevated items-center justify-center rounded-xl p-3 min-h-[44px] border border-border-strong active:bg-surface-hover"
+          >
+            <Text className="text-lg mb-0.5">➗</Text>
+            <Text className="text-foreground-secondary text-[10px] font-medium">Split</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }

@@ -117,6 +117,7 @@ export function LedgerList() {
     const { tx, versionCount } = item;
     const categoryName = tx.lines[0]?.categoryId || 'Unknown';
     const isSplit = tx.lines.length > 1;
+    const isIncome = tx.type === 'income';
 
     return (
       <Pressable 
@@ -128,6 +129,11 @@ export function LedgerList() {
             <Text className="text-foreground font-medium text-base">
               {isSplit ? 'Split' : categoryName}
             </Text>
+            {isIncome && (
+              <View className="bg-success/20 px-1.5 py-0.5 rounded">
+                <Text className="text-success text-xs font-medium">income</Text>
+              </View>
+            )}
             {versionCount > 1 && (
               <View className="bg-brand/20 px-1.5 py-0.5 rounded">
                 <Text className="text-brand text-xs font-medium">edited</Text>
@@ -140,8 +146,8 @@ export function LedgerList() {
             </Text>
           )}
         </View>
-        <Text className="text-foreground font-semibold text-base">
-          {formatMinor(tx.totalMinor, CURRENCY_CONFIG)}
+        <Text className={`font-semibold text-base ${isIncome ? 'text-success' : 'text-foreground'}`}>
+          {isIncome ? '+' : ''}{formatMinor(tx.totalMinor, CURRENCY_CONFIG)}
         </Text>
       </Pressable>
     );
@@ -180,10 +186,10 @@ export function LedgerList() {
               </View>
 
               <Text className="text-foreground text-xl font-semibold mb-1 text-center">
-                {formatMinor(selectedTx.totalMinor, CURRENCY_CONFIG)}
+                {selectedTx.type === 'income' ? '+' : ''}{formatMinor(selectedTx.totalMinor, CURRENCY_CONFIG)}
               </Text>
               <Text className="text-foreground-secondary text-sm mb-8 text-center">
-                {selectedTx.occurredAt} • {selectedTx.lines.length > 1 ? 'Split' : selectedTx.lines[0]?.categoryId}
+                {selectedTx.occurredAt} • {selectedTx.type === 'income' ? '💰 ' : ''}{selectedTx.lines.length > 1 ? 'Split' : selectedTx.lines[0]?.categoryId}
               </Text>
 
               <View className="gap-3">

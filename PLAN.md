@@ -157,6 +157,12 @@ Wire to useAppendTx from features/ledger/hooks. No new data logic.
 PROMPT 3 — ledger list UI. /(tabs)/index: FlashList of tx_current grouped by day with daily totals (sum in Minor, format at render). Row tap → detail sheet with Edit (re-opens EntryScreen prefilled, saves as new version, same txId) and Delete (appends tombstone, confirm dialog). Show a subtle "edited" badge when a tx has >1 version.
 ```
 
+```
+PROMPT 4 — configurable categories. Extend Stage 2 to include full CRUD for categories (both expense and income).
+1. features/categories/repo: Manage categories in MMKV (like ledger). Categories have {id, name, icon, type: 'expense'|'income', parentId?: string}.
+2. Provide a default seed set on first open (simple categories, no subcategories).
+3. UI: Category management screens to add/edit/delete categories and subcategories, choose icons/colors. Wire CategoryGrid to use the live categories instead of hardcoded ones.
+
 **Keep-It-Zero Guardrails:**
 - Still zero cloud usage — the entire stage runs against MMKV. Your daily-driver app is usable from this point even if you never finish Stage 3.
 - Use `@shopify/flash-list` (free, no license) rather than any paid list/table component; charts wait until Stage 4.

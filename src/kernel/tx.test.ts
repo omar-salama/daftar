@@ -77,6 +77,32 @@ describe('tx kernel', () => {
         ]
       }, 'v1')).toThrow(/Unsafe integer/);
     });
+
+    it('defaults type to expense when omitted', () => {
+      const v = buildTxVersion({
+        rowId: 'r1' as RowId,
+        txId: 'tx1' as TxId,
+        deviceId: 'deviceA',
+        occurredAt: '2026-07-24',
+        accountId: 'acc1',
+        lines: [{ categoryId: 'cat1', amountMinor: 100 as Minor }],
+      }, 'v1');
+      expect(v.type).toBe('expense');
+    });
+
+    it('preserves income type when specified', () => {
+      const v = buildTxVersion({
+        rowId: 'r1' as RowId,
+        txId: 'tx1' as TxId,
+        deviceId: 'deviceA',
+        type: 'income',
+        occurredAt: '2026-07-24',
+        accountId: 'acc1',
+        lines: [{ categoryId: 'salary', amountMinor: 500000 as Minor }],
+      }, 'v1');
+      expect(v.type).toBe('income');
+      expect(v.totalMinor).toBe(500000);
+    });
   });
 
   describe('resolveCurrent', () => {

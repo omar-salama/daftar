@@ -12,3 +12,4 @@
 | 2025-07-24 | Basis-point rounding: largest-remainder method | Ensures integer basis points sum to exactly 10,000. Deterministic, no float drift. |
 | 2025-07-24 | Dark-mode first, light mode deferred | Reduces design surface for v1. Can add light theme later via NativeWind config. |
 | 2025-07-24 | Local builds only (no EAS) | $0 budget constraint. `npx expo run:ios/android` compiles locally. Free provisioning for iOS (7-day re-sign). |
+| 2026-07-25 | Income handled via explicit transaction type | Added `type: 'expense' | 'income'` to `TxVersion`. Keeps `amountMinor` positive for both. Transaction semantics explicit rather than encoded in the sign, leaving room for 'transfer' later. |

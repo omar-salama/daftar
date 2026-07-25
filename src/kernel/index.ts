@@ -12,6 +12,7 @@ export { type HLCState, nextHLC } from './hlc';
 export {
   type TxId,
   type RowId,
+  type TxType,
   type TxLine,
   type TxVersion,
   type BuildTxVersionInput,

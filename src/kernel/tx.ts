@@ -2,6 +2,7 @@ import { Minor, addMinor } from './money';
 
 export type TxId = string & { __brand: 'TxId' };
 export type RowId = string & { __brand: 'RowId' };
+export type TxType = 'expense' | 'income';
 
 export interface TxLine {
   categoryId: string;
@@ -13,6 +14,7 @@ export interface TxVersion {
   txId: TxId;
   version: string;
   deviceId: string;
+  type: TxType;
   isDeleted: boolean;
   occurredAt: string; // YYYY-MM-DD format
   accountId: string;
@@ -27,6 +29,7 @@ export interface BuildTxVersionInput {
   rowId: RowId;
   txId: TxId;
   deviceId: string;
+  type?: TxType;
   isDeleted?: boolean;
   occurredAt: string;
   accountId: string;
@@ -54,6 +57,7 @@ export function buildTxVersion(input: BuildTxVersionInput, versionString: string
     txId: input.txId,
     version: versionString,
     deviceId: input.deviceId,
+    type: input.type ?? 'expense',
     isDeleted: input.isDeleted ?? false,
     occurredAt: input.occurredAt,
     accountId: input.accountId,

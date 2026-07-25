@@ -1,10 +1,10 @@
-import { useAppendTx, useCreateTx } from '@/features/ledger/hooks/useLedger';
-import type { TxId, TxLine } from '@/kernel';
+import { useAppendTx, useCreateTx, useLedger } from '@/features/ledger/hooks/useLedger';
+import type { TxId, TxLine, TxType } from '@/kernel';
 import { minorFromDigits } from '@/kernel/money';
 
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useState, useEffect } from 'react';
 import { Modal, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AmountDisplay } from './AmountDisplay';
@@ -13,16 +13,46 @@ import { Keypad } from './Keypad';
 import { SplitEditor } from './SplitEditor';
 
 export function EntryScreen() {
+  const { txId } = useLocalSearchParams<{ txId?: string }>();
+  const { data: ledgerTxs } = useLedger();
+  
+  const [initialized, setInitialized] = useState(false);
+  const [editingTxId, setEditingTxId] = useState<string | null>(null);
+
   const [digits, setDigits] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSplit, setIsSplit] = useState(false);
+  const [txType, setTxType] = useState<TxType>('expense');
   
   const [showDetails, setShowDetails] = useState(false);
   const [payee, setPayee] = useState('');
   const [note, setNote] = useState('');
 
   const amountMinor = minorFromDigits(digits);
+
+  // Prefill if editing
+  useEffect(() => {
+    if (txId && ledgerTxs && !initialized) {
+      const tx = ledgerTxs.find(t => t.txId === txId);
+      if (tx) {
+        const isWhole = tx.totalMinor % 100 === 0;
+        setDigits(isWhole ? (tx.totalMinor / 100).toString() : (tx.totalMinor / 100).toFixed(2));
+        setDate(tx.occurredAt);
+        setPayee(tx.payee || '');
+        setNote(tx.note || '');
+        setTxType(tx.type ?? 'expense');
+        if (tx.lines.length > 1) {
+          setIsSplit(true);
+        }
+        if (tx.payee || tx.note) {
+          setShowDetails(true);
+        }
+        setEditingTxId(tx.txId);
+        setInitialized(true);
+      }
+    }
+  }, [txId, ledgerTxs, initialized]);
   
   const appendTx = useAppendTx();
   const createTx = useCreateTx();
@@ -82,7 +112,8 @@ export function EntryScreen() {
     }
 
     const tx = createTx({
-      txId: uuidStr as TxId,
+      txId: (editingTxId || uuidStr) as TxId,
+      type: txType,
       occurredAt: date,
       accountId: 'default-account',
       payee: payee || undefined,
@@ -96,6 +127,9 @@ export function EntryScreen() {
         setPayee('');
         setNote('');
         setIsSplit(false);
+        setTxType('expense');
+        setEditingTxId(null);
+        setInitialized(false);
         if (router.canGoBack()) {
           router.back();
         } else {
@@ -109,6 +143,11 @@ export function EntryScreen() {
     saveLines([{ categoryId, amountMinor }]);
   };
 
+  const handleToggleType = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setTxType(prev => prev === 'expense' ? 'income' : 'expense');
+  };
+
   const displayDateStr = date === new Date().toISOString().split('T')[0] ? 'Today' : date.slice(5);
 
   return (
@@ -117,7 +156,42 @@ export function EntryScreen() {
       edges={['top', 'left', 'right']}
     >
       <View className="flex-1 bg-surface">
-        <AmountDisplay amount={amountMinor} />
+        {/* Expense ↔ Income Toggle */}
+        <View className="flex-row items-center justify-center pt-3 pb-1">
+          <Pressable
+            onPress={handleToggleType}
+            className="flex-row items-center bg-surface-elevated rounded-full px-1 py-1 border border-border"
+          >
+            <View
+              className={`px-4 py-1.5 rounded-full min-h-[36px] justify-center ${
+                txType === 'expense' ? 'bg-danger' : ''
+              }`}
+            >
+              <Text
+                className={`text-sm font-semibold ${
+                  txType === 'expense' ? 'text-foreground' : 'text-foreground-muted'
+                }`}
+              >
+                Expense
+              </Text>
+            </View>
+            <View
+              className={`px-4 py-1.5 rounded-full min-h-[36px] justify-center ${
+                txType === 'income' ? 'bg-success' : ''
+              }`}
+            >
+              <Text
+                className={`text-sm font-semibold ${
+                  txType === 'income' ? 'text-foreground' : 'text-foreground-muted'
+                }`}
+              >
+                Income
+              </Text>
+            </View>
+          </Pressable>
+        </View>
+
+        <AmountDisplay amount={amountMinor} txType={txType} />
 
         {/* Date and Details Controls below Amount */}
         {!isSplit && (
@@ -170,6 +244,7 @@ export function EntryScreen() {
             />
           ) : (
             <CategoryGrid 
+              txType={txType}
               onSelectCategory={handleSaveCategory} 
               onSplit={() => {
                 if (amountMinor > 0) setIsSplit(true);
