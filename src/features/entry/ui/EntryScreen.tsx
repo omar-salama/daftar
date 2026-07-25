@@ -264,6 +264,7 @@ function EntryForm({
           ) : (
             <CategoryGrid 
               txType={txType}
+              selectedCategoryId={!isSplit && editingTx?.lines?.length === 1 ? editingTx.lines[0].categoryId : undefined}
               onSelectCategory={handleSaveCategory} 
               onSplit={() => {
                 if (amountMinor > 0) setIsSplit(true);
