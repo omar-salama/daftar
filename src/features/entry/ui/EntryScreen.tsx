@@ -1,11 +1,11 @@
-import { useAppendTx, useCreateTx, useLedger } from '@/features/ledger/hooks/useLedger';
 import { useAccounts } from '@/features/accounts/hooks/useAccounts';
+import { useAppendTx, useCreateTx, useLedger } from '@/features/ledger/hooks/useLedger';
 import type { TxId, TxLine, TxType, TxVersion } from '@/kernel';
 import { minorFromDigits } from '@/kernel/money';
 
 import * as Haptics from 'expo-haptics';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Modal, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AmountDisplay } from './AmountDisplay';
@@ -22,7 +22,7 @@ export function EntryScreen() {
 
   return (
     <EntryForm 
-      key={txId || 'new'} 
+      key={txId ? `${txId}-${tx?.version}` : 'new'} 
       editingTx={tx} 
       editingTxId={txId}
       accounts={accounts} 
