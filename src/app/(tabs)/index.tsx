@@ -1,9 +1,10 @@
-import { View, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LedgerList } from '@/features/ledger/ui/LedgerList';
 
 export default function LedgerTab() {
   return (
-    <View className="flex-1 items-center justify-center bg-surface">
-      <Text className="text-foreground mb-8">Ledger Tab Placeholder</Text>
-    </View>
+    <SafeAreaView className="flex-1 bg-surface" edges={['top', 'left', 'right']}>
+      <LedgerList />
+    </SafeAreaView>
   );
 }

@@ -27,6 +27,10 @@ export const localLedgerRepo: LedgerRepo = {
     return resolveCurrent(versions);
   },
 
+  async listAll(): Promise<TxVersion[]> {
+    return getJSON<TxVersion[]>(KEY_LEDGER_VERSIONS) ?? [];
+  },
+
   async append(v: TxVersion): Promise<void> {
     const versions = getJSON<TxVersion[]>(KEY_LEDGER_VERSIONS) ?? [];
     versions.push(v);

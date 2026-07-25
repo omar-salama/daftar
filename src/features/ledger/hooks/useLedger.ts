@@ -13,6 +13,13 @@ export function useLedger() {
   });
 }
 
+export function useLedgerAllVersions() {
+  return useQuery({
+    queryKey: [...ledgerKeys.all, 'raw'],
+    queryFn: () => localLedgerRepo.listAll(),
+  });
+}
+
 export function useCreateTx() {
   return createTxVersion;
 }

@@ -1,3 +1,4 @@
+/* global module */
 /**
  * Semantic theme tokens for Daftar design system.
  * Serves as the single source of truth for Tailwind configuration and JavaScript/React Native styling.
