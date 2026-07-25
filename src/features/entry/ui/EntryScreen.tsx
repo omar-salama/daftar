@@ -114,24 +114,19 @@ export function EntryScreen() {
     <SafeAreaView 
       className="flex-1 bg-zinc-950" 
       edges={['top', 'left', 'right']}
-      style={{ flex: 1, backgroundColor: '#09090b' }}
     >
-      <View className="flex-1 bg-zinc-950" style={{ flex: 1, backgroundColor: '#09090b' }}>
+      <View className="flex-1 bg-zinc-950">
         <AmountDisplay amount={amountMinor} />
 
         {/* Date and Details Controls below Amount */}
         {!isSplit && (
-          <View className="px-6 py-2" style={{ paddingHorizontal: 24, paddingVertical: 8 }}>
-            <View 
-              className="flex-row items-center justify-between"
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-            >
+          <View className="px-6 py-2">
+            <View className="flex-row items-center justify-between">
               <Pressable 
                 onPress={() => setShowDatePicker(true)}
                 className="bg-zinc-900 px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
-                style={{ backgroundColor: '#18181b', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, minHeight: 36, justifyContent: 'center' }}
               >
-                <Text className="text-zinc-300 font-medium text-sm" style={{ color: '#d4d4d8', fontWeight: '500', fontSize: 14 }}>
+                <Text className="text-zinc-300 font-medium text-sm">
                   📅 {displayDateStr}
                 </Text>
               </Pressable>
@@ -139,19 +134,17 @@ export function EntryScreen() {
               <Pressable 
                 onPress={() => setShowDetails(!showDetails)} 
                 className="py-2 min-h-[36px] justify-center" 
-                style={{ minHeight: 36, justifyContent: 'center' }}
               >
-                <Text className="text-zinc-400 font-medium text-sm" style={{ color: '#a1a1aa', fontWeight: '500', fontSize: 14 }}>
+                <Text className="text-zinc-400 font-medium text-sm">
                   {showDetails ? '- hide details' : '+ details'}
                 </Text>
               </Pressable>
             </View>
 
             {showDetails && (
-              <View className="space-y-4 mt-3 gap-y-2" style={{ marginTop: 12, gap: 8 }}>
+              <View className="mt-3 gap-y-2">
                 <TextInput 
                   className="bg-zinc-900 text-zinc-100 p-3 rounded-xl min-h-[44px]"
-                  style={{ backgroundColor: '#18181b', color: '#f4f4f5', padding: 12, borderRadius: 12, minHeight: 44 }}
                   placeholder="Payee" 
                   placeholderTextColor="#52525b"
                   value={payee}
@@ -159,7 +152,6 @@ export function EntryScreen() {
                 />
                 <TextInput 
                   className="bg-zinc-900 text-zinc-100 p-3 rounded-xl min-h-[44px]"
-                  style={{ backgroundColor: '#18181b', color: '#f4f4f5', padding: 12, borderRadius: 12, minHeight: 44 }}
                   placeholder="Note" 
                   placeholderTextColor="#52525b"
                   value={note}
@@ -196,11 +188,11 @@ export function EntryScreen() {
       {showDatePicker && (
         <Modal transparent animationType="fade" visible={showDatePicker} onRequestClose={() => setShowDatePicker(false)}>
           <Pressable 
-            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' }} 
+            className="flex-1 bg-black/60 justify-center items-center" 
             onPress={() => setShowDatePicker(false)}
           >
-            <View style={{ width: '80%', backgroundColor: '#18181b', borderRadius: 16, padding: 16, gap: 12, borderWidth: 1, borderColor: '#27272a' }}>
-              <Text style={{ color: '#f4f4f5', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 4 }}>Select Date</Text>
+            <View className="w-[80%] bg-zinc-900 rounded-2xl p-4 gap-3 border border-zinc-800">
+              <Text className="text-zinc-100 text-lg font-semibold text-center mb-1">Select Date</Text>
               {getQuickDates().map((d) => (
                 <Pressable
                   key={d.value}
@@ -208,9 +200,9 @@ export function EntryScreen() {
                     setDate(d.value);
                     setShowDatePicker(false);
                   }}
-                  style={{ backgroundColor: '#27272a', padding: 14, borderRadius: 10, alignItems: 'center' }}
+                  className="bg-zinc-800 p-3.5 rounded-lg items-center"
                 >
-                  <Text style={{ color: '#f4f4f5', fontSize: 16, fontWeight: '500' }}>{d.label} ({d.value})</Text>
+                  <Text className="text-zinc-100 text-base font-medium">{d.label} ({d.value})</Text>
                 </Pressable>
               ))}
             </View>
