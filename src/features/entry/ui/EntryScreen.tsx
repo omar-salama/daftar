@@ -1,7 +1,7 @@
 import { useAppendTx, useCreateTx } from '@/features/ledger/hooks/useLedger';
 import type { TxId, TxLine } from '@/kernel';
 import { minorFromDigits } from '@/kernel/money';
-import { tokens } from '@/theme';
+
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -145,16 +145,14 @@ export function EntryScreen() {
             {showDetails && (
               <View className="mt-3 gap-y-2">
                 <TextInput 
-                  className="bg-surface-elevated text-foreground p-3 rounded-xl min-h-[44px]"
+                  className="bg-surface-elevated text-foreground placeholder:text-foreground-placeholder p-3 rounded-xl min-h-[44px]"
                   placeholder="Payee" 
-                  placeholderTextColor={tokens.colors.foreground.placeholder}
                   value={payee}
                   onChangeText={setPayee}
                 />
                 <TextInput 
-                  className="bg-surface-elevated text-foreground p-3 rounded-xl min-h-[44px]"
+                  className="bg-surface-elevated text-foreground placeholder:text-foreground-placeholder p-3 rounded-xl min-h-[44px]"
                   placeholder="Note" 
-                  placeholderTextColor={tokens.colors.foreground.placeholder}
                   value={note}
                   onChangeText={setNote}
                 />

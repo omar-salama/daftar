@@ -5,29 +5,29 @@
 const tokens = {
   colors: {
     surface: {
-      DEFAULT: '#09090b',
-      elevated: '#18181b',
-      hover: '#27272a',
-      overlay: 'rgba(0,0,0,0.6)',
+      DEFAULT: 'var(--color-surface)',
+      elevated: 'var(--color-surface-elevated)',
+      hover: 'var(--color-surface-hover)',
+      overlay: 'var(--color-surface-overlay)',
     },
     border: {
-      DEFAULT: '#18181b',
-      strong: '#27272a',
+      DEFAULT: 'var(--color-border)',
+      strong: 'var(--color-border-strong)',
     },
     foreground: {
-      DEFAULT: '#f4f4f5',
-      secondary: '#d4d4d8',
-      muted: '#a1a1aa',
-      tertiary: '#8e8e93',
-      placeholder: '#52525b',
+      DEFAULT: 'var(--color-foreground)',
+      secondary: 'var(--color-foreground-secondary)',
+      muted: 'var(--color-foreground-muted)',
+      tertiary: 'var(--color-foreground-tertiary)',
+      placeholder: 'var(--color-foreground-placeholder)',
     },
     brand: {
-      DEFAULT: '#2563eb',
-      active: '#1d4ed8',
+      DEFAULT: 'var(--color-brand)',
+      active: 'var(--color-brand-active)',
     },
-    success: '#22c55e',
-    warning: '#f59e0b',
-    danger: '#ef4444',
+    success: 'var(--color-success)',
+    warning: 'var(--color-warning)',
+    danger: 'var(--color-danger)',
   },
 };
 
