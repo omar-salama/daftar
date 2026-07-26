@@ -1,13 +1,11 @@
-import { useAppendCategory, useCategories } from '@/features/categories/hooks';
+import { useCategories, useDeleteCategory, useReorderCategories } from '@/features/categories/hooks';
 import { CategoryVersion } from '@/features/categories/model';
-import { nextHLC } from '@/kernel';
-import { getDeviceId, getHlcState, setHlcState } from '@/lib/storage';
+import { CategoryListItem } from '@/features/categories/ui';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CategoryManagementScreen() {
@@ -15,7 +13,8 @@ export default function CategoryManagementScreen() {
   const router = useRouter();
   
   const { data: categories = [] } = useCategories();
-  const appendCategory = useAppendCategory();
+  const reorderCategories = useReorderCategories();
+  const deleteCategory = useDeleteCategory();
   
   const [data, setData] = useState<CategoryVersion[]>([]);
 
@@ -29,97 +28,18 @@ export default function CategoryManagementScreen() {
 
   const handleDragEnd = ({ data: newData }: { data: CategoryVersion[] }) => {
     setData(newData);
-    const now = Date.now();
-    const deviceId = getDeviceId();
-    let hlcState = getHlcState();
-
-    newData.forEach((category, index) => {
-      if (category.order !== index) {
-        const [version, nextState] = nextHLC(now, hlcState, deviceId);
-        hlcState = nextState;
-        
-        appendCategory.mutate({
-          ...category,
-          version,
-          order: index,
-        });
-      }
-    });
-    setHlcState(hlcState);
+    reorderCategories.mutate(newData);
   };
-
-  const handleDelete = (category: CategoryVersion) => {
-    Alert.alert('Delete Category', `Are you sure you want to delete "${category.name}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { 
-        text: 'Delete', 
-        style: 'destructive',
-        onPress: () => {
-          const now = Date.now();
-          const deviceId = getDeviceId();
-          const hlcState = getHlcState();
-          const [version, nextState] = nextHLC(now, hlcState, deviceId);
-          setHlcState(nextState);
-
-          appendCategory.mutate({
-            ...category,
-            isDeleted: true,
-            version,
-          });
-        }
-      }
-    ]);
-  };
-
-  const renderRightActions = (item: CategoryVersion) => (
-    <Pressable
-      onPress={() => handleDelete(item)}
-      className="bg-danger justify-center items-center px-5 mb-2 rounded-xl ml-2"
-    >
-      <Text className="text-foreground font-semibold text-base">Delete</Text>
-    </Pressable>
-  );
 
   const renderItem = ({ item, drag, isActive }: RenderItemParams<CategoryVersion>) => {
     return (
-      <ScaleDecorator>
-        <View className="px-4">
-          <ReanimatedSwipeable
-            renderRightActions={() => renderRightActions(item)}
-            overshootRight={false}
-          >
-            <View
-              className={`flex-row justify-between items-center px-4 py-4 mb-2 rounded-xl border border-border ${
-                isActive ? 'bg-surface-hover' : 'bg-surface-elevated'
-              }`}
-            >
-              <View className="flex-row items-center flex-1">
-                <Text className="text-2xl mr-3">{item.icon}</Text>
-                <Text className="text-foreground text-lg">{item.name}</Text>
-              </View>
-
-              <View className="flex-row items-center gap-2">
-                <Pressable
-                  onPress={() => router.push(`/category-form?categoryId=${item.categoryId}&type=${type}`)}
-                  className="p-2"
-                  hitSlop={8}
-                >
-                  <Text className="text-base">✏️</Text>
-                </Pressable>
-
-                <Pressable
-                  onPressIn={drag}
-                  disabled={isActive}
-                  className="p-2 -mr-2"
-                  hitSlop={8}
-                >
-                  <Text className="text-lg text-foreground-muted font-bold">☰</Text>
-                </Pressable>
-              </View>
-            </View>
-          </ReanimatedSwipeable>
-        </View>
-      </ScaleDecorator>
+      <CategoryListItem 
+        item={item} 
+        type={type} 
+        isActive={isActive} 
+        drag={drag} 
+        onDelete={(item) => deleteCategory.mutate(item)} 
+      />
     );
   };
 
