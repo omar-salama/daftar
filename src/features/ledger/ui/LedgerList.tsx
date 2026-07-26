@@ -138,6 +138,16 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
     ]);
   };
 
+  const getCategoryName = (categoryId: string) => {
+    const cat = categories.find(c => c.categoryId === categoryId);
+    if (!cat) return categoryId;
+    if (cat.parentId) {
+      const parent = categories.find(c => c.categoryId === cat.parentId);
+      if (parent) return `${parent.name} - ${cat.name}`;
+    }
+    return cat.name;
+  };
+
   const handleEdit = (tx: TxVersion) => {
     setSelectedTx(null);
     router.push({ pathname: '/entry', params: { txId: tx.txId } });
@@ -219,7 +229,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
               <Text className="text-on-surface-variant text-sm mb-8 text-center font-sans">
                 {selectedTx.type === 'transfer' 
                   ? `${accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} → ${accounts.find(a => a.accountId === selectedTx.transferAccountId)?.name || selectedTx.transferAccountId}`
-                  : `${accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} • ${selectedTx.occurredAt} • ${selectedTx.type === 'income' ? '💰 ' : ''}${selectedTx.lines.length > 1 ? 'Split' : (categories.find(c => c.categoryId === selectedTx.lines[0]?.categoryId)?.name || selectedTx.lines[0]?.categoryId)}`
+                  : `${accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} • ${selectedTx.occurredAt} • ${selectedTx.type === 'income' ? '💰 ' : ''}${selectedTx.lines.length > 1 ? 'Split' : getCategoryName(selectedTx.lines[0]?.categoryId)}`
                 }
               </Text>
 

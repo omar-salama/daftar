@@ -17,7 +17,9 @@ interface LedgerRowProps {
 export function LedgerRow({ tx, versionCount, accounts, categories, onPress }: LedgerRowProps) {
   const isTransfer = tx.type === 'transfer';
   const catObj = categories.find(c => c.categoryId === tx.lines[0]?.categoryId);
-  const categoryName = isTransfer ? 'Transfer' : (catObj ? catObj.name : (tx.lines[0]?.categoryId || 'Unknown'));
+  const parentObj = catObj?.parentId ? categories.find(c => c.categoryId === catObj.parentId) : null;
+  const categoryName = isTransfer ? 'Transfer' : 
+    (catObj ? (parentObj ? `${parentObj.name} - ${catObj.name}` : catObj.name) : (tx.lines[0]?.categoryId || 'Unknown'));
   const isSplit = tx.lines.length > 1;
   const isExpense = tx.type === 'expense';
 

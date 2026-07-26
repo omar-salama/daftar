@@ -51,6 +51,7 @@ export function useSaveCategory() {
       icon: string;
       type: CategoryType;
       maxOrder: number;
+      parentId?: string;
     }) => {
       const now = Date.now();
       const deviceId = getDeviceId();
@@ -63,6 +64,7 @@ export function useSaveCategory() {
           ...data.existingCategory,
           name: data.name,
           icon: data.icon,
+          parentId: data.parentId,
           version,
         });
       } else {
@@ -81,6 +83,7 @@ export function useSaveCategory() {
           name: data.name,
           type: data.type,
           icon: data.icon,
+          parentId: data.parentId,
           order: data.maxOrder + 1,
         });
       }

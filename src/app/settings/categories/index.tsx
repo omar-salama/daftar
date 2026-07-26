@@ -17,11 +17,14 @@ export default function CategoryManagementScreen() {
   const deleteCategory = useDeleteCategory();
   
   const [data, setData] = useState<CategoryVersion[]>([]);
+  const [allRelevant, setAllRelevant] = useState<CategoryVersion[]>([]);
 
   useEffect(() => {
+    const relevant = categories.filter(c => c.type === type);
+    setAllRelevant(relevant);
     setData(
-      categories
-        .filter(c => c.type === type)
+      relevant
+        .filter(c => !c.parentId)
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     );
   }, [categories, type]);
@@ -32,14 +35,35 @@ export default function CategoryManagementScreen() {
   };
 
   const renderItem = ({ item, drag, isActive }: RenderItemParams<CategoryVersion>) => {
+    const subCategories = allRelevant
+      .filter(c => c.parentId === item.categoryId)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
     return (
-      <CategoryListItem 
-        item={item} 
-        type={type} 
-        isActive={isActive} 
-        drag={drag} 
-        onDelete={(item) => deleteCategory.mutate(item)} 
-      />
+      <View>
+        <CategoryListItem 
+          item={item} 
+          type={type} 
+          isActive={isActive} 
+          drag={drag} 
+          onDelete={(item) => deleteCategory.mutate(item)} 
+        />
+        {subCategories.length > 0 && (
+          <View className="ml-8 border-l-2 border-surface-variant pl-4">
+            {subCategories.map(subItem => (
+              <CategoryListItem 
+                key={subItem.categoryId}
+                item={subItem} 
+                type={type} 
+                isActive={false} 
+                drag={() => {}} // Disabled for subcategories
+                onDelete={(item) => deleteCategory.mutate(item)} 
+                isSubCategory
+              />
+            ))}
+          </View>
+        )}
+      </View>
     );
   };
 

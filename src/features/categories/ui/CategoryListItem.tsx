@@ -10,9 +10,10 @@ interface CategoryListItemProps {
   isActive: boolean;
   drag: () => void;
   onDelete: (item: CategoryVersion) => void;
+  isSubCategory?: boolean;
 }
 
-export function CategoryListItem({ item, type, isActive, drag, onDelete }: CategoryListItemProps) {
+export function CategoryListItem({ item, type, isActive, drag, onDelete, isSubCategory }: CategoryListItemProps) {
   const router = useRouter();
 
   const handleDelete = () => {
@@ -35,32 +36,32 @@ export function CategoryListItem({ item, type, isActive, drag, onDelete }: Categ
     </Pressable>
   );
 
-  return (
-    <ScaleDecorator>
-      <View className="px-4">
-        <ReanimatedSwipeable
-          renderRightActions={renderRightActions}
-          overshootRight={false}
+  const content = (
+    <View className="px-4">
+      <ReanimatedSwipeable
+        renderRightActions={renderRightActions}
+        overshootRight={false}
+      >
+        <View
+          className={`flex-row justify-between items-center px-4 py-4 mb-2 rounded-xl border border-surface-variant ${
+            isActive ? 'bg-surface-container-high' : 'bg-surface-container'
+          }`}
         >
-          <View
-            className={`flex-row justify-between items-center px-4 py-4 mb-2 rounded-xl border border-surface-variant ${
-              isActive ? 'bg-surface-container-high' : 'bg-surface-container'
-            }`}
-          >
-            <View className="flex-row items-center flex-1">
-              <Text className="text-2xl mr-3">{item.icon}</Text>
-              <Text className="text-on-surface text-lg">{item.name}</Text>
-            </View>
+          <View className="flex-row items-center flex-1">
+            <Text className="text-2xl mr-3">{item.icon}</Text>
+            <Text className="text-on-surface text-lg">{item.name}</Text>
+          </View>
 
-            <View className="flex-row items-center gap-2">
-              <Pressable
-                onPress={() => router.push(`/category-form?categoryId=${item.categoryId}&type=${type}`)}
-                className="p-2"
-                hitSlop={8}
-              >
-                <Text className="text-base">✏️</Text>
-              </Pressable>
+          <View className="flex-row items-center gap-2">
+            <Pressable
+              onPress={() => router.push(`/category-form?categoryId=${item.categoryId}&type=${type}`)}
+              className="p-2"
+              hitSlop={8}
+            >
+              <Text className="text-base">✏️</Text>
+            </Pressable>
 
+            {!isSubCategory && (
               <Pressable
                 onPressIn={drag}
                 disabled={isActive}
@@ -69,10 +70,20 @@ export function CategoryListItem({ item, type, isActive, drag, onDelete }: Categ
               >
                 <Text className="text-lg text-on-surface-variant font-bold">☰</Text>
               </Pressable>
-            </View>
+            )}
           </View>
-        </ReanimatedSwipeable>
-      </View>
+        </View>
+      </ReanimatedSwipeable>
+    </View>
+  );
+
+  if (isSubCategory) {
+    return content;
+  }
+
+  return (
+    <ScaleDecorator>
+      {content}
     </ScaleDecorator>
   );
 }
