@@ -1,13 +1,17 @@
+import { useAccounts } from '@/features/accounts/hooks/useAccounts';
+import { useCategories } from '@/features/categories/hooks';
 import { Minor, TxVersion } from '@/kernel';
 import { formatMinor } from '@/kernel/money';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, FlatList, Modal, Pressable, Text, View } from 'react-native';
 import { useAppendTx, useCreateTx, useLedger, useLedgerAllVersions } from '../hooks/useLedger';
-import { useAccounts } from '@/features/accounts/hooks/useAccounts';
-import { useCategories } from '@/features/categories/hooks';
+import { useMonthlyLedger } from '../hooks/useMonthlyLedger';
+import { MonthSwiper } from './MonthSwiper';
+import { MonthTotals } from './MonthTotals';
+import { LedgerDailyHeader } from './LedgerDailyHeader';
+import { LedgerRow } from './LedgerRow';
 
-// We need a generic currency config for formatting.
 const CURRENCY_CONFIG = { symbol: '$', decimals: 2 };
 
 type ListItem = 
@@ -25,6 +29,16 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
 
   const [selectedTx, setSelectedTx] = useState<TxVersion | null>(null);
 
+  const {
+    handlePrevMonth,
+    handleNextMonth,
+    filteredTxs,
+    monthIncome,
+    monthExpense,
+    monthTotal,
+    monthName,
+  } = useMonthlyLedger(currentTxs, accountId);
+
   const versionCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const v of allVersions) {
@@ -32,11 +46,6 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
     }
     return counts;
   }, [allVersions]);
-
-  const filteredTxs = useMemo(() => {
-    if (!accountId) return currentTxs;
-    return currentTxs.filter(tx => tx.accountId === accountId || tx.transferAccountId === accountId);
-  }, [currentTxs, accountId]);
 
   const listData = useMemo(() => {
     // Sort transactions descending by date, then by HLC version
@@ -94,7 +103,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
     }
 
     return items;
-  }, [currentTxs, versionCounts]);
+  }, [filteredTxs, versionCounts]);
 
   const stickyHeaderIndices = useMemo(() => {
     const indices: number[] = [];
@@ -136,74 +145,41 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
 
   const renderItem = ({ item }: { item: ListItem }) => {
     if (item.type === 'header') {
-      const hasIncome = item.incomeTotalMinor > 0;
-      const hasExpense = item.expenseTotalMinor > 0;
-
       return (
-        <View className="flex-row justify-between items-center px-4 py-2.5 bg-surface-elevated border-b border-border-strong">
-          <Text className="text-foreground-secondary font-medium text-xs">{item.date}</Text>
-          <View className="flex-row items-center">
-            <Text
-              className={`w-24 text-right font-medium text-sm ${hasIncome ? 'text-success' : 'text-foreground-muted'}`}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-            >
-              +{formatMinor(item.incomeTotalMinor, CURRENCY_CONFIG)}
-            </Text>
-            <Text
-              className={`w-24 text-right font-medium text-sm pl-2 ${hasExpense ? 'text-foreground-secondary' : 'text-foreground-muted'}`} 
-              numberOfLines={1} 
-              adjustsFontSizeToFit
-            >
-              {formatMinor(item.expenseTotalMinor, CURRENCY_CONFIG)}
-            </Text>
-          </View>
-        </View>
+        <LedgerDailyHeader 
+          date={item.date} 
+          incomeTotalMinor={item.incomeTotalMinor} 
+          expenseTotalMinor={item.expenseTotalMinor} 
+        />
       );
     }
 
-    const { tx, versionCount } = item;
-    const isTransfer = tx.type === 'transfer';
-    const catObj = categories.find(c => c.categoryId === tx.lines[0]?.categoryId);
-    const categoryName = isTransfer ? 'Transfer' : (catObj ? catObj.name : (tx.lines[0]?.categoryId || 'Unknown'));
-    const isSplit = tx.lines.length > 1;
-    const isIncome = tx.type === 'income';
-
-    const accountName = accounts.find(a => a.accountId === tx.accountId)?.name || tx.accountId;
-    const transferAccountName = isTransfer && tx.transferAccountId 
-       ? (accounts.find(a => a.accountId === tx.transferAccountId)?.name || tx.transferAccountId) 
-       : undefined;
-    const subtitle = isTransfer 
-       ? `${accountName} → ${transferAccountName}`
-       : [accountName, tx.payee, tx.note].filter(Boolean).join(' • ');
-
     return (
-      <Pressable 
-        onPress={() => setSelectedTx(tx)}
-        className="flex-row justify-between items-center px-4 py-3 bg-surface border-b border-border active:bg-surface-hover"
-      >
-        <View className="flex-1">
-          <View className="flex-row items-center gap-1.5">
-            <Text className="text-foreground text-base">
-              {isSplit && !isTransfer ? 'Split' : categoryName}
-            </Text>
-            {versionCount > 1 && (
-              <Text className="text-brand text-sm font-bold">*</Text>
-            )}
-          </View>
-          <Text className="text-foreground-muted text-sm mt-0.5" numberOfLines={1}>
-            {subtitle}
-          </Text>
-        </View>
-        <Text className={`text-base ${isIncome ? 'text-success' : isTransfer ? 'text-info' : 'text-foreground'}`}>
-          {isIncome ? '+' : ''}{formatMinor(tx.totalMinor, CURRENCY_CONFIG)}
-        </Text>
-      </Pressable>
+      <LedgerRow 
+        tx={item.tx} 
+        versionCount={item.versionCount} 
+        accounts={accounts} 
+        categories={categories} 
+        onPress={setSelectedTx} 
+      />
     );
   };
 
   return (
     <View className="flex-1 bg-surface w-full h-full">
+      <View className="px-4 py-4 bg-surface border-b border-border-strong z-10">
+        <MonthSwiper
+          monthName={monthName}
+          onPrevMonth={handlePrevMonth}
+          onNextMonth={handleNextMonth}
+        />
+        <MonthTotals
+          monthIncome={monthIncome}
+          monthExpense={monthExpense}
+          monthTotal={monthTotal}
+        />
+      </View>
+
       <FlatList
         data={listData}
         renderItem={renderItem}
