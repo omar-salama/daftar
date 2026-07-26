@@ -7,10 +7,10 @@ import { useMemo, useState } from 'react';
 import { Alert, FlatList, Modal, Pressable, Text, View } from 'react-native';
 import { useAppendTx, useCreateTx, useLedger, useLedgerAllVersions } from '../hooks/useLedger';
 import { useMonthlyLedger } from '../hooks/useMonthlyLedger';
-import { MonthSwiper } from './MonthSwiper';
-import { MonthTotals } from './MonthTotals';
 import { LedgerDailyHeader } from './LedgerDailyHeader';
 import { LedgerRow } from './LedgerRow';
+import { MonthSwiper } from './MonthSwiper';
+import { MonthTotals } from './MonthTotals';
 
 const CURRENCY_CONFIG = { symbol: '$', decimals: 2 };
 
@@ -167,7 +167,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
 
   return (
     <View className="flex-1 bg-surface w-full h-full">
-      <View className="px-4 py-4 bg-surface border-b border-border-strong z-10">
+      <View className="px-4 py-4 bg-surface border-b border-surface-variant z-10">
         <MonthSwiper
           monthName={monthName}
           onPrevMonth={handlePrevMonth}
@@ -189,7 +189,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
         stickyHeaderIndices={stickyHeaderIndices}
         ListEmptyComponent={
           <View className="flex-1 items-center justify-center p-8 mt-10">
-            <Text className="text-foreground-muted">No transactions yet.</Text>
+            <Text className="text-on-surface-variant">No transactions yet.</Text>
           </View>
         }
       />
@@ -202,21 +202,21 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
       >
         {selectedTx && (
           <Pressable 
-            className="flex-1 bg-surface-overlay justify-end"
+            className="flex-1 bg-black/60 justify-end"
             onPress={() => setSelectedTx(null)}
           >
             <Pressable 
-              className="bg-surface-elevated rounded-t-3xl p-6 pb-10"
+              className="bg-surface-container-highest rounded-t-3xl p-6 pb-10"
               onPress={(e) => e.stopPropagation()}
             >
               <View className="items-center mb-6">
-                <View className="w-12 h-1 bg-border rounded-full" />
+                <View className="w-12 h-1 bg-outline rounded-full" />
               </View>
 
-              <Text className="text-foreground text-xl font-semibold mb-1 text-center">
+              <Text className="text-on-surface text-xl font-semibold mb-1 text-center font-mono">
                 {selectedTx.type === 'income' ? '+' : ''}{formatMinor(selectedTx.totalMinor, CURRENCY_CONFIG)}
               </Text>
-              <Text className="text-foreground-secondary text-sm mb-8 text-center">
+              <Text className="text-on-surface-variant text-sm mb-8 text-center font-sans">
                 {selectedTx.type === 'transfer' 
                   ? `${accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} → ${accounts.find(a => a.accountId === selectedTx.transferAccountId)?.name || selectedTx.transferAccountId}`
                   : `${accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} • ${selectedTx.occurredAt} • ${selectedTx.type === 'income' ? '💰 ' : ''}${selectedTx.lines.length > 1 ? 'Split' : (categories.find(c => c.categoryId === selectedTx.lines[0]?.categoryId)?.name || selectedTx.lines[0]?.categoryId)}`
@@ -225,17 +225,17 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
 
               <View className="gap-3">
                 <Pressable
-                  className="bg-brand py-3.5 rounded-xl items-center"
+                  className="bg-primary py-3.5 rounded-full items-center"
                   onPress={() => handleEdit(selectedTx)}
                 >
-                  <Text className="text-surface font-semibold text-base">Edit</Text>
+                  <Text className="text-on-primary font-semibold text-base font-sans">Edit</Text>
                 </Pressable>
                 
                 <Pressable
-                  className="bg-surface border border-danger py-3.5 rounded-xl items-center"
+                  className="bg-surface-container-highest border border-error py-3.5 rounded-full items-center"
                   onPress={() => handleDelete(selectedTx)}
                 >
-                  <Text className="text-danger font-semibold text-base">Delete</Text>
+                  <Text className="text-error font-semibold text-base font-sans">Delete</Text>
                 </Pressable>
               </View>
             </Pressable>

@@ -8,6 +8,8 @@ module.exports = {
   theme: {
     extend: {
       colors: tokens.colors,
+      spacing: tokens.spacing,
+      borderRadius: tokens.rounded,
       fontFamily: {
         sans: ['Inter'],
         mono: ['JetBrainsMono'],

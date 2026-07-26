@@ -1,6 +1,6 @@
-import { Text, View } from 'react-native';
 import { Minor } from '@/kernel';
 import { formatMinor } from '@/kernel/money';
+import { Text, View } from 'react-native';
 
 const CURRENCY_CONFIG = { symbol: '$', decimals: 2 };
 
@@ -19,23 +19,23 @@ export function LedgerDailyHeader({ date, incomeTotalMinor, expenseTotalMinor }:
   const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
 
   return (
-    <View className="flex-row justify-between items-center px-4 py-1 bg-surface-elevated">
+    <View className="flex-row justify-between items-center px-4 py-1 bg-surface-container">
       <View className="flex-row items-center gap-2">
-        <Text className="text-foreground text-lg font-semibold">{day}</Text>
-        <View className="bg-surface-hover px-1.5 py-0.5 rounded">
-          <Text className="text-foreground-secondary font-semibold text-xs tracking-smaller">{dayName}</Text>
+        <Text className="text-on-surface text-lg font-semibold">{day}</Text>
+        <View className="bg-surface-container-high px-1.5 py-0.5 rounded">
+          <Text className="text-on-surface-variant font-semibold text-xs tracking-smaller">{dayName}</Text>
         </View>
       </View>
       <View className="flex-row items-center">
         <Text
-          className={`w-24 text-right font-medium text-sm ${hasIncome ? 'text-success' : 'text-foreground-muted'}`}
+          className={`w-24 text-right font-medium text-sm ${hasIncome ? 'text-secondary' : 'text-on-surface-variant'}`}
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          +{formatMinor(incomeTotalMinor, CURRENCY_CONFIG)}
+          {formatMinor(incomeTotalMinor, CURRENCY_CONFIG)}
         </Text>
         <Text
-          className={`w-24 text-right font-medium text-sm pl-2 ${hasExpense ? 'text-foreground-secondary' : 'text-foreground-muted'}`} 
+          className={`w-24 text-right font-medium text-sm pl-2 ${hasExpense ? 'text-error' : 'text-on-surface-variant'}`} 
           numberOfLines={1} 
           adjustsFontSizeToFit
         >

@@ -55,9 +55,9 @@ export default function AccountsTab() {
         />
 
         <View className="flex-row justify-between items-center px-4 mb-2">
-          <Text className="text-xl font-bold text-foreground">Accounts</Text>
-          <Pressable onPress={handleAddAccount} className="bg-surface-hover px-3 py-1.5 rounded-lg border border-border">
-            <Text className="text-foreground font-medium text-sm">+ Add</Text>
+          <Text className="text-xl font-bold text-on-surface">Accounts</Text>
+          <Pressable onPress={handleAddAccount} className="bg-surface-container-high px-3 py-1.5 rounded-lg border border-surface-variant">
+            <Text className="text-on-surface font-medium text-sm">+ Add</Text>
           </Pressable>
         </View>
 

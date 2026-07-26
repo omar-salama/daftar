@@ -1,11 +1,10 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 import { useAccountBalances } from '@/features/accounts/hooks/useAccountBalances';
+import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 import { LedgerList } from '@/features/ledger/ui/LedgerList';
 import { formatMinor, Minor } from '@/kernel/money';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AccountDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,9 +19,9 @@ export default function AccountDetailsScreen() {
   if (!account) {
     return (
       <SafeAreaView className="flex-1 bg-surface justify-center items-center">
-        <Text className="text-foreground-muted">Account not found.</Text>
-        <Pressable onPress={() => router.back()} className="mt-4 px-4 py-2 bg-surface-hover rounded-lg border border-border">
-          <Text className="text-foreground">Go Back</Text>
+        <Text className="text-on-surface-variant">Account not found.</Text>
+        <Pressable onPress={() => router.back()} className="mt-4 px-4 py-2 bg-surface-container-high rounded-lg border border-surface-variant">
+          <Text className="text-on-surface">Go Back</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -35,23 +34,23 @@ export default function AccountDetailsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
       {/* Header */}
-      <View className="flex-row items-center px-4 py-3 bg-surface-elevated border-b border-border">
+      <View className="flex-row items-center px-4 py-3 bg-surface-container border-b border-surface-variant">
         <Pressable onPress={() => router.back()} className="mr-4">
-          <Text className="text-xl text-foreground-secondary">‹ Back</Text>
+          <Text className="text-xl text-on-surface-variant">‹ Back</Text>
         </Pressable>
         <View className="flex-1">
-          <Text className="text-lg font-bold text-foreground">{account.name}</Text>
-          <Text className="text-sm text-foreground-secondary capitalize">{account.type}</Text>
+          <Text className="text-lg font-bold text-on-surface">{account.name}</Text>
+          <Text className="text-sm text-on-surface-variant capitalize">{account.type}</Text>
         </View>
-        <Pressable onPress={handleEdit} className="bg-surface-hover px-3 py-1.5 rounded-lg border border-border">
-          <Text className="text-foreground font-medium text-sm">Edit</Text>
+        <Pressable onPress={handleEdit} className="bg-surface-container-high px-3 py-1.5 rounded-lg border border-surface-variant">
+          <Text className="text-on-surface font-medium text-sm">Edit</Text>
         </Pressable>
       </View>
 
       {/* Balance Summary */}
-      <View className="px-4 py-6 bg-surface-elevated border-b border-border">
-        <Text className="text-sm text-foreground-muted font-medium">CURRENT BALANCE</Text>
-        <Text className={`text-4xl font-bold ${account.type === 'credit' && balance < 0 ? 'text-danger' : 'text-foreground'}`}>
+      <View className="px-4 py-6 bg-surface-container border-b border-surface-variant">
+        <Text className="text-sm text-on-surface-variant font-medium">CURRENT BALANCE</Text>
+        <Text className={`text-4xl font-bold ${account.type === 'credit' && balance < 0 ? 'text-error' : 'text-on-surface'}`}>
           {formatMinor(balance as Minor, { symbol: '$', decimals: 2 })}
         </Text>
       </View>

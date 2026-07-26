@@ -34,9 +34,9 @@ export function TransactionEditor({
         <Pressable
           onPress={onSaveTransfer}
           disabled={!canSave}
-          className={`rounded-xl py-4 items-center bg-surface-elevated`}
+          className={`rounded py-4 mx-1 items-center bg-surface-container`}
         >
-          <Text className={`text-base font-semibold ${canSave ? 'text-foreground' : 'text-foreground-muted'}`}>
+          <Text className={`text-base font-semibold ${canSave ? 'text-on-surface' : 'text-on-surface-variant'}`}>
             Save Transfer
           </Text>
         </Pressable>

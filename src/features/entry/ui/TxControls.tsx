@@ -1,5 +1,5 @@
-import { Pressable, Text, TextInput, View } from 'react-native';
 import type { TxType } from '@/kernel';
+import { Pressable, Text, TextInput, View } from 'react-native';
 
 interface TxControlsProps {
   txType: TxType;
@@ -42,30 +42,30 @@ export function TxControls({
         <View className="flex-row items-center gap-2 flex-wrap">
           <Pressable
             onPress={onPressDate}
-            className="bg-surface-elevated px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
+            className="bg-surface-container px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
           >
-            <Text className="text-foreground-secondary font-medium text-sm">
+            <Text className="text-on-surface-variant font-medium text-sm">
               📅 {displayDateStr}
             </Text>
           </Pressable>
 
           <Pressable
             onPress={onPressAccount}
-            className="bg-surface-elevated px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
+            className="bg-surface-container px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
           >
-            <Text className="text-foreground-secondary font-medium text-sm">
+            <Text className="text-on-surface-variant font-medium text-sm">
               🏦 {accounts.find(a => a.accountId === accountId)?.name || 'Select Account'}
             </Text>
           </Pressable>
 
           {txType === 'transfer' && (
             <View className="flex-row items-center gap-2">
-              <Text className="text-foreground-muted">→</Text>
+              <Text className="text-on-surface-variant">→</Text>
               <Pressable
                 onPress={onPressTransferAccount}
-                className="bg-surface-elevated px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
+                className="bg-surface-container px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
               >
-                <Text className="text-foreground-secondary font-medium text-sm">
+                <Text className="text-on-surface-variant font-medium text-sm">
                   🏦 {accounts.find(a => a.accountId === transferAccountId)?.name || 'To Account'}
                 </Text>
               </Pressable>
@@ -77,7 +77,7 @@ export function TxControls({
           onPress={onToggleDetails}
           className="py-2 min-h-[36px] justify-center"
         >
-          <Text className="text-foreground-muted font-medium text-sm">
+          <Text className="text-on-surface-variant font-medium text-sm">
             {showDetails ? '- hide details' : '+ details'}
           </Text>
         </Pressable>
@@ -86,13 +86,13 @@ export function TxControls({
       {showDetails && (
         <View className="mt-3 gap-y-2">
           <TextInput
-            className="bg-surface-elevated text-foreground placeholder:text-foreground-placeholder p-3 rounded-xl min-h-[44px]"
+            className="bg-surface-container text-on-surface placeholder:text-[#64748b] p-3 rounded-xl min-h-[44px]"
             placeholder="Payee"
             value={payee}
             onChangeText={onChangePayee}
           />
           <TextInput
-            className="bg-surface-elevated text-foreground placeholder:text-foreground-placeholder p-3 rounded-xl min-h-[44px]"
+            className="bg-surface-container text-on-surface placeholder:text-[#64748b] p-3 rounded-xl min-h-[44px]"
             placeholder="Note"
             value={note}
             onChangeText={onChangeNote}

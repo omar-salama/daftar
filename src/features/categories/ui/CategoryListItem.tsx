@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, Text, Pressable, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Alert, Pressable, Text, View } from 'react-native';
 import { ScaleDecorator } from 'react-native-draggable-flatlist';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import { useRouter } from 'expo-router';
 import { CategoryVersion } from '../model';
 
 interface CategoryListItemProps {
@@ -30,9 +29,9 @@ export function CategoryListItem({ item, type, isActive, drag, onDelete }: Categ
   const renderRightActions = () => (
     <Pressable
       onPress={handleDelete}
-      className="bg-danger justify-center items-center px-5 mb-2 rounded-xl ml-2"
+      className="bg-error justify-center items-center px-5 mb-2 rounded-xl ml-2"
     >
-      <Text className="text-foreground font-semibold text-base">Delete</Text>
+      <Text className="text-on-surface font-semibold text-base">Delete</Text>
     </Pressable>
   );
 
@@ -44,13 +43,13 @@ export function CategoryListItem({ item, type, isActive, drag, onDelete }: Categ
           overshootRight={false}
         >
           <View
-            className={`flex-row justify-between items-center px-4 py-4 mb-2 rounded-xl border border-border ${
-              isActive ? 'bg-surface-hover' : 'bg-surface-elevated'
+            className={`flex-row justify-between items-center px-4 py-4 mb-2 rounded-xl border border-surface-variant ${
+              isActive ? 'bg-surface-container-high' : 'bg-surface-container'
             }`}
           >
             <View className="flex-row items-center flex-1">
               <Text className="text-2xl mr-3">{item.icon}</Text>
-              <Text className="text-foreground text-lg">{item.name}</Text>
+              <Text className="text-on-surface text-lg">{item.name}</Text>
             </View>
 
             <View className="flex-row items-center gap-2">
@@ -68,7 +67,7 @@ export function CategoryListItem({ item, type, isActive, drag, onDelete }: Categ
                 className="p-2 -mr-2"
                 hitSlop={8}
               >
-                <Text className="text-lg text-foreground-muted font-bold">☰</Text>
+                <Text className="text-lg text-on-surface-variant font-bold">☰</Text>
               </Pressable>
             </View>
           </View>

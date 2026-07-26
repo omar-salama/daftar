@@ -14,7 +14,7 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
 
   if (isLoading || !categories) {
     return (
-      <View className="p-4 items-center justify-center border-t border-border bg-surface">
+      <View className="p-4 items-center justify-center border-t border-surface-variant bg-surface">
         <ActivityIndicator size="small" />
       </View>
     );
@@ -29,17 +29,16 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
       {activeCategories.map(c => {
         const isSelected = c.categoryId === selectedCategoryId;
         return (
-          <View key={c.categoryId} className="w-1/4 p-1">
-            <Pressable 
+          <View key={c.categoryId} className="w-1/4 px-1 pt-1">
+            <Pressable
               onPress={() => onSelectCategory(c.categoryId)}
               testID={`category-${c.categoryId}`}
-              className={`items-center justify-center rounded-xl gap-1 p-2 min-h-[52px] flex-col bg-surface-elevated active:bg-surface-hover border ${
-                isSelected ? 'border-[#52525b] bg-surface-hover' : 'border-transparent'
-              }`}
+              className={`items-center justify-center rounded gap-1 p-2 min-h-[52px] flex-col bg-surface-container active:bg-surface-container-high border ${isSelected ? 'border-primary bg-primary-container' : 'border-transparent'
+                }`}
             >
               <Text className="text-lg">{c.icon}</Text>
-              <Text 
-                className='text-[10px] font-medium text-foreground-secondary'
+              <Text
+                className={`text-[10px] ${isSelected ? 'text-on-surface-variant' : 'font-medium text-on-surface-variant'}`}
                 numberOfLines={1}
               >
                 {c.name}
@@ -49,13 +48,13 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
         );
       })}
       {txType === 'expense' && (
-        <View className="w-1/4 p-1">
-          <Pressable 
+        <View className="w-1/4 px-1 pt-1">
+          <Pressable
             onPress={onSplit}
-            className="items-center justify-center rounded-xl p-2 min-h-[52px] flex-col gap-1 bg-surface-elevated border border-border-strong active:opacity-70"
+            className="items-center justify-center rounded gap-1 p-2 min-h-[52px] flex-col bg-surface-container border border-transparent active:opacity-70"
           >
             <Text className="text-lg">➗</Text>
-            <Text className="text-[10px] font-medium text-foreground-secondary">
+            <Text className="text-[10px] font-medium text-on-surface-variant">
               Split
             </Text>
           </Pressable>

@@ -75,15 +75,15 @@ export function CategoryForm({ categoryId, defaultType }: CategoryFormProps) {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      <View className="flex-row items-center justify-between px-6 py-4 bg-surface-elevated border-b border-border">
+      <View className="flex-row items-center justify-between px-6 py-4 bg-surface-container border-b border-surface-variant">
         <Pressable onPress={() => router.back()}>
-          <Text className="text-foreground-secondary text-base">Cancel</Text>
+          <Text className="text-on-surface-variant text-base">Cancel</Text>
         </Pressable>
-        <Text className="text-lg font-bold text-foreground">
+        <Text className="text-lg font-bold text-on-surface">
           {isEditing ? `Edit ${type.charAt(0).toUpperCase() + type.slice(1)} Category` : `New ${type.charAt(0).toUpperCase() + type.slice(1)} Category`}
         </Text>
         <Pressable onPress={handleSave} disabled={!name.trim() || !icon.trim() || saveCategory.isPending}>
-          <Text className={`text-base font-semibold ${name.trim() && icon.trim() ? 'text-brand' : 'text-foreground-muted'}`}>
+          <Text className={`text-base font-semibold ${name.trim() && icon.trim() ? 'text-primary' : 'text-on-surface-variant'}`}>
             Save
           </Text>
         </Pressable>
@@ -92,18 +92,18 @@ export function CategoryForm({ categoryId, defaultType }: CategoryFormProps) {
       <ScrollView className="flex-1 p-4" keyboardShouldPersistTaps="handled">
         <View className="mb-6 flex-row items-start gap-3">
           <View className="w-16">
-            <Text className="text-sm font-medium text-foreground-secondary mb-2">Icon</Text>
+            <Text className="text-sm font-medium text-on-surface-variant mb-2">Icon</Text>
             <TextInput
-              className="bg-surface-elevated text-foreground rounded-xl border border-border text-center text-xl h-12"
+              className="bg-surface-container text-on-surface rounded-xl border border-surface-variant text-center text-xl h-12"
               value={icon}
               onChangeText={setIcon}
               maxLength={2}
             />
           </View>
           <View className="flex-1">
-            <Text className="text-sm font-medium text-foreground-secondary mb-2">Category Name</Text>
+            <Text className="text-sm font-medium text-on-surface-variant mb-2">Category Name</Text>
             <TextInput
-              className="bg-surface-elevated text-foreground px-3 rounded-xl border border-border h-12"
+              className="bg-surface-container text-on-surface px-3 rounded-xl border border-surface-variant h-12"
               placeholder="e.g. Groceries"
               placeholderTextColor="#71717a"
               value={name}

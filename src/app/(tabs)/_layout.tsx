@@ -10,13 +10,13 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: isDark ? '#09090b' : '#ffffff',
-          borderTopColor: isDark ? '#18181b' : '#e4e4e7',
+          backgroundColor: isDark ? '#1d2027' : '#ffffff',
+          borderTopColor: isDark ? '#32353c' : '#e4e4e7',
           borderTopWidth: 1,
           elevation: 0,
         },
-        tabBarActiveTintColor: isDark ? '#f4f4f5' : '#09090b',
-        tabBarInactiveTintColor: isDark ? '#a1a1aa' : '#52525b',
+        tabBarActiveTintColor: isDark ? '#e1e2ec' : '#09090b',
+        tabBarInactiveTintColor: isDark ? '#c2c6d6' : '#52525b',
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Ledger', tabBarIcon: () => <></> }} />

@@ -80,15 +80,15 @@ export function AccountForm({ accountId }: AccountFormProps) {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      <View className="flex-row items-center justify-between px-4 py-3 bg-surface-elevated border-b border-border">
+      <View className="flex-row items-center justify-between px-4 py-3 bg-surface-container border-b border-surface-variant">
         <Pressable onPress={() => router.back()}>
-          <Text className="text-foreground-secondary text-base">Cancel</Text>
+          <Text className="text-on-surface-variant text-base">Cancel</Text>
         </Pressable>
-        <Text className="text-lg font-bold text-foreground">
+        <Text className="text-lg font-bold text-on-surface">
           {isEditing ? 'Edit Account' : 'New Account'}
         </Text>
         <Pressable onPress={handleSave} disabled={!name.trim() || saveAccount.isPending}>
-          <Text className={`text-base font-semibold ${name.trim() ? 'text-brand' : 'text-foreground-muted'}`}>
+          <Text className={`text-base font-semibold ${name.trim() ? 'text-primary' : 'text-on-surface-variant'}`}>
             Save
           </Text>
         </Pressable>
@@ -96,9 +96,9 @@ export function AccountForm({ accountId }: AccountFormProps) {
 
       <ScrollView className="flex-1 p-4" keyboardShouldPersistTaps="handled">
         <View className="mb-6">
-          <Text className="text-sm font-medium text-foreground-secondary mb-2">Account Name</Text>
+          <Text className="text-sm font-medium text-on-surface-variant mb-2">Account Name</Text>
           <TextInput
-            className="bg-surface-elevated text-foreground p-3 rounded-xl border border-border text-base"
+            className="bg-surface-container text-on-surface p-3 rounded-xl border border-surface-variant text-base"
             placeholder="e.g. Chase Sapphire"
             placeholderTextColor="#71717a"
             value={name}
@@ -108,9 +108,9 @@ export function AccountForm({ accountId }: AccountFormProps) {
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-medium text-foreground-secondary mb-2">Balance</Text>
+          <Text className="text-sm font-medium text-on-surface-variant mb-2">Balance</Text>
           <TextInput
-            className="bg-surface-elevated text-foreground p-3 rounded-xl border border-border text-base"
+            className="bg-surface-container text-on-surface p-3 rounded-xl border border-surface-variant text-base"
             placeholder="0.00"
             placeholderTextColor="#71717a"
             value={balanceInput}
@@ -120,7 +120,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-medium text-foreground-secondary mb-2">Account Type</Text>
+          <Text className="text-sm font-medium text-on-surface-variant mb-2">Account Type</Text>
           <View className="flex-row flex-wrap gap-2">
             {ACCOUNT_TYPES.map((t) => (
               <Pressable
@@ -128,12 +128,12 @@ export function AccountForm({ accountId }: AccountFormProps) {
                 onPress={() => setType(t.value)}
                 className={`px-4 py-2 rounded-lg border ${
                   type === t.value 
-                    ? 'bg-brand border-brand' 
-                    : 'bg-surface-elevated border-border'
+                    ? 'bg-primary border-primary' 
+                    : 'bg-surface-container border-surface-variant'
                 }`}
               >
                 <Text className={`font-medium ${
-                  type === t.value ? 'text-surface' : 'text-foreground'
+                  type === t.value ? 'text-surface' : 'text-on-surface'
                 }`}>
                   {t.label}
                 </Text>
@@ -143,9 +143,9 @@ export function AccountForm({ accountId }: AccountFormProps) {
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-medium text-foreground-secondary mb-2">Note (Optional)</Text>
+          <Text className="text-sm font-medium text-on-surface-variant mb-2">Note (Optional)</Text>
           <TextInput
-            className="bg-surface-elevated text-foreground p-3 rounded-xl border border-border text-base min-h-[80px]"
+            className="bg-surface-container text-on-surface p-3 rounded-xl border border-surface-variant text-base min-h-[80px]"
             placeholder="Account details, last 4 digits..."
             placeholderTextColor="#71717a"
             value={note}

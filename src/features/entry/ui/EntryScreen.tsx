@@ -160,9 +160,9 @@ function EntryForm({
       className="flex-1 bg-surface"
       edges={['top', 'left', 'right']}
     >
-      <View className="flex-1 bg-surface gap-3">
+      <View className="flex-1 bg-surface gap-6">
         <TxTypeToggle txType={txType} onChangeType={handleToggleType} />
-        <View className='px-6 gap-3'>
+        <View className='px-6 gap-6'>
           <AmountDisplay amount={amountMinor} txType={txType} />
 
           {!isSplit && (

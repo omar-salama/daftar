@@ -50,21 +50,21 @@ export default function CategoryManagementScreen() {
         
         <View className="flex-row items-center justify-between px-3 py-2">
           <Pressable onPress={() => router.back()}>
-            <Text className="text-foreground-secondary text-xl font-medium">‹ Back</Text>
+            <Text className="text-on-surface-variant text-xl font-medium">‹ Back</Text>
           </Pressable>
 
           <Pressable onPress={() => router.push(`/category-form?type=${type}`)}>
-            <Text className="text-foreground-secondary font-semibold text-3xl leading-6">+</Text>
+            <Text className="text-on-surface-variant font-semibold text-3xl leading-6">+</Text>
           </Pressable>
         </View>
         
-        <Text className="text-3xl font-bold text-foreground px-4 mt-2 mb-4">
+        <Text className="text-3xl font-bold text-on-surface px-4 mt-2 mb-4">
           {type === 'expense' ? 'Expense Categories' : 'Income Categories'}
         </Text>
         
         <View className="flex-1">
           {data.length === 0 ? (
-            <Text className="text-foreground-secondary text-center mt-8 mb-4">No categories found.</Text>
+            <Text className="text-on-surface-variant text-center mt-8 mb-4">No categories found.</Text>
           ) : (
             <DraggableFlatList
               data={data}

@@ -14,20 +14,21 @@ export function AmountDisplay({ amount, txType = 'expense' }: AmountDisplayProps
   const isZero = amount === 0;
 
   const colorClass = isZero
-    ? 'text-foreground-muted'
+    ? 'text-on-surface-variant'
     : txType === 'income'
-      ? 'text-success'
-      : 'text-foreground'
+      ? 'text-secondary'
+      : 'text-on-surface'
 
   return (
     <View className="items-center justify-center">
       <Text
         adjustsFontSizeToFit
         numberOfLines={1}
-        className={`${colorClass} text-[54px] font-bold tracking-[-2px]`}
+        className={`${colorClass} text-[40px] leading-[48px] font-mono font-bold tracking-[-0.02em]`}
         testID="AmountDisplay"
       >
         {txType === 'income' && !isZero ? '+' : ''}{formatted}
+
       </Text>
     </View>
   );

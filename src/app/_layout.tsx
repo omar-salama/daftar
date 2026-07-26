@@ -14,7 +14,7 @@ export default function RootLayout() {
       <Stack 
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: colorScheme === 'dark' ? '#09090b' : '#ffffff' }
+          contentStyle: { backgroundColor: colorScheme === 'dark' ? '#10131a' : '#ffffff' }
         }}
       >
         <Stack.Screen name="(tabs)" />

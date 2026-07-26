@@ -18,11 +18,11 @@ export function AccountPickerModal({
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
       <Pressable
-        className="flex-1 bg-surface-overlay justify-center items-center"
+        className="flex-1 bg-black/60 justify-center items-center"
         onPress={onClose}
       >
-        <View className="w-[80%] bg-surface-elevated rounded-2xl p-4 gap-3 border border-border-strong">
-          <Text className="text-foreground text-lg font-semibold text-center mb-1">{title}</Text>
+        <View className="w-[80%] bg-surface-container rounded-2xl p-4 gap-3 border border-outline">
+          <Text className="text-on-surface text-lg font-semibold text-center mb-1">{title}</Text>
           {accounts.sort((a, b) => a.order - b.order).map((acc) => (
             <Pressable
               key={acc.accountId}
@@ -30,9 +30,9 @@ export function AccountPickerModal({
                 onSelectAccount(acc.accountId);
                 onClose();
               }}
-              className="bg-surface-hover p-3.5 rounded-lg items-center"
+              className="bg-surface-container-high p-3.5 rounded-lg items-center"
             >
-              <Text className="text-foreground text-base font-medium">{acc.name}</Text>
+              <Text className="text-on-surface text-base font-medium">{acc.name}</Text>
             </Pressable>
           ))}
         </View>
