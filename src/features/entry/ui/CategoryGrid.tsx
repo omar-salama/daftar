@@ -25,7 +25,7 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   return (
-    <View className="flex-row flex-wrap p-2 border-t border-border bg-surface">
+    <View className="flex-row flex-wrap bg-surface">
       {activeCategories.map(c => {
         const isSelected = c.categoryId === selectedCategoryId;
         return (

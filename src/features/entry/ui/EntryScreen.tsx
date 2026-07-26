@@ -6,12 +6,17 @@ import { minorFromDigits } from '@/kernel/money';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AccountPickerModal } from './AccountPickerModal';
 import { AmountDisplay } from './AmountDisplay';
 import { CategoryGrid } from './CategoryGrid';
+import { DatePickerModal } from './DatePickerModal';
 import { Keypad } from './Keypad';
 import { SplitEditor } from './SplitEditor';
+import { TxControls } from './TxControls';
+import { TxTypeToggle } from './TxTypeToggle';
+import { TransactionEditor } from './TransactionEditor';
 
 export function EntryScreen() {
   const { txId } = useLocalSearchParams<{ txId?: string }>();
@@ -92,21 +97,6 @@ function EntryForm({
     setDigits(prev => prev.slice(0, -1));
   };
 
-  const getQuickDates = () => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-
-    const dayBefore = new Date(today);
-    dayBefore.setDate(today.getDate() - 2);
-
-    return [
-      { label: 'Today', value: today.toISOString().split('T')[0] },
-      { label: 'Yesterday', value: yesterday.toISOString().split('T')[0] },
-      { label: dayBefore.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }), value: dayBefore.toISOString().split('T')[0] },
-    ];
-  };
-
   const saveLines = (lines: TxLine[]) => {
     if (amountMinor === 0) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -167,140 +157,48 @@ function EntryForm({
     setTxType(type);
   };
 
-  const displayDateStr = date === new Date().toISOString().split('T')[0] ? 'Today' : date.slice(5);
-
   return (
     <SafeAreaView
       className="flex-1 bg-surface"
       edges={['top', 'left', 'right']}
     >
       <View className="flex-1 bg-surface gap-3">
-        {/* Expense ↔ Income ↔ Transfer Toggle */}
-        <View className="flex-row items-center justify-center pt-3 pb-1">
-          <View className="flex-row items-center bg-surface-elevated rounded-full px-1 py-1 border border-border">
-            {(['expense', 'income', 'transfer'] as TxType[]).map((type) => (
-              <Pressable
-                key={type}
-                onPress={() => handleToggleType(type)}
-                className={`px-4 py-1.5 rounded-full min-h-[36px] justify-center ${txType === type
-                    ? type === 'expense' ? 'bg-danger'
-                      : type === 'income' ? 'bg-success'
-                        : 'bg-surface-hover'
-                    : ''
-                  }`}
-              >
-                <Text
-                  className={`text-sm font-semibold capitalize ${txType === type ? 'text-foreground' : 'text-foreground-muted'
-                    }`}
-                >
-                  {type}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
+        <TxTypeToggle txType={txType} onChangeType={handleToggleType} />
         <View className='px-6 gap-3'>
           <AmountDisplay amount={amountMinor} txType={txType} />
 
-          {/* Date and Details Controls below Amount */}
           {!isSplit && (
-            <View>
-              <View className="flex-row items-center justify-between flex-wrap gap-y-2">
-                <View className="flex-row items-center gap-2 flex-wrap">
-                  <Pressable
-                    onPress={() => setShowDatePicker(true)}
-                    className="bg-surface-elevated px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
-                  >
-                    <Text className="text-foreground-secondary font-medium text-sm">
-                      📅 {displayDateStr}
-                    </Text>
-                  </Pressable>
-
-                  <Pressable
-                    onPress={() => setShowAccountPicker(true)}
-                    className="bg-surface-elevated px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
-                  >
-                    <Text className="text-foreground-secondary font-medium text-sm">
-                      🏦 {accounts.find(a => a.accountId === accountId)?.name || 'Select Account'}
-                    </Text>
-                  </Pressable>
-
-                  {txType === 'transfer' && (
-                    <View className="flex-row items-center gap-2">
-                      <Text className="text-foreground-muted">→</Text>
-                      <Pressable
-                        onPress={() => setShowTransferAccountPicker(true)}
-                        className="bg-surface-elevated px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
-                      >
-                        <Text className="text-foreground-secondary font-medium text-sm">
-                          🏦 {accounts.find(a => a.accountId === transferAccountId)?.name || 'To Account'}
-                        </Text>
-                      </Pressable>
-                    </View>
-                  )}
-                </View>
-
-                <Pressable
-                  onPress={() => setShowDetails(!showDetails)}
-                  className="py-2 min-h-[36px] justify-center"
-                >
-                  <Text className="text-foreground-muted font-medium text-sm">
-                    {showDetails ? '- hide details' : '+ details'}
-                  </Text>
-                </Pressable>
-              </View>
-
-              {showDetails && (
-                <View className="mt-3 gap-y-2">
-                  <TextInput
-                    className="bg-surface-elevated text-foreground placeholder:text-foreground-placeholder p-3 rounded-xl min-h-[44px]"
-                    placeholder="Payee"
-                    value={payee}
-                    onChangeText={setPayee}
-                  />
-                  <TextInput
-                    className="bg-surface-elevated text-foreground placeholder:text-foreground-placeholder p-3 rounded-xl min-h-[44px]"
-                    placeholder="Note"
-                    value={note}
-                    onChangeText={setNote}
-                  />
-                </View>
-              )}
-            </View>
-          )}
-
-          {txType === 'transfer' && (
-            <View className="px-6 py-4">
-              <Pressable
-                onPress={handleSaveTransfer}
-                disabled={amountMinor === 0 || !transferAccountId}
-                className={`rounded-xl py-4 items-center ${(amountMinor > 0 && transferAccountId) ? 'bg-primary' : 'bg-surface-elevated'}`}
-              >
-                <Text className={`text-base font-semibold ${(amountMinor > 0 && transferAccountId) ? 'text-primary-foreground' : 'text-foreground-muted'}`}>
-                  Save Transfer
-                </Text>
-              </Pressable>
-            </View>
+            <TxControls
+              txType={txType}
+              date={date}
+              accountId={accountId}
+              transferAccountId={transferAccountId}
+              accounts={accounts}
+              showDetails={showDetails}
+              payee={payee}
+              note={note}
+              onPressDate={() => setShowDatePicker(true)}
+              onPressAccount={() => setShowAccountPicker(true)}
+              onPressTransferAccount={() => setShowTransferAccountPicker(true)}
+              onToggleDetails={() => setShowDetails(!showDetails)}
+              onChangePayee={setPayee}
+              onChangeNote={setNote}
+            />
           )}
         </View>
-        <View className="flex-1 justify-end">
+        <View className="flex-1 justify-end p-2 gap-3">
+          <TransactionEditor
+            txType={txType}
+            isSplit={isSplit}
+            amountMinor={amountMinor}
+            transferAccountId={transferAccountId}
+            editingTx={editingTx}
+            onSaveTransfer={handleSaveTransfer}
+            onSaveLines={saveLines}
+            onSetIsSplit={setIsSplit}
+            onSaveCategory={handleSaveCategory}
+          />
 
-          {isSplit && txType === 'expense' ? (
-            <SplitEditor
-              totalMinor={amountMinor}
-              onSave={saveLines}
-              onCancel={() => setIsSplit(false)}
-            />
-          ) : (
-            <CategoryGrid
-              txType={txType}
-              selectedCategoryId={!isSplit && editingTx?.lines?.length === 1 ? editingTx.lines[0].categoryId : undefined}
-              onSelectCategory={handleSaveCategory}
-              onSplit={() => {
-                if (amountMinor > 0) setIsSplit(true);
-              }}
-            />
-          )}
           <Keypad
             onDigit={handleDigit}
             onBackspace={handleBackspace}
@@ -308,86 +206,27 @@ function EntryForm({
         </View>
       </View>
 
-      {/* Date Picker Modal */}
-      {showDatePicker && (
-        <Modal transparent animationType="fade" visible={showDatePicker} onRequestClose={() => setShowDatePicker(false)}>
-          <Pressable
-            className="flex-1 bg-surface-overlay justify-center items-center"
-            onPress={() => setShowDatePicker(false)}
-          >
-            <View className="w-[80%] bg-surface-elevated rounded-2xl p-4 gap-3 border border-border-strong">
-              <Text className="text-foreground text-lg font-semibold text-center mb-1">Select Date</Text>
-              {getQuickDates().map((d) => (
-                <Pressable
-                  key={d.value}
-                  onPress={() => {
-                    setDate(d.value);
-                    setShowDatePicker(false);
-                  }}
-                  className="bg-surface-hover p-3.5 rounded-lg items-center"
-                >
-                  <Text className="text-foreground text-base font-medium">{d.label} ({d.value})</Text>
-                </Pressable>
-              ))}
-            </View>
-          </Pressable>
-        </Modal>
-      )}
+      <DatePickerModal
+        visible={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSelectDate={setDate}
+      />
 
-      {/* Account Picker Modal */}
-      {showAccountPicker && (
-        <Modal transparent animationType="fade" visible={showAccountPicker} onRequestClose={() => setShowAccountPicker(false)}>
-          <Pressable
-            className="flex-1 bg-surface-overlay justify-center items-center"
-            onPress={() => setShowAccountPicker(false)}
-          >
-            <View className="w-[80%] bg-surface-elevated rounded-2xl p-4 gap-3 border border-border-strong">
-              <Text className="text-foreground text-lg font-semibold text-center mb-1">Select Account</Text>
-              {accounts.sort((a, b) => a.order - b.order).map((acc) => (
-                <Pressable
-                  key={acc.accountId}
-                  onPress={() => {
-                    setAccountId(acc.accountId);
-                    setShowAccountPicker(false);
-                  }}
-                  className="bg-surface-hover p-3.5 rounded-lg items-center"
-                >
-                  <Text className="text-foreground text-base font-medium">{acc.name}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </Pressable>
-        </Modal>
-      )}
+      <AccountPickerModal
+        visible={showAccountPicker}
+        title="Select Account"
+        accounts={accounts}
+        onClose={() => setShowAccountPicker(false)}
+        onSelectAccount={setAccountId}
+      />
 
-      {/* Transfer Account Picker Modal */}
-      {showTransferAccountPicker && (
-        <Modal transparent animationType="fade" visible={showTransferAccountPicker} onRequestClose={() => setShowTransferAccountPicker(false)}>
-          <Pressable
-            className="flex-1 bg-surface-overlay justify-center items-center"
-            onPress={() => setShowTransferAccountPicker(false)}
-          >
-            <View className="w-[80%] bg-surface-elevated rounded-2xl p-4 gap-3 border border-border-strong">
-              <Text className="text-foreground text-lg font-semibold text-center mb-1">Select Destination Account</Text>
-              {accounts
-                .filter(a => a.accountId !== accountId)
-                .sort((a, b) => a.order - b.order)
-                .map((acc) => (
-                  <Pressable
-                    key={acc.accountId}
-                    onPress={() => {
-                      setTransferAccountId(acc.accountId);
-                      setShowTransferAccountPicker(false);
-                    }}
-                    className="bg-surface-hover p-3.5 rounded-lg items-center"
-                  >
-                    <Text className="text-foreground text-base font-medium">{acc.name}</Text>
-                  </Pressable>
-                ))}
-            </View>
-          </Pressable>
-        </Modal>
-      )}
+      <AccountPickerModal
+        visible={showTransferAccountPicker}
+        title="Select Destination Account"
+        accounts={accounts.filter(a => a.accountId !== accountId)}
+        onClose={() => setShowTransferAccountPicker(false)}
+        onSelectAccount={setTransferAccountId}
+      />
     </SafeAreaView>
   );
 }

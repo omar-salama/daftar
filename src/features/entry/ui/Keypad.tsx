@@ -21,7 +21,7 @@ export function Keypad({ onDigit, onBackspace }: KeypadProps) {
   };
 
   return (
-    <View className="flex-row flex-wrap w-full p-2 bg-surface">
+    <View className="flex-row flex-wrap w-full bg-surface">
       {keys.map((k) => (
         <View key={k} className="w-1/3 p-1">
           <Pressable
