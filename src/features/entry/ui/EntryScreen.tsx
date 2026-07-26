@@ -6,17 +6,15 @@ import { minorFromDigits } from '@/kernel/money';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AccountPickerModal } from './AccountPickerModal';
 import { AmountDisplay } from './AmountDisplay';
-import { CategoryGrid } from './CategoryGrid';
 import { DatePickerModal } from './DatePickerModal';
 import { Keypad } from './Keypad';
-import { SplitEditor } from './SplitEditor';
+import { TransactionEditor } from './TransactionEditor';
 import { TxControls } from './TxControls';
 import { TxTypeToggle } from './TxTypeToggle';
-import { TransactionEditor } from './TransactionEditor';
 
 export function EntryScreen() {
   const { txId } = useLocalSearchParams<{ txId?: string }>();

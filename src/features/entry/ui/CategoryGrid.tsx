@@ -55,7 +55,7 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
             className="items-center justify-center rounded-xl p-2 min-h-[52px] flex-col gap-1 bg-surface-elevated border border-border-strong active:opacity-70"
           >
             <Text className="text-lg">➗</Text>
-            <Text className="text-[10px] font-medium text-foreground-secondary leading-none">
+            <Text className="text-[10px] font-medium text-foreground-secondary">
               Split
             </Text>
           </Pressable>

@@ -1,8 +1,8 @@
-import { Pressable, Text, View } from 'react-native';
 import type { TxLine, TxType, TxVersion } from '@/kernel';
 import { Minor } from '@/kernel/money';
-import { SplitEditor } from './SplitEditor';
+import { Pressable, Text, View } from 'react-native';
 import { CategoryGrid } from './CategoryGrid';
+import { SplitEditor } from './SplitEditor';
 
 interface TransactionEditorProps {
   txType: TxType;
