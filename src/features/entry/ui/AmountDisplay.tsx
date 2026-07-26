@@ -1,5 +1,5 @@
-import { Minor, formatMinor } from '@/kernel/money';
 import type { TxType } from '@/kernel';
+import { Minor, formatMinor } from '@/kernel/money';
 import { Text, View } from 'react-native';
 
 interface AmountDisplayProps {
@@ -17,13 +17,10 @@ export function AmountDisplay({ amount, txType = 'expense' }: AmountDisplayProps
     ? 'text-foreground-muted'
     : txType === 'income'
       ? 'text-success'
-      : 'text-foreground';
+      : 'text-foreground'
 
   return (
-    <View className="items-center justify-center min-h-[154px] px-6">
-      <Text className="text-foreground-tertiary text-[11px] font-bold tracking-[1.1px] mb-2">
-        {txType === 'income' ? 'INCOME' : 'AMOUNT'}
-      </Text>
+    <View className="items-center justify-center">
       <Text
         adjustsFontSizeToFit
         numberOfLines={1}

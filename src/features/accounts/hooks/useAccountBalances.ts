@@ -23,12 +23,13 @@ export function useAccountBalances() {
             balances[tx.accountId] -= tx.totalMinor;
           } else if (tx.type === 'income') {
             balances[tx.accountId] += tx.totalMinor;
+          } else if (tx.type === 'transfer') {
+            balances[tx.accountId] -= tx.totalMinor;
           }
         }
         
         if (tx.transferAccountId && balances[tx.transferAccountId] !== undefined) {
-          // Assuming transfer means expense from accountId to transferAccountId
-          if (tx.type === 'expense') {
+          if (tx.type === 'expense' || tx.type === 'transfer') {
             balances[tx.transferAccountId] += tx.totalMinor;
           }
         }

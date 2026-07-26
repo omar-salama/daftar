@@ -2,7 +2,7 @@ import { Minor, addMinor } from './money';
 
 export type TxId = string & { __brand: 'TxId' };
 export type RowId = string & { __brand: 'RowId' };
-export type TxType = 'expense' | 'income';
+export type TxType = 'expense' | 'income' | 'transfer';
 
 export interface TxLine {
   categoryId: string;
