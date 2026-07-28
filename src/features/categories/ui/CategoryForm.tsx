@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCategories, useSaveCategory } from '../hooks';
-import { CategoryId, CategoryType, CategoryVersion } from '../model';
+import { CategoryId, CategoryType } from '../model';
 import { ParentCategoryPickerModal } from './ParentCategoryPickerModal';
 
 interface CategoryFormProps {
@@ -97,8 +97,8 @@ export function CategoryForm({ categoryId, defaultType, defaultParentId }: Categ
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      <View className="flex-row items-center justify-between px-6 py-4 bg-surface-container border-b border-surface-variant">
+    <SafeAreaView className="flex-1" edges={['top']}>
+      <View className="flex-row items-center justify-between px-4 pb-3 mb-6 border-b border-surface-container">
         <Pressable onPress={() => router.back()}>
           <Text className="text-on-surface-variant text-base">Cancel</Text>
         </Pressable>
@@ -112,12 +112,12 @@ export function CategoryForm({ categoryId, defaultType, defaultParentId }: Categ
         </Pressable>
       </View>
 
-      <ScrollView className="flex-1 p-4" keyboardShouldPersistTaps="handled">
-        <View className="mb-6 flex-row items-start gap-3">
+      <ScrollView className='flex-1' contentContainerClassName="px-4 gap-6" keyboardShouldPersistTaps="handled">
+        <View className="flex-row items-start gap-3">
           <View className="w-16">
             <Text className="text-sm font-medium text-on-surface-variant mb-2">Icon</Text>
             <TextInput
-              className="bg-surface-container text-on-surface rounded-xl border border-surface-variant text-center text-xl h-12"
+              className="bg-surface-container text-on-surface rounded-xl border border-surface-variant text-center py-3"
               value={icon}
               onChangeText={setIcon}
               maxLength={2}
@@ -126,7 +126,7 @@ export function CategoryForm({ categoryId, defaultType, defaultParentId }: Categ
           <View className="flex-1">
             <Text className="text-sm font-medium text-on-surface-variant mb-2">Category Name</Text>
             <TextInput
-              className="bg-surface-container text-on-surface px-3 rounded-xl border border-surface-variant h-12"
+              className="bg-surface-container text-on-surface rounded-xl border border-surface-variant px-3 py-3"
               placeholder="e.g. Groceries"
               placeholderTextColor="#71717a"
               value={name}
@@ -136,11 +136,11 @@ export function CategoryForm({ categoryId, defaultType, defaultParentId }: Categ
           </View>
         </View>
 
-        <View className="mb-6">
+        <View>
           <Text className="text-sm font-medium text-on-surface-variant mb-2">Parent Category</Text>
           <Pressable
             onPress={() => setIsParentPickerVisible(true)}
-            className="bg-surface-container rounded-xl border border-surface-variant p-4 flex-row items-center"
+            className="bg-surface-container rounded-xl border border-surface-variant py-3 px-4 flex-row items-center"
           >
             {parentCategory ? (
               <>
@@ -154,7 +154,7 @@ export function CategoryForm({ categoryId, defaultType, defaultParentId }: Categ
         </View>
 
         {isEditing && !parentId && (
-          <View className="mb-6">
+          <View>
             <View className="flex-row items-center justify-between mb-2">
               <Text className="text-sm font-medium text-on-surface-variant">Subcategories</Text>
               <Pressable
@@ -166,7 +166,7 @@ export function CategoryForm({ categoryId, defaultType, defaultParentId }: Categ
             </View>
             <View className="rounded-xl overflow-hidden border border-surface-variant bg-surface-container">
               {subCategories.length === 0 ? (
-                <Text className="text-on-surface-variant text-sm py-4 px-4 text-center">No subcategories yet.</Text>
+                <Text className="text-on-surface-variant text-sm py-3 px-4 text-center">No subcategories yet.</Text>
               ) : (
                 subCategories.map((subItem, index) => (
                   <View key={subItem.categoryId} className={index !== subCategories.length - 1 ? "border-b border-surface-variant" : ""}>
@@ -175,7 +175,7 @@ export function CategoryForm({ categoryId, defaultType, defaultParentId }: Categ
                       className="flex-row items-center justify-between py-3 px-4 bg-surface-container active:bg-surface-container-high"
                     >
                       <View className="flex-row items-center gap-3">
-                        <Text className="text-xl">{subItem.icon}</Text>
+                        <Text>{subItem.icon}</Text>
                         <Text className="text-on-surface text-base">{subItem.name}</Text>
                       </View>
                       <Text className="text-on-surface-variant text-xl">›</Text>

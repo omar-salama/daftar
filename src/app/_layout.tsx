@@ -19,7 +19,7 @@ export default function RootLayout() {
       >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="account-form" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="category-form" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="category-form" />
       </Stack>
     </PersistQueryClientProvider>
   );
