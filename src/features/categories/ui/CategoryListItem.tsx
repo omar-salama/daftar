@@ -11,9 +11,24 @@ interface CategoryListItemProps {
   drag: () => void;
   onDelete: (item: CategoryVersion) => void;
   isSubCategory?: boolean;
+  hasSubCategories?: boolean;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
+  subCount?: number;
 }
 
-export function CategoryListItem({ item, type, isActive, drag, onDelete, isSubCategory }: CategoryListItemProps) {
+export function CategoryListItem({ 
+  item, 
+  type, 
+  isActive, 
+  drag, 
+  onDelete, 
+  isSubCategory,
+  hasSubCategories,
+  isExpanded,
+  onToggleExpand,
+  subCount
+}: CategoryListItemProps) {
   const router = useRouter();
 
   const handleDelete = () => {
@@ -43,29 +58,42 @@ export function CategoryListItem({ item, type, isActive, drag, onDelete, isSubCa
         overshootRight={false}
       >
         <View
-          className={`flex-row justify-between items-center px-4 py-4 mb-2 rounded-xl border border-surface-variant ${
+          className={`flex-row justify-between items-center pl-4 pr-2 mb-2 rounded-xl border border-surface-variant ${
             isActive ? 'bg-surface-container-high' : 'bg-surface-container'
           }`}
         >
-          <View className="flex-row items-center flex-1">
-            <Text className="text-2xl mr-3">{item.icon}</Text>
-            <Text className="text-on-surface text-lg">{item.name}</Text>
-          </View>
+          <Pressable 
+            className="flex-row items-center flex-1 py-3"
+            onPress={() => router.push(`/category-form?categoryId=${item.categoryId}&type=${type}`)}
+          >
+            <Text className="mr-3">{item.icon}</Text>
+            <View className="flex-row items-center flex-shrink">
+              <Text className="text-on-surface" numberOfLines={1}>{item.name}</Text>
+              {!!subCount && subCount > 0 && (
+                <Text className="text-on-surface-variant text-sm ml-1">
+                  ({subCount})
+                </Text>
+              )}
+            </View>
+          </Pressable>
 
-          <View className="flex-row items-center gap-2">
-            <Pressable
-              onPress={() => router.push(`/category-form?categoryId=${item.categoryId}&type=${type}`)}
-              className="p-2"
-              hitSlop={8}
-            >
-              <Text className="text-base">✏️</Text>
-            </Pressable>
-
+          <View className="flex-row items-center gap-1">
+            {hasSubCategories && (
+              <Pressable
+                onPress={onToggleExpand}
+                className="p-2"
+                hitSlop={8}
+              >
+                <Text className="text-on-surface-variant text-sm">
+                  {isExpanded ? '▼' : '▶'}
+                </Text>
+              </Pressable>
+            )}
             {!isSubCategory && (
               <Pressable
                 onPressIn={drag}
                 disabled={isActive}
-                className="p-2 -mr-2"
+                className="p-2"
                 hitSlop={8}
               >
                 <Text className="text-lg text-on-surface-variant font-bold">☰</Text>

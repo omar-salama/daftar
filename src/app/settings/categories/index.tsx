@@ -8,6 +8,50 @@ import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flat
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+const CategoryRow = ({ item, type, isActive, drag, deleteCategory, allRelevant }: {
+  item: CategoryVersion;
+  type: string;
+  isActive: boolean;
+  drag: () => void;
+  deleteCategory: any;
+  allRelevant: CategoryVersion[];
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const subCategories = allRelevant
+    .filter(c => c.parentId === item.categoryId)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  return (
+    <View>
+      <CategoryListItem 
+        item={item} 
+        type={type} 
+        isActive={isActive} 
+        drag={drag} 
+        onDelete={(item) => deleteCategory.mutate(item)} 
+        hasSubCategories={subCategories.length > 0}
+        isExpanded={isExpanded}
+        onToggleExpand={() => setIsExpanded(!isExpanded)}
+        subCount={subCategories.length}
+      />
+      {subCategories.length > 0 && isExpanded && (
+        <View className="ml-8 border-l-2 border-surface-variant pl-4">
+          {subCategories.map(subItem => (
+            <CategoryListItem 
+              key={subItem.categoryId}
+              item={subItem} 
+              type={type} 
+              isActive={false} 
+              drag={() => {}} // Disabled for subcategories
+              onDelete={(item) => deleteCategory.mutate(item)} 
+              isSubCategory
+            />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
 export default function CategoryManagementScreen() {
   const { type = 'expense' } = useLocalSearchParams<{ type?: string }>();
   const router = useRouter();
@@ -35,35 +79,15 @@ export default function CategoryManagementScreen() {
   };
 
   const renderItem = ({ item, drag, isActive }: RenderItemParams<CategoryVersion>) => {
-    const subCategories = allRelevant
-      .filter(c => c.parentId === item.categoryId)
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
     return (
-      <View>
-        <CategoryListItem 
-          item={item} 
-          type={type} 
-          isActive={isActive} 
-          drag={drag} 
-          onDelete={(item) => deleteCategory.mutate(item)} 
-        />
-        {subCategories.length > 0 && (
-          <View className="ml-8 border-l-2 border-surface-variant pl-4">
-            {subCategories.map(subItem => (
-              <CategoryListItem 
-                key={subItem.categoryId}
-                item={subItem} 
-                type={type} 
-                isActive={false} 
-                drag={() => {}} // Disabled for subcategories
-                onDelete={(item) => deleteCategory.mutate(item)} 
-                isSubCategory
-              />
-            ))}
-          </View>
-        )}
-      </View>
+      <CategoryRow 
+        item={item} 
+        type={type} 
+        isActive={isActive} 
+        drag={drag} 
+        deleteCategory={deleteCategory} 
+        allRelevant={allRelevant} 
+      />
     );
   };
 
