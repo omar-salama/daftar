@@ -102,9 +102,5 @@ export function CategoryListItem({
       </ReanimatedSwipeable>
   );
 
-  if (isSubCategory) {
-    return content;
-  }
-
   return content;
 }

@@ -1,101 +1,25 @@
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useCategories, useSaveCategory } from '../hooks';
-import { CategoryId, CategoryType } from '../model';
+import { useCategoryForm, UseCategoryFormProps } from '../hooks';
 import { ParentCategoryPickerModal } from './ParentCategoryPickerModal';
+import { SubcategoryList } from './SubcategoryList';
 import { AppHeader } from '@/components/ui/AppHeader';
 
-interface CategoryFormProps {
-  categoryId?: string;
-  defaultType?: string;
-  defaultParentId?: string;
-}
-
-export function CategoryForm({ categoryId, defaultType, defaultParentId }: CategoryFormProps) {
-  const router = useRouter();
-  
-  const { data: categories = [] } = useCategories();
-  const saveCategory = useSaveCategory();
-  
-  const existingCategory = categories.find(c => c.categoryId === categoryId);
-  const isEditing = !!existingCategory;
-
-  const [name, setName] = useState('');
-  const [icon, setIcon] = useState('📦');
-  const [parentId, setParentId] = useState<string | null>(defaultParentId || null);
-  const [isParentPickerVisible, setIsParentPickerVisible] = useState(false);
-  const type = (defaultType as CategoryType) || 'expense';
-  
-  useEffect(() => {
-    if (existingCategory) {
-      setName(existingCategory.name);
-      setIcon(existingCategory.icon);
-      setParentId(existingCategory.parentId ?? null);
-    } else if (defaultParentId) {
-      const parent = categories.find(c => c.categoryId === defaultParentId);
-      if (parent) {
-        setIcon(parent.icon);
-      }
-    }
-  }, [existingCategory, defaultParentId]);
-
-  const possibleParents = categories.filter(c => 
-    !c.isDeleted && 
-    c.type === type && 
-    !c.parentId && 
-    c.categoryId !== categoryId
-  );
-  
-  const parentCategory = parentId ? categories.find(c => c.categoryId === parentId) : null;
-  const subCategories = categories
-    .filter(c => c.parentId === categoryId && !c.isDeleted)
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-  const handleSave = () => {
-    const trimmedName = name.trim();
-    if (!trimmedName || !icon.trim()) return;
-
-    const generatedSlug = trimmedName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-    const targetCategoryId = (generatedSlug || 'category') as CategoryId;
-
-    const isDuplicate = categories.some(
-      c => !c.isDeleted && 
-           (c.categoryId === targetCategoryId || c.name.toLowerCase() === trimmedName.toLowerCase()) && 
-           c.categoryId !== categoryId
-    );
-
-    if (isDuplicate) {
-      Alert.alert(
-        'Category Exists',
-        `A category with the name "${trimmedName}" already exists. Please enter a unique name.`
-      );
-      return;
-    }
-
-    let maxOrder = 0;
-    if (categories.length > 0) {
-      const sameTypeCategories = categories.filter(c => c.type === type);
-      if (sameTypeCategories.length > 0) {
-        maxOrder = Math.max(...sameTypeCategories.map(c => c.order ?? 0));
-      }
-    }
-
-    saveCategory.mutate({
-      existingCategory,
-      name: trimmedName,
-      icon: icon.trim(),
-      type,
-      maxOrder,
-      parentId: parentId ?? undefined
-    }, {
-      onSuccess: () => router.back()
-    });
-  };
+export function CategoryForm({ categoryId, defaultType, defaultParentId }: UseCategoryFormProps) {
+  const {
+    isEditing,
+    name, setName,
+    icon, setIcon,
+    parentId, setParentId,
+    isParentPickerVisible, setIsParentPickerVisible,
+    type,
+    possibleParents,
+    parentCategory,
+    subCategories,
+    handleSave,
+    isPending,
+    router,
+  } = useCategoryForm({ categoryId, defaultType, defaultParentId });
 
   return (
     <SafeAreaView className="flex-1" edges={['top']}>
@@ -106,7 +30,7 @@ export function CategoryForm({ categoryId, defaultType, defaultParentId }: Categ
         rightAction={{ 
           label: 'Save', 
           onPress: handleSave, 
-          disabled: !name.trim() || !icon.trim() || saveCategory.isPending 
+          disabled: !name.trim() || !icon.trim() || isPending 
         }}
       />
 
@@ -151,38 +75,12 @@ export function CategoryForm({ categoryId, defaultType, defaultParentId }: Categ
           </Pressable>
         </View>
 
-        {isEditing && !parentId && (
-          <View>
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-sm font-medium text-on-surface-variant">Subcategories</Text>
-              <Pressable
-                onPress={() => router.push(`/category-form?type=${type}&parentId=${categoryId}`)}
-                hitSlop={8}
-              >
-                <Text className="text-primary text-sm font-semibold">+ Add New</Text>
-              </Pressable>
-            </View>
-            <View className="rounded-xl overflow-hidden border border-surface-variant bg-surface-container">
-              {subCategories.length === 0 ? (
-                <Text className="text-on-surface-variant text-sm py-3 px-4 text-center">No subcategories yet.</Text>
-              ) : (
-                subCategories.map((subItem, index) => (
-                  <View key={subItem.categoryId} className={index !== subCategories.length - 1 ? "border-b border-surface-variant" : ""}>
-                    <Pressable
-                      onPress={() => router.push(`/category-form?categoryId=${subItem.categoryId}&type=${type}`)}
-                      className="flex-row items-center justify-between py-3 px-4 bg-surface-container active:bg-surface-container-high"
-                    >
-                      <View className="flex-row items-center gap-3">
-                        <Text>{subItem.icon}</Text>
-                        <Text className="text-on-surface text-base">{subItem.name}</Text>
-                      </View>
-                      <Text className="text-on-surface-variant text-xl">›</Text>
-                    </Pressable>
-                  </View>
-                ))
-              )}
-            </View>
-          </View>
+        {isEditing && !parentId && categoryId && (
+          <SubcategoryList
+            categoryId={categoryId}
+            type={type}
+            subCategories={subCategories}
+          />
         )}
       </ScrollView>
 
