@@ -14,6 +14,7 @@ interface CategoryListItemProps {
   isExpanded?: boolean;
   onToggleExpand?: () => void;
   subCount?: number;
+  containerClassName?: string;
 }
 
 export function CategoryListItem({ 
@@ -25,7 +26,8 @@ export function CategoryListItem({
   hasSubCategories,
   isExpanded,
   onToggleExpand,
-  subCount
+  subCount,
+  containerClassName = 'bg-surface'
 }: CategoryListItemProps) {
   const router = useRouter();
 
@@ -56,7 +58,7 @@ export function CategoryListItem({
       >
         <View
           className={`flex-row justify-between items-center pl-4 pr-2 ${
-            isActive ? 'bg-surface-container-high' : 'bg-surface'
+            isActive ? 'bg-surface-container-high' : containerClassName
           }`}
         >
           <Pressable 
