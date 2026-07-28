@@ -22,7 +22,6 @@ export function CategoryListItem({
   isActive, 
   drag, 
   onDelete, 
-  isSubCategory,
   hasSubCategories,
   isExpanded,
   onToggleExpand,
