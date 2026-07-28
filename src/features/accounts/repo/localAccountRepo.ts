@@ -1,14 +1,11 @@
-import { nextHLC, RowId } from '@/kernel';
-import { generateUuid, getDeviceId, getHlcState, getJSON, outboxAppend, setHlcState, setJSON } from '@/lib/storage';
+import { RowId } from '@/kernel';
+import { generateUuid, getJSON, nextVersion, outboxAppend, setJSON } from '@/lib/storage';
 import { AccountId, AccountRepo, AccountType, AccountVersion, resolveAccountCurrent } from '../model';
 
 const KEY_ACCOUNT_VERSIONS = 'accounts.versions';
 
-function createSeedAccount(name: string, type: AccountType, order: number, now: number): AccountVersion {
-  const deviceId = getDeviceId();
-  const state = getHlcState();
-  const [version, newState] = nextHLC(now, state, deviceId);
-  setHlcState(newState);
+function createSeedAccount(name: string, type: AccountType, order: number): AccountVersion {
+  const { version, deviceId } = nextVersion();
 
   return {
     rowId: generateUuid() as RowId,
@@ -26,15 +23,14 @@ function createSeedAccount(name: string, type: AccountType, order: number, now: 
 export const localAccountRepo: AccountRepo = {
   async listCurrent(): Promise<AccountVersion[]> {
     let versions = getJSON<AccountVersion[]>(KEY_ACCOUNT_VERSIONS) ?? [];
-    
+
     // Seed default accounts on first open if empty
     if (versions.length === 0) {
-      const now = Date.now();
-      const seed1 = createSeedAccount('Cash', 'cash', 0, now);
-      const seed2 = createSeedAccount('Main', 'bank', 1, now);
+      const seed1 = createSeedAccount('Cash', 'cash', 0);
+      const seed2 = createSeedAccount('Main', 'bank', 1);
       versions = [seed1, seed2];
       setJSON(KEY_ACCOUNT_VERSIONS, versions);
-      
+
       outboxAppend(seed1);
       outboxAppend(seed2);
     }

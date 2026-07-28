@@ -1,14 +1,11 @@
-import { nextHLC, RowId } from '@/kernel';
-import { generateUuid, getDeviceId, getHlcState, getJSON, outboxAppend, setHlcState, setJSON } from '@/lib/storage';
+import { RowId } from '@/kernel';
+import { generateUuid, getJSON, nextVersion, outboxAppend, setJSON } from '@/lib/storage';
 import { CategoryId, CategoryRepo, CategoryType, CategoryVersion, resolveCategoryCurrent } from '../model';
 
 const KEY_CATEGORY_VERSIONS = 'categories.versions';
 
-function createSeedCategory(id: string, name: string, icon: string, type: CategoryType, now: number, order: number): CategoryVersion {
-  const deviceId = getDeviceId();
-  const state = getHlcState();
-  const [version, newState] = nextHLC(now, state, deviceId);
-  setHlcState(newState);
+function createSeedCategory(id: string, name: string, icon: string, type: CategoryType, order: number): CategoryVersion {
+  const { version, deviceId } = nextVersion();
 
   return {
     rowId: generateUuid() as RowId,
@@ -29,18 +26,16 @@ export const localCategoryRepo: CategoryRepo = {
     
     // Seed default categories on first open if empty
     if (versions.length === 0) {
-      const now = Date.now();
-      
       const seeds = [
-        createSeedCategory('groceries', 'Groceries', '🛒', 'expense', now, 0),
-        createSeedCategory('dining', 'Dining', '🍽', 'expense', now, 1),
-        createSeedCategory('transport', 'Transport', '🚕', 'expense', now, 2),
-        createSeedCategory('coffee', 'Coffee', '☕️', 'expense', now, 3),
-        createSeedCategory('shopping', 'Shopping', '🛍', 'expense', now, 4),
-        createSeedCategory('bills', 'Bills', '💡', 'expense', now, 5),
-        createSeedCategory('entertainment', 'Entertainment', '🎬', 'expense', now, 6),
-        createSeedCategory('salary', 'Salary', '💰', 'income', now, 0),
-        createSeedCategory('other', 'Other', '💵', 'income', now, 1),
+        createSeedCategory('groceries', 'Groceries', '🛒', 'expense', 0),
+        createSeedCategory('dining', 'Dining', '🍽', 'expense', 1),
+        createSeedCategory('transport', 'Transport', '🚕', 'expense', 2),
+        createSeedCategory('coffee', 'Coffee', '☕️', 'expense', 3),
+        createSeedCategory('shopping', 'Shopping', '🛍', 'expense', 4),
+        createSeedCategory('bills', 'Bills', '💡', 'expense', 5),
+        createSeedCategory('entertainment', 'Entertainment', '🎬', 'expense', 6),
+        createSeedCategory('salary', 'Salary', '💰', 'income', 0),
+        createSeedCategory('other', 'Other', '💵', 'income', 1),
       ];
       
       versions = seeds;
