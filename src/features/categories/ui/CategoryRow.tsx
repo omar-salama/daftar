@@ -53,7 +53,7 @@ export const CategoryRow = ({ item, type, isActive, drag, onDelete, allRelevant 
               keyExtractor={(subItem) => subItem.categoryId}
               renderItem={({ item: subItem, drag: subDrag, isActive: subIsActive }) => (
                 <ScaleDecorator>
-                  <View className="border-t border-surface-variant">
+                  <View className="border-t border-surface-container">
                     <CategoryListItem
                       item={subItem}
                       type={type}
