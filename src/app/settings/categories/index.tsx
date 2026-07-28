@@ -1,13 +1,12 @@
+import { AppHeader } from '@/components/ui/AppHeader';
 import { useCategories, useDeleteCategory, useReorderCategories } from '@/features/categories/hooks';
 import { CategoryVersion } from '@/features/categories/model';
 import { CategoryRow } from '@/features/categories/ui';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { NestableScrollContainer, NestableDraggableFlatList, RenderItemParams } from 'react-native-draggable-flatlist';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Text, View } from 'react-native';
+import { NestableDraggableFlatList, NestableScrollContainer, RenderItemParams } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AppHeader } from '@/components/ui/AppHeader';
 
 
 export default function CategoryManagementScreen() {
@@ -50,35 +49,27 @@ export default function CategoryManagementScreen() {
   };
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-        <Stack.Screen options={{ headerShown: false }} />
+    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
+      <Stack.Screen options={{ headerShown: false }} />
 
-        <AppHeader
-          title={type === 'expense' ? 'Expense Categories' : 'Income Categories'}
-          rightAction={{ label: "+", onPress: () => router.push(`/category-form?type=${type}`) }}
-        />
-        <View className="flex-1">
-          {data.length === 0 ? (
-            <Text className="text-on-surface-variant text-center mt-8 mb-4">No categories found.</Text>
-          ) : (
-            <NestableScrollContainer>
-              <NestableDraggableFlatList
-                data={data}
-                onDragEnd={handleDragEnd}
-                keyExtractor={(item) => item.categoryId}
-                renderItem={renderItem}
-              />
-            </NestableScrollContainer>
-          )}
-        </View>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+      <AppHeader
+        title={type === 'expense' ? 'Expense Categories' : 'Income Categories'}
+        rightAction={{ label: "+", onPress: () => router.push(`/category-form?type=${type}`) }}
+      />
+      <View className="flex-1">
+        {data.length === 0 ? (
+          <Text className="text-on-surface-variant text-center mt-8 mb-4">No categories found.</Text>
+        ) : (
+          <NestableScrollContainer>
+            <NestableDraggableFlatList
+              data={data}
+              onDragEnd={handleDragEnd}
+              keyExtractor={(item) => item.categoryId}
+              renderItem={renderItem}
+            />
+          </NestableScrollContainer>
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
