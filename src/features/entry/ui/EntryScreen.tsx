@@ -2,6 +2,7 @@ import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 import { useAppendTx, useCreateTx, useLedger } from '@/features/ledger/hooks/useLedger';
 import type { TxId, TxLine, TxType, TxVersion } from '@/kernel';
 import { minorFromDigits } from '@/kernel/money';
+import { generateUuid } from '@/lib/storage';
 
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -99,17 +100,7 @@ function EntryForm({
     if (amountMinor === 0) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    // UUID from crypto fallback or expo
-    let uuidStr: string;
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      uuidStr = crypto.randomUUID();
-    } else {
-      uuidStr = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = (Math.random() * 16) | 0;
-        const v = c === 'x' ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-      });
-    }
+    const uuidStr = generateUuid();
 
     const tx = createTx({
       txId: (editingTxId || uuidStr) as TxId,
