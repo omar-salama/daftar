@@ -4,9 +4,13 @@ import { localCategoryRepo } from '../repo';
 import { nextHLC, RowId } from '@/kernel';
 import { generateUuid, getDeviceId, getHlcState, nextVersion, setHlcState } from '@/lib/storage';
 
+export const categoryKeys = {
+  all: ['categories'] as const,
+};
+
 export function useCategories() {
   return useQuery({
-    queryKey: ['categories'],
+    queryKey: categoryKeys.all,
     queryFn: () => localCategoryRepo.listCurrent(),
   });
 }
@@ -18,11 +22,11 @@ export function useAppendCategory() {
   return useMutation({
     mutationFn: (v: CategoryVersion) => localCategoryRepo.append(v),
     onMutate: async (newVersion) => {
-      await queryClient.cancelQueries({ queryKey: ['categories'] });
+      await queryClient.cancelQueries({ queryKey: categoryKeys.all });
 
-      const previousCategories = queryClient.getQueryData<CategoryVersion[]>(['categories']);
+      const previousCategories = queryClient.getQueryData<CategoryVersion[]>(categoryKeys.all);
 
-      queryClient.setQueryData<CategoryVersion[]>(['categories'], (old) => {
+      queryClient.setQueryData<CategoryVersion[]>(categoryKeys.all, (old) => {
         const allVersions = old ? [...old, newVersion] : [newVersion];
         return resolveCategoryCurrent(allVersions);
       });
@@ -31,11 +35,11 @@ export function useAppendCategory() {
     },
     onError: (err, newVersion, context) => {
       if (context?.previousCategories) {
-        queryClient.setQueryData(['categories'], context.previousCategories);
+        queryClient.setQueryData(categoryKeys.all, context.previousCategories);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: categoryKeys.all });
     },
   });
 }
