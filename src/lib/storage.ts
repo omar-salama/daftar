@@ -1,5 +1,5 @@
 import { MMKV } from 'react-native-mmkv';
-import { type HLCState } from '@/kernel';
+import { type HLCState, nextHLC } from '@/kernel';
 
 // Minimal interface for anything that can be placed in the sync outbox.
 // The outbox is an append-only queue that accepts any versioned row type.
@@ -115,6 +115,18 @@ export function getHlcState(): HLCState {
 
 export function setHlcState(state: HLCState): void {
   setJSON(KEY_HLC_STATE, state);
+}
+
+// ---------------------------------------------------------------------------
+// nextVersion — generate a single HLC version string and persist the new state.
+// Use this instead of manually calling getDeviceId/getHlcState/nextHLC/setHlcState.
+// ---------------------------------------------------------------------------
+
+export function nextVersion(): { version: string; deviceId: string } {
+  const deviceId = getDeviceId();
+  const [version, newState] = nextHLC(Date.now(), getHlcState(), deviceId);
+  setHlcState(newState);
+  return { version, deviceId };
 }
 
 // ---------------------------------------------------------------------------

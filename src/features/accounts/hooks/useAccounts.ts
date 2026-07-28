@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AccountId, AccountType, AccountVersion, resolveAccountCurrent } from '../model';
 import { localAccountRepo } from '../repo/localAccountRepo';
 import { nextHLC, RowId } from '@/kernel';
-import { generateUuid, getDeviceId, getHlcState, setHlcState } from '@/lib/storage';
+import { generateUuid, getDeviceId, getHlcState, nextVersion, setHlcState } from '@/lib/storage';
 import { Minor } from '@/kernel/money';
 
 export const accountKeys = {
@@ -59,10 +59,7 @@ export function useSaveAccount() {
       maxOrder: number;
     }) => {
       const now = Date.now();
-      const deviceId = getDeviceId();
-      let hlcState = getHlcState();
-      const [version, nextState] = nextHLC(now, hlcState, deviceId);
-      setHlcState(nextState);
+      const { version, deviceId } = nextVersion();
 
       const payload: AccountVersion = data.existingAccount
         ? {
@@ -130,12 +127,7 @@ export function useDeleteAccount() {
 
   return useMutation({
     mutationFn: async (account: AccountVersion) => {
-      const now = Date.now();
-      const deviceId = getDeviceId();
-      const hlcState = getHlcState();
-      const [version, nextState] = nextHLC(now, hlcState, deviceId);
-      setHlcState(nextState);
-
+      const { version } = nextVersion();
       return appendAccount.mutateAsync({
         ...account,
         isDeleted: true,

@@ -8,6 +8,7 @@ export {
   getDeviceId,
   getHlcState,
   setHlcState,
+  nextVersion,
   getLastPulledAt,
   setLastPulledAt,
   generateUuid,

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CategoryId, CategoryType, CategoryVersion, resolveCategoryCurrent } from '../model';
 import { localCategoryRepo } from '../repo';
 import { nextHLC, RowId } from '@/kernel';
-import { generateUuid, getDeviceId, getHlcState, setHlcState } from '@/lib/storage';
+import { generateUuid, getDeviceId, getHlcState, nextVersion, setHlcState } from '@/lib/storage';
 
 export function useCategories() {
   return useQuery({
@@ -53,11 +53,7 @@ export function useSaveCategory() {
       maxOrder: number;
       parentId?: string;
     }) => {
-      const now = Date.now();
-      const deviceId = getDeviceId();
-      const hlcState = getHlcState();
-      const [version, nextState] = nextHLC(now, hlcState, deviceId);
-      setHlcState(nextState);
+      const { version, deviceId } = nextVersion();
 
       if (data.existingCategory) {
         return appendCategory.mutateAsync({
@@ -128,12 +124,7 @@ export function useDeleteCategory() {
 
   return useMutation({
     mutationFn: async (category: CategoryVersion) => {
-      const now = Date.now();
-      const deviceId = getDeviceId();
-      const hlcState = getHlcState();
-      const [version, nextState] = nextHLC(now, hlcState, deviceId);
-      setHlcState(nextState);
-
+      const { version } = nextVersion();
       return appendCategory.mutateAsync({
         ...category,
         isDeleted: true,

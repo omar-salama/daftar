@@ -1,18 +1,10 @@
-import { getJSON, setJSON, outboxAppend } from '@/lib/storage';
-import { TxVersion, resolveCurrent } from '@/kernel';
+import { getJSON, setJSON, outboxAppend, nextVersion, generateUuid } from '@/lib/storage';
+import { TxVersion, resolveCurrent, buildTxVersion, BuildTxVersionInput, RowId } from '@/kernel';
 import { LedgerRepo } from '../model';
 
-const KEY_LEDGER_VERSIONS = 'ledger.versions';
-
-import { getDeviceId, getHlcState, setHlcState, generateUuid } from '@/lib/storage';
-import { nextHLC } from '@/kernel/hlc';
-import { buildTxVersion, BuildTxVersionInput, RowId } from '@/kernel';
-
 export function createTxVersion(input: Omit<BuildTxVersionInput, 'deviceId' | 'rowId'>): TxVersion {
-  const deviceId = getDeviceId();
+  const { version, deviceId } = nextVersion();
   const rowId = generateUuid() as RowId;
-  const [version, newState] = nextHLC(Date.now(), getHlcState(), deviceId);
-  setHlcState(newState);
 
   return buildTxVersion({
     ...input,
@@ -20,6 +12,8 @@ export function createTxVersion(input: Omit<BuildTxVersionInput, 'deviceId' | 'r
     rowId
   }, version);
 }
+
+const KEY_LEDGER_VERSIONS = 'ledger.versions';
 
 export const localLedgerRepo: LedgerRepo = {
   async listCurrent(): Promise<TxVersion[]> {
