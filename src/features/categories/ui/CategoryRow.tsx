@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { NestableDraggableFlatList, ScaleDecorator } from 'react-native-draggable-flatlist';
-import { useReorderCategories } from '../hooks';
+import { ScaleDecorator } from 'react-native-draggable-flatlist';
 import { CategoryVersion } from '../model';
 import { CategoryListItem } from './CategoryListItem';
 
@@ -14,7 +13,6 @@ export const CategoryRow = ({ item, type, isActive, drag, onDelete, allRelevant 
   allRelevant: CategoryVersion[];
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const reorderCategories = useReorderCategories();
 
   const [subCategories, setSubCategories] = useState<CategoryVersion[]>([]);
 
@@ -26,10 +24,7 @@ export const CategoryRow = ({ item, type, isActive, drag, onDelete, allRelevant 
     );
   }, [allRelevant, item.categoryId]);
 
-  const handleSubDragEnd = ({ data: newData }: { data: CategoryVersion[] }) => {
-    setSubCategories(newData);
-    reorderCategories.mutate(newData);
-  };
+
 
   return (
     <ScaleDecorator>
@@ -47,25 +42,17 @@ export const CategoryRow = ({ item, type, isActive, drag, onDelete, allRelevant 
         />
         {subCategories.length > 0 && isExpanded && (
           <View className="ml-7 border-l border-surface-variant">
-            <NestableDraggableFlatList
-              data={subCategories}
-              onDragEnd={handleSubDragEnd}
-              keyExtractor={(subItem) => subItem.categoryId}
-              renderItem={({ item: subItem, drag: subDrag, isActive: subIsActive }) => (
-                <ScaleDecorator>
-                  <View>
-                    <CategoryListItem
-                      item={subItem}
-                      type={type}
-                      isActive={subIsActive}
-                      drag={subDrag}
-                      onDelete={onDelete}
-                      isSubCategory
-                    />
-                  </View>
-                </ScaleDecorator>
-              )}
-            />
+            {subCategories.map(subItem => (
+              <View key={subItem.categoryId}>
+                <CategoryListItem
+                  item={subItem}
+                  type={type}
+                  isActive={false}
+                  drag={() => {}}
+                  onDelete={onDelete}
+                />
+              </View>
+            ))}
           </View>
         )}
       </View>
