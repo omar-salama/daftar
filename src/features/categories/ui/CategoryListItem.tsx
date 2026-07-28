@@ -1,6 +1,5 @@
 import { useRouter } from 'expo-router';
 import { Alert, Pressable, Text, View } from 'react-native';
-import { ScaleDecorator } from 'react-native-draggable-flatlist';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { CategoryVersion } from '../model';
 
@@ -45,21 +44,20 @@ export function CategoryListItem({
   const renderRightActions = () => (
     <Pressable
       onPress={handleDelete}
-      className="bg-error justify-center items-center px-5 mb-2 rounded-xl ml-2"
+      className="bg-error justify-center items-center px-5"
     >
       <Text className="text-on-surface font-semibold text-base">Delete</Text>
     </Pressable>
   );
 
   const content = (
-    <View className="px-4">
       <ReanimatedSwipeable
         renderRightActions={renderRightActions}
         overshootRight={false}
       >
         <View
-          className={`flex-row justify-between items-center pl-4 pr-2 mb-2 rounded-xl border border-surface-variant ${
-            isActive ? 'bg-surface-container-high' : 'bg-surface-container'
+          className={`flex-row justify-between items-center pl-4 pr-2 ${
+            isActive ? 'bg-surface-container-high' : 'bg-surface'
           }`}
         >
           <Pressable 
@@ -102,16 +100,11 @@ export function CategoryListItem({
           </View>
         </View>
       </ReanimatedSwipeable>
-    </View>
   );
 
   if (isSubCategory) {
     return content;
   }
 
-  return (
-    <ScaleDecorator>
-      {content}
-    </ScaleDecorator>
-  );
+  return content;
 }

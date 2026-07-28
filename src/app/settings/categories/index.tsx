@@ -4,7 +4,7 @@ import { CategoryListItem } from '@/features/categories/ui';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
+import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -22,44 +22,50 @@ const CategoryRow = ({ item, type, isActive, drag, deleteCategory, allRelevant }
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   return (
-    <View>
-      <CategoryListItem 
-        item={item} 
-        type={type} 
-        isActive={isActive} 
-        drag={drag} 
-        onDelete={(item) => deleteCategory.mutate(item)} 
-        hasSubCategories={subCategories.length > 0}
-        isExpanded={isExpanded}
-        onToggleExpand={() => setIsExpanded(!isExpanded)}
-        subCount={subCategories.length}
-      />
-      {subCategories.length > 0 && isExpanded && (
-        <View className="ml-8 border-l-2 border-surface-variant pl-4">
-          {subCategories.map(subItem => (
-            <CategoryListItem 
-              key={subItem.categoryId}
-              item={subItem} 
-              type={type} 
-              isActive={false} 
-              drag={() => {}} // Disabled for subcategories
-              onDelete={(item) => deleteCategory.mutate(item)} 
-              isSubCategory
-            />
-          ))}
-        </View>
-      )}
-    </View>
+    <ScaleDecorator>
+      <View className="border-b border-surface-container">
+        <CategoryListItem
+          item={item}
+          type={type}
+          isActive={isActive}
+          drag={drag}
+          onDelete={(item) => deleteCategory.mutate(item)}
+          hasSubCategories={subCategories.length > 0}
+          isExpanded={isExpanded}
+          onToggleExpand={() => setIsExpanded(!isExpanded)}
+          subCount={subCategories.length}
+        />
+        {subCategories.length > 0 && isExpanded && (
+          <View>
+            {subCategories.map((subItem) => (
+              <View
+                key={subItem.categoryId}
+                className="border-t border-surface-variant pl-4"
+              >
+                <CategoryListItem
+                  item={subItem}
+                  type={type}
+                  isActive={false}
+                  drag={() => { }} // Disabled for subcategories
+                  onDelete={(item) => deleteCategory.mutate(item)}
+                  isSubCategory
+                />
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+    </ScaleDecorator>
   );
 };
 export default function CategoryManagementScreen() {
   const { type = 'expense' } = useLocalSearchParams<{ type?: string }>();
   const router = useRouter();
-  
+
   const { data: categories = [] } = useCategories();
   const reorderCategories = useReorderCategories();
   const deleteCategory = useDeleteCategory();
-  
+
   const [data, setData] = useState<CategoryVersion[]>([]);
   const [allRelevant, setAllRelevant] = useState<CategoryVersion[]>([]);
 
@@ -80,13 +86,13 @@ export default function CategoryManagementScreen() {
 
   const renderItem = ({ item, drag, isActive }: RenderItemParams<CategoryVersion>) => {
     return (
-      <CategoryRow 
-        item={item} 
-        type={type} 
-        isActive={isActive} 
-        drag={drag} 
-        deleteCategory={deleteCategory} 
-        allRelevant={allRelevant} 
+      <CategoryRow
+        item={item}
+        type={type}
+        isActive={isActive}
+        drag={drag}
+        deleteCategory={deleteCategory}
+        allRelevant={allRelevant}
       />
     );
   };
@@ -95,21 +101,44 @@ export default function CategoryManagementScreen() {
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
         <Stack.Screen options={{ headerShown: false }} />
-        
-        <View className="flex-row items-center justify-between px-3 py-2">
-          <Pressable onPress={() => router.back()}>
-            <Text className="text-on-surface-variant text-xl font-medium">‹ Back</Text>
-          </Pressable>
 
-          <Pressable onPress={() => router.push(`/category-form?type=${type}`)}>
-            <Text className="text-on-surface-variant font-semibold text-3xl leading-6">+</Text>
-          </Pressable>
+        <View className="flex-row items-center justify-between h-12 px-4 border-b border-surface-container">
+          {/* Left action */}
+          <View className="w-24">
+            <Pressable
+              onPress={() => router.back()}
+              className="flex-row items-center"
+              hitSlop={8}
+            >
+              <Text className="text-on-surface-variant text-base font-medium">
+                ‹ Back
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Center title */}
+          <View className="flex-1 items-center">
+            <Text
+              className="text-lg font-bold text-on-surface"
+              numberOfLines={1}
+            >
+              {type === 'expense' ? 'Expense Categories' : 'Income Categories'}
+            </Text>
+          </View>
+
+          {/* Right action */}
+          <View className="w-24 items-end">
+            <Pressable
+              onPress={() => router.push(`/category-form?type=${type}`)}
+              className="items-center justify-center"
+              hitSlop={8}
+            >
+              <Text className="text-primary text-2xl font-semibold leading-6">
+                +
+              </Text>
+            </Pressable>
+          </View>
         </View>
-        
-        <Text className="text-3xl font-bold text-on-surface px-4 mt-2 mb-4">
-          {type === 'expense' ? 'Expense Categories' : 'Income Categories'}
-        </Text>
-        
         <View className="flex-1">
           {data.length === 0 ? (
             <Text className="text-on-surface-variant text-center mt-8 mb-4">No categories found.</Text>
@@ -119,7 +148,6 @@ export default function CategoryManagementScreen() {
               onDragEnd={handleDragEnd}
               keyExtractor={(item) => item.categoryId}
               renderItem={renderItem}
-              contentContainerStyle={{ paddingBottom: 100 }}
             />
           )}
         </View>
