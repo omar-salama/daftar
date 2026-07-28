@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { ScaleDecorator } from 'react-native-draggable-flatlist';
+import { NestableDraggableFlatList, ScaleDecorator } from 'react-native-draggable-flatlist';
+import { useReorderCategories } from '../hooks';
 import { CategoryVersion } from '../model';
 import { CategoryListItem } from './CategoryListItem';
 
@@ -13,9 +14,22 @@ export const CategoryRow = ({ item, type, isActive, drag, onDelete, allRelevant 
   allRelevant: CategoryVersion[];
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const subCategories = allRelevant
-    .filter(c => c.parentId === item.categoryId)
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const reorderCategories = useReorderCategories();
+
+  const [subCategories, setSubCategories] = useState<CategoryVersion[]>([]);
+
+  useEffect(() => {
+    setSubCategories(
+      allRelevant
+        .filter(c => c.parentId === item.categoryId)
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    );
+  }, [allRelevant, item.categoryId]);
+
+  const handleSubDragEnd = ({ data: newData }: { data: CategoryVersion[] }) => {
+    setSubCategories(newData);
+    reorderCategories.mutate(newData);
+  };
 
   return (
     <ScaleDecorator>
@@ -32,22 +46,26 @@ export const CategoryRow = ({ item, type, isActive, drag, onDelete, allRelevant 
           subCount={subCategories.length}
         />
         {subCategories.length > 0 && isExpanded && (
-          <View>
-            {subCategories.map((subItem) => (
-              <View
-                key={subItem.categoryId}
-                className="border-t border-surface-variant pl-4"
-              >
-                <CategoryListItem
-                  item={subItem}
-                  type={type}
-                  isActive={false}
-                  drag={() => { }} // Disabled for subcategories
-                  onDelete={onDelete}
-                  isSubCategory
-                />
-              </View>
-            ))}
+          <View className="pl-4">
+            <NestableDraggableFlatList
+              data={subCategories}
+              onDragEnd={handleSubDragEnd}
+              keyExtractor={(subItem) => subItem.categoryId}
+              renderItem={({ item: subItem, drag: subDrag, isActive: subIsActive }) => (
+                <ScaleDecorator>
+                  <View className="border-t border-surface-variant">
+                    <CategoryListItem
+                      item={subItem}
+                      type={type}
+                      isActive={subIsActive}
+                      drag={subDrag}
+                      onDelete={onDelete}
+                      isSubCategory
+                    />
+                  </View>
+                </ScaleDecorator>
+              )}
+            />
           </View>
         )}
       </View>

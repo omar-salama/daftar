@@ -87,16 +87,14 @@ export function CategoryListItem({
                 </Text>
               </Pressable>
             )}
-            {!isSubCategory && (
-              <Pressable
-                onPressIn={drag}
-                disabled={isActive}
-                className="p-2"
-                hitSlop={8}
-              >
-                <Text className="text-lg text-on-surface-variant font-bold">☰</Text>
-              </Pressable>
-            )}
+            <Pressable
+              onPressIn={drag}
+              disabled={isActive}
+              className="p-2"
+              hitSlop={8}
+            >
+              <Text className="text-lg text-on-surface-variant font-bold">☰</Text>
+            </Pressable>
           </View>
         </View>
       </ReanimatedSwipeable>

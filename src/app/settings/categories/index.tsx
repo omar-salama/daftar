@@ -4,7 +4,7 @@ import { CategoryRow } from '@/features/categories/ui';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
+import { NestableScrollContainer, NestableDraggableFlatList, RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '@/components/ui/AppHeader';
@@ -62,12 +62,14 @@ export default function CategoryManagementScreen() {
           {data.length === 0 ? (
             <Text className="text-on-surface-variant text-center mt-8 mb-4">No categories found.</Text>
           ) : (
-            <DraggableFlatList
-              data={data}
-              onDragEnd={handleDragEnd}
-              keyExtractor={(item) => item.categoryId}
-              renderItem={renderItem}
-            />
+            <NestableScrollContainer>
+              <NestableDraggableFlatList
+                data={data}
+                onDragEnd={handleDragEnd}
+                keyExtractor={(item) => item.categoryId}
+                renderItem={renderItem}
+              />
+            </NestableScrollContainer>
           )}
         </View>
       </SafeAreaView>
