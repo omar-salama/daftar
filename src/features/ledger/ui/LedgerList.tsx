@@ -1,6 +1,6 @@
 import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 import { useCategories } from '@/features/categories/hooks';
-import { Minor, TxVersion } from '@/kernel';
+import { Minor, TxVersion, DEFAULT_CURRENCY } from '@/kernel';
 import { formatMinor } from '@/kernel/money';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -12,7 +12,7 @@ import { LedgerRow } from './LedgerRow';
 import { MonthSwiper } from './MonthSwiper';
 import { MonthTotals } from './MonthTotals';
 
-const CURRENCY_CONFIG = { symbol: '$', decimals: 2 };
+
 
 type ListItem = 
   | { type: 'header'; date: string; expenseTotalMinor: Minor; incomeTotalMinor: Minor }
@@ -224,7 +224,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
               </View>
 
               <Text className="text-on-surface text-xl font-semibold mb-1 text-center font-mono">
-                {selectedTx.type === 'income' ? '+' : ''}{formatMinor(selectedTx.totalMinor, CURRENCY_CONFIG)}
+                {selectedTx.type === 'income' ? '+' : ''}{formatMinor(selectedTx.totalMinor, DEFAULT_CURRENCY)}
               </Text>
               <Text className="text-on-surface-variant text-sm mb-8 text-center font-sans">
                 {selectedTx.type === 'transfer' 

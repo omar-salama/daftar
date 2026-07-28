@@ -1,5 +1,5 @@
 import { TxLine } from '@/kernel';
-import { Minor, formatMinor } from '@/kernel/money';
+import { Minor, formatMinor, DEFAULT_CURRENCY } from '@/kernel/money';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { useCategories } from '../../categories/hooks';
@@ -47,7 +47,7 @@ export function SplitEditor({ totalMinor, onSave, onCancel }: SplitEditorProps) 
             className="flex-row justify-between py-2 border-b border-surface-variant"
           >
             <Text className="text-on-surface-variant">{categories.find(c => c.categoryId === l.categoryId)?.name || 'Unknown'}</Text>
-            <Text className="text-on-surface">{formatMinor(l.amountMinor, { symbol: '$', decimals: 2 })}</Text>
+            <Text className="text-on-surface">{formatMinor(l.amountMinor, DEFAULT_CURRENCY)}</Text>
           </View>
         ))}
       </ScrollView>

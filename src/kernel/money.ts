@@ -5,6 +5,10 @@ export interface CurrencyConfig {
   decimals: number;
 }
 
+// Default currency config used throughout the app.
+// Pass a different CurrencyConfig to formatMinor for multi-currency support.
+export const DEFAULT_CURRENCY: CurrencyConfig = { symbol: '$', decimals: 2 };
+
 export function minorFromDigits(digits: string): Minor {
   if (digits === '' || digits === '.') {
     return 0 as Minor;

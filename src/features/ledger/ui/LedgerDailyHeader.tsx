@@ -1,8 +1,6 @@
 import { Minor } from '@/kernel';
-import { formatMinor } from '@/kernel/money';
+import { formatMinor, DEFAULT_CURRENCY } from '@/kernel/money';
 import { Text, View } from 'react-native';
-
-const CURRENCY_CONFIG = { symbol: '$', decimals: 2 };
 
 interface LedgerDailyHeaderProps {
   date: string;
@@ -32,14 +30,14 @@ export function LedgerDailyHeader({ date, incomeTotalMinor, expenseTotalMinor }:
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          {formatMinor(incomeTotalMinor, CURRENCY_CONFIG)}
+          {formatMinor(incomeTotalMinor, DEFAULT_CURRENCY)}
         </Text>
         <Text
           className={`w-24 text-right font-medium text-sm pl-2 ${hasExpense ? 'text-error' : 'text-on-surface-variant'}`} 
           numberOfLines={1} 
           adjustsFontSizeToFit
         >
-          {formatMinor(expenseTotalMinor, CURRENCY_CONFIG)}
+          {formatMinor(expenseTotalMinor, DEFAULT_CURRENCY)}
         </Text>
       </View>
     </View>

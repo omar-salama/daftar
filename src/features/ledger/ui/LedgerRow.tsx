@@ -1,10 +1,8 @@
 import { AccountVersion } from '@/features/accounts/model';
 import { CategoryVersion } from '@/features/categories/model';
 import { TxVersion } from '@/kernel';
-import { formatMinor } from '@/kernel/money';
+import { formatMinor, DEFAULT_CURRENCY } from '@/kernel/money';
 import { Pressable, Text, View } from 'react-native';
-
-const CURRENCY_CONFIG = { symbol: '$', decimals: 2 };
 
 interface LedgerRowProps {
   tx: TxVersion;
@@ -55,7 +53,7 @@ export function LedgerRow({ tx, versionCount, accounts, categories, onPress }: L
         </Text>
       </View>
       <Text className={`text-base font-mono ${isExpense ? 'text-error' : isTransfer ? 'text-on-surface' : 'text-secondary'}`}>
-        {formatMinor(tx.totalMinor, CURRENCY_CONFIG)}
+        {formatMinor(tx.totalMinor, DEFAULT_CURRENCY)}
       </Text>
     </Pressable>
   );

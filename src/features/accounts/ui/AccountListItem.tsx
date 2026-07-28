@@ -1,4 +1,4 @@
-import { formatMinor, Minor } from '@/kernel/money';
+import { formatMinor, Minor, DEFAULT_CURRENCY } from '@/kernel/money';
 import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { ScaleDecorator } from 'react-native-draggable-flatlist';
@@ -30,7 +30,7 @@ export function AccountListItem({ item, balance, drag, isActive }: AccountListIt
         </View>
         <View className="items-end">
           <Text className="text-lg font-semibold text-on-surface">
-            {formatMinor(balance as Minor, { symbol: '$', decimals: 2 })}
+            {formatMinor(balance as Minor, DEFAULT_CURRENCY)}
           </Text>
           <Text className="text-xs text-on-surface-variant">☰</Text>
         </View>

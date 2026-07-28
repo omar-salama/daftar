@@ -1,5 +1,5 @@
 import type { TxType } from '@/kernel';
-import { Minor, formatMinor } from '@/kernel/money';
+import { Minor, formatMinor, DEFAULT_CURRENCY } from '@/kernel/money';
 import { Text, View } from 'react-native';
 
 interface AmountDisplayProps {
@@ -7,10 +7,8 @@ interface AmountDisplayProps {
   txType?: TxType;
 }
 
-const config = { symbol: '$', decimals: 2 };
-
 export function AmountDisplay({ amount, txType = 'expense' }: AmountDisplayProps) {
-  const formatted = formatMinor(amount, config);
+  const formatted = formatMinor(amount, DEFAULT_CURRENCY);
   const isZero = amount === 0;
 
   const colorClass = isZero
