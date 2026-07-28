@@ -7,6 +7,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 const CategoryRow = ({ item, type, isActive, drag, deleteCategory, allRelevant }: {
   item: CategoryVersion;
@@ -102,43 +103,10 @@ export default function CategoryManagementScreen() {
       <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
         <Stack.Screen options={{ headerShown: false }} />
 
-        <View className="flex-row items-center justify-between h-12 px-4 border-b border-surface-container">
-          {/* Left action */}
-          <View className="w-24">
-            <Pressable
-              onPress={() => router.back()}
-              className="flex-row items-center"
-              hitSlop={8}
-            >
-              <Text className="text-on-surface-variant text-base font-medium">
-                ‹ Back
-              </Text>
-            </Pressable>
-          </View>
-
-          {/* Center title */}
-          <View className="flex-1 items-center">
-            <Text
-              className="text-lg font-bold text-on-surface"
-              numberOfLines={1}
-            >
-              {type === 'expense' ? 'Expense Categories' : 'Income Categories'}
-            </Text>
-          </View>
-
-          {/* Right action */}
-          <View className="w-24 items-end">
-            <Pressable
-              onPress={() => router.push(`/category-form?type=${type}`)}
-              className="items-center justify-center"
-              hitSlop={8}
-            >
-              <Text className="text-primary text-2xl font-semibold leading-6">
-                +
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+        <AppHeader
+          title={type === 'expense' ? 'Expense Categories' : 'Income Categories'}
+          rightAction={{ label: "+", onPress: () => router.push(`/category-form?type=${type}`) }}
+        />
         <View className="flex-1">
           {data.length === 0 ? (
             <Text className="text-on-surface-variant text-center mt-8 mb-4">No categories found.</Text>

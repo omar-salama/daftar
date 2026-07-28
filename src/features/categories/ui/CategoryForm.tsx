@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCategories, useSaveCategory } from '../hooks';
 import { CategoryId, CategoryType } from '../model';
 import { ParentCategoryPickerModal } from './ParentCategoryPickerModal';
+import { AppHeader } from '@/components/ui/AppHeader';
 
 interface CategoryFormProps {
   categoryId?: string;
@@ -98,19 +99,16 @@ export function CategoryForm({ categoryId, defaultType, defaultParentId }: Categ
 
   return (
     <SafeAreaView className="flex-1" edges={['top']}>
-      <View className="flex-row items-center justify-between px-4 pb-3 mb-6 border-b border-surface-container">
-        <Pressable onPress={() => router.back()}>
-          <Text className="text-on-surface-variant text-base">Cancel</Text>
-        </Pressable>
-        <Text className="text-lg font-bold text-on-surface">
-          {isEditing ? `Edit ${type.charAt(0).toUpperCase() + type.slice(1)} Category` : `New ${type.charAt(0).toUpperCase() + type.slice(1)} Category`}
-        </Text>
-        <Pressable onPress={handleSave} disabled={!name.trim() || !icon.trim() || saveCategory.isPending}>
-          <Text className={`text-base font-semibold ${name.trim() && icon.trim() ? 'text-primary' : 'text-on-surface-variant'}`}>
-            Save
-          </Text>
-        </Pressable>
-      </View>
+      <AppHeader
+        className="mb-6"
+        title={isEditing ? `Edit ${type.charAt(0).toUpperCase() + type.slice(1)} Category` : `New ${type.charAt(0).toUpperCase() + type.slice(1)} Category`}
+        leftAction={{ label: 'Cancel', onPress: () => router.back() }}
+        rightAction={{ 
+          label: 'Save', 
+          onPress: handleSave, 
+          disabled: !name.trim() || !icon.trim() || saveCategory.isPending 
+        }}
+      />
 
       <ScrollView className='flex-1' contentContainerClassName="px-4 gap-6" keyboardShouldPersistTaps="handled">
         <View className="flex-row items-start gap-3">
