@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import { CategoryId, CategoryType } from '../model';
+import { CategoryType } from '../model';
 import { useCategories, useSaveCategory } from './useCategories';
 
 export interface UseCategoryFormProps {
@@ -54,15 +54,9 @@ export function useCategoryForm({ categoryId, defaultType, defaultParentId }: Us
     const trimmedName = name.trim();
     if (!trimmedName || !icon.trim()) return;
 
-    const generatedSlug = trimmedName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-    const targetCategoryId = (generatedSlug || 'category') as CategoryId;
-
     const isDuplicate = categories.some(
-      c => !c.isDeleted && 
-           (c.categoryId === targetCategoryId || c.name.toLowerCase() === trimmedName.toLowerCase()) && 
+      c => !c.isDeleted &&
+           c.name.toLowerCase() === trimmedName.toLowerCase() &&
            c.categoryId !== categoryId
     );
 
@@ -74,13 +68,10 @@ export function useCategoryForm({ categoryId, defaultType, defaultParentId }: Us
       return;
     }
 
-    let maxOrder = 0;
-    if (categories.length > 0) {
-      const sameTypeCategories = categories.filter(c => c.type === type);
-      if (sameTypeCategories.length > 0) {
-        maxOrder = Math.max(...sameTypeCategories.map(c => c.order ?? 0));
-      }
-    }
+    const sameTypeCategories = categories.filter(c => c.type === type);
+    const maxOrder = sameTypeCategories.length > 0
+      ? Math.max(...sameTypeCategories.map(c => c.order ?? 0))
+      : 0;
 
     saveCategory.mutate({
       existingCategory,
