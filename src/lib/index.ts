@@ -1,4 +1,4 @@
-export { storage, rqStorage, getJSON, setJSON } from './storage';
+export { storage, rqStorage, getJSON, setJSON, type OutboxRow } from './storage';
 export {
   outboxAppend,
   outboxPeekAll,
@@ -10,5 +10,6 @@ export {
   setHlcState,
   getLastPulledAt,
   setLastPulledAt,
+  generateUuid,
 } from './storage';
 export { queryClient, mmkvPersister } from './queryClient';

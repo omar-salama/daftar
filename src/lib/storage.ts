@@ -1,6 +1,11 @@
 import { MMKV } from 'react-native-mmkv';
 import { type HLCState } from '@/kernel';
-import type { TxVersion } from '@/kernel';
+
+// Minimal interface for anything that can be placed in the sync outbox.
+// The outbox is an append-only queue that accepts any versioned row type.
+export interface OutboxRow {
+  rowId: string;
+}
 
 // ---------------------------------------------------------------------------
 // Single shared MMKV instance
@@ -53,21 +58,21 @@ export const rqStorage = {
 };
 
 // ---------------------------------------------------------------------------
-// Outbox — append-only queue of pending TxVersion rows awaiting sync push
+// Outbox — append-only queue of pending rows awaiting sync push
 // ---------------------------------------------------------------------------
 
-export function outboxAppend(row: TxVersion): void {
-  const current = getJSON<TxVersion[]>(KEY_OUTBOX) ?? [];
+export function outboxAppend(row: OutboxRow): void {
+  const current = getJSON<OutboxRow[]>(KEY_OUTBOX) ?? [];
   current.push(row);
   setJSON(KEY_OUTBOX, current);
 }
 
-export function outboxPeekAll(): readonly TxVersion[] {
-  return getJSON<TxVersion[]>(KEY_OUTBOX) ?? [];
+export function outboxPeekAll(): readonly OutboxRow[] {
+  return getJSON<OutboxRow[]>(KEY_OUTBOX) ?? [];
 }
 
 export function outboxRemove(rowIds: ReadonlyArray<string>): void {
-  const current = getJSON<TxVersion[]>(KEY_OUTBOX) ?? [];
+  const current = getJSON<OutboxRow[]>(KEY_OUTBOX) ?? [];
   const idSet = new Set(rowIds);
   const remaining = current.filter((row) => !idSet.has(row.rowId));
   setJSON(KEY_OUTBOX, remaining);

@@ -35,9 +35,7 @@ export const localAccountRepo: AccountRepo = {
       versions = [seed1, seed2];
       setJSON(KEY_ACCOUNT_VERSIONS, versions);
       
-      // @ts-expect-error - The sync engine outbox accepts all versions but is typed to TxVersion for now.
       outboxAppend(seed1);
-      // @ts-expect-error - outbox accepts all versions but typed to TxVersion for now.
       outboxAppend(seed2);
     }
 
@@ -49,7 +47,6 @@ export const localAccountRepo: AccountRepo = {
     versions.push(v);
     setJSON(KEY_ACCOUNT_VERSIONS, versions);
     
-    // @ts-expect-error - outbox accepts all versions but typed to TxVersion for now.
     outboxAppend(v);
   }
 };

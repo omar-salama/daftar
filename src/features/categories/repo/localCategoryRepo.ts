@@ -45,9 +45,8 @@ export const localCategoryRepo: CategoryRepo = {
       
       versions = seeds;
       setJSON(KEY_CATEGORY_VERSIONS, versions);
-      
+
       for (const seed of seeds) {
-        // @ts-expect-error - outbox accepts all versions but typed to TxVersion for now.
         outboxAppend(seed);
       }
     }
@@ -60,7 +59,6 @@ export const localCategoryRepo: CategoryRepo = {
     versions.push(v);
     setJSON(KEY_CATEGORY_VERSIONS, versions);
     
-    // @ts-expect-error - outbox accepts all versions but typed to TxVersion for now.
     outboxAppend(v);
   }
 };
