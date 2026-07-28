@@ -46,14 +46,14 @@ export const CategoryRow = ({ item, type, isActive, drag, onDelete, allRelevant 
           subCount={subCategories.length}
         />
         {subCategories.length > 0 && isExpanded && (
-          <View className="pl-4">
+          <View className="ml-7 border-l border-surface-variant">
             <NestableDraggableFlatList
               data={subCategories}
               onDragEnd={handleSubDragEnd}
               keyExtractor={(subItem) => subItem.categoryId}
               renderItem={({ item: subItem, drag: subDrag, isActive: subIsActive }) => (
                 <ScaleDecorator>
-                  <View className="border-t border-surface-container">
+                  <View>
                     <CategoryListItem
                       item={subItem}
                       type={type}
