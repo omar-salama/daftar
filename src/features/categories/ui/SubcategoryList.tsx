@@ -59,7 +59,6 @@ export function SubcategoryList({ categoryId, type, subCategories: initialSubCat
                       isActive={isActive}
                       drag={drag}
                       onDelete={(itemToDelete) => deleteCategory.mutate(itemToDelete)}
-                      isSubCategory
                       containerClassName="bg-surface-container"
                     />
                   </View>
