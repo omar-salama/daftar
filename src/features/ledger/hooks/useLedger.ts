@@ -20,9 +20,8 @@ export function useLedgerAllVersions() {
   });
 }
 
-export function useCreateTx() {
-  return createTxVersion;
-}
+// Re-exported so callers don't need to import directly from the repo.
+export { createTxVersion };
 
 export function useAppendTx() {
   const queryClient = useQueryClient();

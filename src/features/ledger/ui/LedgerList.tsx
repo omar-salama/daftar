@@ -5,7 +5,7 @@ import { formatMinor } from '@/kernel/money';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, FlatList, Modal, Pressable, Text, View } from 'react-native';
-import { useAppendTx, useCreateTx, useLedger, useLedgerAllVersions } from '../hooks/useLedger';
+import { useAppendTx, createTxVersion, useLedger, useLedgerAllVersions } from '../hooks/useLedger';
 import { useMonthlyLedger } from '../hooks/useMonthlyLedger';
 import { LedgerDailyHeader } from './LedgerDailyHeader';
 import { LedgerRow } from './LedgerRow';
@@ -24,7 +24,6 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
   const appendTx = useAppendTx();
-  const createTx = useCreateTx();
   const router = useRouter();
 
   const [selectedTx, setSelectedTx] = useState<TxVersion | null>(null);
@@ -122,7 +121,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
         text: 'Delete', 
         style: 'destructive',
         onPress: () => {
-          const tombstone = createTx({
+          const tombstone = createTxVersion({
             txId: tx.txId,
             occurredAt: tx.occurredAt,
             accountId: tx.accountId,

@@ -1,5 +1,5 @@
 import { useAccounts } from '@/features/accounts/hooks/useAccounts';
-import { useAppendTx, useCreateTx, useLedger } from '@/features/ledger/hooks/useLedger';
+import { useAppendTx, createTxVersion, useLedger } from '@/features/ledger/hooks/useLedger';
 import type { TxId, TxLine, TxType, TxVersion } from '@/kernel';
 import { minorFromDigits } from '@/kernel/money';
 import { generateUuid } from '@/lib/storage';
@@ -72,7 +72,6 @@ function EntryForm({
   const amountMinor = minorFromDigits(digits);
 
   const appendTx = useAppendTx();
-  const createTx = useCreateTx();
 
   const handleDigit = (d: string) => {
     if (d === '.') {
@@ -102,7 +101,7 @@ function EntryForm({
 
     const uuidStr = generateUuid();
 
-    const tx = createTx({
+    const tx = createTxVersion({
       txId: (editingTxId || uuidStr) as TxId,
       type: txType,
       occurredAt: date,
