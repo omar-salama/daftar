@@ -9,7 +9,6 @@ interface CategoryListItemProps {
   isActive: boolean;
   drag: () => void;
   onDelete: (item: CategoryVersion) => void;
-  isSubCategory?: boolean;
   hasSubCategories?: boolean;
   isExpanded?: boolean;
   onToggleExpand?: () => void;
