@@ -52,6 +52,7 @@ export function applyPristineDistribution(lines: EditorLine[], totalMinor: Minor
 export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSave }: UseSplitEditorProps) {
   const [lines, setLines] = useState<EditorLine[]>([]);
   const [activeLineId, setActiveLineId] = useState<string | null>(null);
+  const [justFocusedLineId, setJustFocusedLineId] = useState<string | null>(null);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -70,7 +71,10 @@ export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSa
         };
       });
       setLines(initialLines);
-      if (initialLines.length > 0) setActiveLineId(initialLines[0].id);
+      if (initialLines.length > 0) {
+        setActiveLineId(initialLines[0].id);
+        setJustFocusedLineId(initialLines[0].id);
+      }
       setIsInitialized(true);
     } else if (initialCategoryIds && initialCategoryIds.length > 0) {
       const initialLines = initialCategoryIds.map((catId, i) => ({
@@ -80,7 +84,10 @@ export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSa
         isPristine: true,
       }));
       setLines(applyPristineDistribution(initialLines, totalMinor));
-      if (initialLines.length > 0) setActiveLineId(initialLines[0].id);
+      if (initialLines.length > 0) {
+        setActiveLineId(initialLines[0].id);
+        setJustFocusedLineId(initialLines[0].id);
+      }
       setIsInitialized(true);
     } else {
       setIsAddingCategory(true);
@@ -97,6 +104,7 @@ export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSa
 
   const handleFocusLine = (id: string) => {
     setActiveLineId(id);
+    setJustFocusedLineId(id);
   };
 
   const handleDigit = (d: string) => {
@@ -104,13 +112,22 @@ export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSa
     setLines(prev => {
       const nextLines = prev.map(line => {
         if (line.id !== activeLineId) return line;
-        const newDigits = line.isPristine 
+        
+        const isFreshFocus = justFocusedLineId === line.id;
+        const shouldOverwrite = isFreshFocus || line.isPristine;
+        
+        const newDigits = shouldOverwrite 
           ? appendDigit('', d)
           : appendDigit(line.digits, d);
+          
         return { ...line, digits: newDigits, isPristine: false };
       });
       return applyPristineDistribution(nextLines, totalMinor);
     });
+    
+    if (justFocusedLineId === activeLineId) {
+      setJustFocusedLineId(null);
+    }
   };
 
   const handleBackspace = () => {
@@ -118,13 +135,20 @@ export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSa
     setLines(prev => {
       const nextLines = prev.map(line => {
         if (line.id !== activeLineId) return line;
-        if (line.isPristine) {
+        
+        const isFreshFocus = justFocusedLineId === line.id;
+        
+        if (line.isPristine || isFreshFocus) {
           return { ...line, digits: '', isPristine: false };
         }
         return { ...line, digits: line.digits.slice(0, -1), isPristine: false };
       });
       return applyPristineDistribution(nextLines, totalMinor);
     });
+    
+    if (justFocusedLineId === activeLineId) {
+      setJustFocusedLineId(null);
+    }
   };
 
   const handleAddCategory = (categoryId: string) => {
@@ -137,6 +161,7 @@ export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSa
       return applyPristineDistribution(nextLines, totalMinor);
     });
     setActiveLineId(newId);
+    setJustFocusedLineId(newId);
     setIsAddingCategory(false);
   };
 
@@ -145,8 +170,10 @@ export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSa
       const next = prev.filter(l => l.id !== id);
       if (activeLineId === id && next.length > 0) {
         setActiveLineId(next[0].id);
+        setJustFocusedLineId(next[0].id);
       } else if (next.length === 0) {
         setActiveLineId(null);
+        setJustFocusedLineId(null);
       }
       return applyPristineDistribution(next, totalMinor);
     });
