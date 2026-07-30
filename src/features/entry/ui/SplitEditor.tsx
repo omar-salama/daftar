@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-nati
 import { useCategories } from '../../categories/hooks';
 import { Keypad } from './Keypad';
 import { CategoryGrid } from './CategoryGrid';
+import { SplitEditorRow } from './SplitEditorRow';
 import { useSplitEditor } from '../hooks/useSplitEditor';
 
 interface SplitEditorProps {
@@ -78,30 +79,17 @@ export function SplitEditor(props: SplitEditorProps) {
       </View>
       
       <ScrollView className="flex-1 px-4">
-        {lines.map((l) => {
-          const isActive = l.id === activeLineId;
-          const category = categories.find(c => c.categoryId === l.categoryId);
-          
-          return (
-            <Pressable 
-              key={l.id} 
-              onPress={() => handleFocusLine(l.id)}
-              className={`flex-row items-center justify-between py-3 border-b border-surface-variant ${isActive ? 'bg-surface-container-high rounded-lg px-2 -mx-2' : ''}`}
-            >
-              <View className="flex-row items-center gap-3">
-                <Pressable onPress={() => handleRemoveLine(l.id)} className="p-1">
-                  <Text className="text-error text-lg">❌</Text>
-                </Pressable>
-                <Text className="text-on-surface font-medium">
-                  {category?.icon} {category?.name || 'Unknown'}
-                </Text>
-              </View>
-              <Text className={`text-xl font-mono ${isActive ? 'text-primary font-bold' : 'text-on-surface'}`}>
-                {l.digits || '0'}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {lines.map((l) => (
+          <SplitEditorRow
+            key={l.id}
+            id={l.id}
+            digits={l.digits}
+            isActive={l.id === activeLineId}
+            category={categories.find(c => c.categoryId === l.categoryId)}
+            onFocus={handleFocusLine}
+            onRemove={handleRemoveLine}
+          />
+        ))}
         
         <Pressable 
           onPress={() => setIsAddingCategory(true)}
