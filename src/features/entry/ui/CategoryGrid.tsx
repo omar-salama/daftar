@@ -1,5 +1,5 @@
 import type { TxType } from '@/kernel';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { useCategories } from '../../categories/hooks';
 
@@ -9,9 +9,10 @@ interface CategoryGridProps {
   onSplit: (categories?: string[]) => void;
   selectedCategoryId?: string;
   isAddMode?: boolean; // When used inside SplitEditor to just add one category
+  disabledCategoryIds?: string[];
 }
 
-export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCategoryId, isAddMode }: CategoryGridProps) {
+export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCategoryId, isAddMode, disabledCategoryIds = [] }: CategoryGridProps) {
   const { data: categories, isLoading } = useCategories();
   const [expandedParentId, setExpandedParentId] = useState<string | null>(null);
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
@@ -105,13 +106,21 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
           ? multiSelectedIds.includes(c.categoryId)
           : c.categoryId === selectedCategoryId;
         const hasSubCategories = relevantCategories.some(sub => sub.parentId === c.categoryId);
+        const isDisabled = disabledCategoryIds.includes(c.categoryId);
         
         return (
           <View key={c.categoryId} className="w-1/4 px-0.5 pt-1">
             <Pressable
-              onPress={() => handlePressCategory(c.categoryId)}
+              onPress={() => {
+                if (isDisabled && !hasSubCategories) return;
+                handlePressCategory(c.categoryId);
+              }}
               testID={`category-${c.categoryId}`}
-              className={`items-center justify-center rounded gap-1 p-2 min-h-[52px] flex-col bg-surface-container active:bg-surface-container-high border relative ${isSelected ? 'border-primary bg-primary-container' : 'border-transparent'}`}
+              className={`items-center justify-center rounded gap-1 p-2 min-h-[52px] flex-col border relative ${
+                isSelected 
+                  ? 'border-primary bg-primary-container' 
+                  : (isDisabled && !hasSubCategories ? 'border-outline bg-surface opacity-40' : 'border-transparent bg-surface-container active:bg-surface-container-high')
+              }`}
             >
               <Text className="text-lg">{c.icon}</Text>
               <Text

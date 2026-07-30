@@ -57,6 +57,7 @@ export function SplitEditor(props: SplitEditorProps) {
             onSelectCategory={handleAddCategory} 
             onSplit={() => {}} 
             isAddMode={true}
+            disabledCategoryIds={lines.map(l => l.categoryId)}
           />
         </ScrollView>
       </View>
