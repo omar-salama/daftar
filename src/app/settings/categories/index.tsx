@@ -1,11 +1,11 @@
 import { AppHeader } from '@/components/ui/AppHeader';
-import { useCategories, useDeleteCategory, useReorderCategories } from '@/features/categories/hooks';
+import { useCategories, useDeleteCategory } from '@/features/categories/hooks';
 import { CategoryVersion } from '@/features/categories/model';
-import { CategoryRow } from '@/features/categories/ui';
+import { CategoryRow, DraggableCategoryList } from '@/features/categories/ui';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Text, View } from 'react-native';
-import { NestableDraggableFlatList, NestableScrollContainer, RenderItemParams } from 'react-native-draggable-flatlist';
+import { NestableScrollContainer, RenderItemParams } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -14,26 +14,14 @@ export default function CategoryManagementScreen() {
   const router = useRouter();
 
   const { data: categories = [] } = useCategories();
-  const reorderCategories = useReorderCategories();
   const deleteCategory = useDeleteCategory();
 
-  const [data, setData] = useState<CategoryVersion[]>([]);
-  const [allRelevant, setAllRelevant] = useState<CategoryVersion[]>([]);
-
-  useEffect(() => {
-    const relevant = categories.filter(c => c.type === type);
-    setAllRelevant(relevant);
-    setData(
-      relevant
-        .filter(c => !c.parentId)
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    );
-  }, [categories, type]);
-
-  const handleDragEnd = ({ data: newData }: { data: CategoryVersion[] }) => {
-    setData(newData);
-    reorderCategories.mutate(newData);
-  };
+  const allRelevant = useMemo(() => categories.filter(c => c.type === type), [categories, type]);
+  const data = useMemo(() => {
+    return allRelevant
+      .filter(c => !c.parentId)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [allRelevant]);
 
   const renderItem = ({ item, drag, isActive }: RenderItemParams<CategoryVersion>) => {
     return (
@@ -61,10 +49,10 @@ export default function CategoryManagementScreen() {
           <Text className="text-on-surface-variant text-center mt-8 mb-4">No categories found.</Text>
         ) : (
           <NestableScrollContainer>
-            <NestableDraggableFlatList
-              data={data}
-              onDragEnd={handleDragEnd}
-              keyExtractor={(item) => item.categoryId}
+            <DraggableCategoryList
+              categories={data}
+              type={type}
+              onDelete={(item) => deleteCategory.mutate(item)}
               renderItem={renderItem}
             />
           </NestableScrollContainer>

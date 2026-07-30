@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { ScaleDecorator } from 'react-native-draggable-flatlist';
 import { CategoryVersion } from '../model';
 import { CategoryListItem } from './CategoryListItem';
+import { DraggableCategoryList } from './DraggableCategoryList';
 
 export const CategoryRow = ({ item, type, isActive, drag, onDelete, allRelevant }: {
   item: CategoryVersion;
@@ -14,17 +15,11 @@ export const CategoryRow = ({ item, type, isActive, drag, onDelete, allRelevant 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const [subCategories, setSubCategories] = useState<CategoryVersion[]>([]);
-
-  useEffect(() => {
-    setSubCategories(
-      allRelevant
-        .filter(c => c.parentId === item.categoryId)
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    );
+  const subCategories = useMemo(() => {
+    return allRelevant
+      .filter(c => c.parentId === item.categoryId)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }, [allRelevant, item.categoryId]);
-
-
 
   return (
     <ScaleDecorator>
@@ -42,17 +37,12 @@ export const CategoryRow = ({ item, type, isActive, drag, onDelete, allRelevant 
         />
         {subCategories.length > 0 && isExpanded && (
           <View className="ml-7 border-l border-surface-variant">
-            {subCategories.map(subItem => (
-              <View key={subItem.categoryId}>
-                <CategoryListItem
-                  item={subItem}
-                  type={type}
-                  isActive={false}
-                  drag={() => {}}
-                  onDelete={onDelete}
-                />
-              </View>
-            ))}
+            <DraggableCategoryList
+              categories={subCategories}
+              type={type}
+              onDelete={onDelete}
+              containerClassName='py-0'
+            />
           </View>
         )}
       </View>

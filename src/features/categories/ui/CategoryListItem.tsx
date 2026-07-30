@@ -16,12 +16,12 @@ interface CategoryListItemProps {
   containerClassName?: string;
 }
 
-export function CategoryListItem({ 
-  item, 
-  type, 
-  isActive, 
-  drag, 
-  onDelete, 
+export function CategoryListItem({
+  item,
+  type,
+  isActive,
+  drag,
+  onDelete,
   hasSubCategories,
   isExpanded,
   onToggleExpand,
@@ -33,8 +33,8 @@ export function CategoryListItem({
   const handleDelete = () => {
     Alert.alert('Delete Category', `Are you sure you want to delete "${item.name}"?`, [
       { text: 'Cancel', style: 'cancel' },
-      { 
-        text: 'Delete', 
+      {
+        text: 'Delete',
         style: 'destructive',
         onPress: () => onDelete(item)
       }
@@ -51,53 +51,53 @@ export function CategoryListItem({
   );
 
   const content = (
-      <ReanimatedSwipeable
-        renderRightActions={renderRightActions}
-        overshootRight={false}
+    <ReanimatedSwipeable
+      renderRightActions={renderRightActions}
+      overshootRight={false}
+    >
+      <View
+        className={`flex-row justify-between items-center py-1 pl-4 pr-2 ${isActive ? 'bg-surface-container-high' : ''
+          } ${containerClassName}
+        `}
       >
-        <View
-          className={`flex-row justify-between items-center pl-4 pr-2 ${
-            isActive ? 'bg-surface-container-high' : containerClassName
-          }`}
+        <Pressable
+          className="flex-row items-center flex-1 py-3"
+          onPress={() => router.push(`/category-form?categoryId=${item.categoryId}&type=${type}`)}
         >
-          <Pressable 
-            className="flex-row items-center flex-1 py-3"
-            onPress={() => router.push(`/category-form?categoryId=${item.categoryId}&type=${type}`)}
-          >
-            <Text className="mr-3">{item.icon}</Text>
-            <View className="flex-row items-center flex-shrink">
-              <Text className="text-on-surface" numberOfLines={1}>{item.name}</Text>
-              {!!subCount && subCount > 0 && (
-                <Text className="text-on-surface-variant text-sm ml-1">
-                  ({subCount})
-                </Text>
-              )}
-            </View>
-          </Pressable>
-
-          <View className="flex-row items-center gap-1">
-            {hasSubCategories && (
-              <Pressable
-                onPress={onToggleExpand}
-                className="p-2"
-                hitSlop={8}
-              >
-                <Text className="text-on-surface-variant text-sm">
-                  {isExpanded ? '▼' : '▶'}
-                </Text>
-              </Pressable>
+          <Text className="mr-3">{item.icon}</Text>
+          <View className="flex-row items-center flex-shrink">
+            <Text className="text-on-surface" numberOfLines={1}>{item.name}</Text>
+            {!!subCount && subCount > 0 && (
+              <Text className="text-on-surface-variant text-sm ml-1">
+                ({subCount})
+              </Text>
             )}
+          </View>
+        </Pressable>
+
+        <View className="flex-row items-center gap-1">
+          {hasSubCategories && (
             <Pressable
-              onPressIn={drag}
-              disabled={isActive}
+              onPress={onToggleExpand}
               className="p-2"
               hitSlop={8}
             >
-              <Text className="text-lg text-on-surface-variant font-bold">☰</Text>
+              <Text className="text-on-surface-variant text-sm">
+                {isExpanded ? '▼' : '▶'}
+              </Text>
             </Pressable>
-          </View>
+          )}
+          <Pressable
+            onPressIn={drag}
+            disabled={isActive}
+            className="p-2"
+            hitSlop={8}
+          >
+            <Text className="text-lg text-on-surface-variant font-bold">☰</Text>
+          </Pressable>
         </View>
-      </ReanimatedSwipeable>
+      </View>
+    </ReanimatedSwipeable>
   );
 
   return content;
