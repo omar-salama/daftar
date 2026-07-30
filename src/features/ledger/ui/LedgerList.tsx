@@ -1,18 +1,18 @@
 import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 import { useCategories } from '@/features/categories/hooks';
-import { Minor, TxVersion, DEFAULT_CURRENCY } from '@/kernel';
-import { formatMinor } from '@/kernel/money';
+import { Minor, TxVersion } from '@/kernel';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Alert, FlatList, Modal, Pressable, Text, View } from 'react-native';
-import { useAppendTx, createTxVersion, useLedger, useLedgerAllVersions } from '../hooks/useLedger';
+import { Alert, FlatList, Text, View } from 'react-native';
+import { createTxVersion, useAppendTx, useLedger, useLedgerAllVersions } from '../hooks/useLedger';
 import { useMonthlyLedger } from '../hooks/useMonthlyLedger';
 import { LedgerDailyHeader } from './LedgerDailyHeader';
+import { LedgerDetailsModal } from './LedgerDetailsModal';
 import { LedgerRow } from './LedgerRow';
 import { MonthSwiper } from './MonthSwiper';
 import { MonthTotals } from './MonthTotals';
 
-type ListItem = 
+type ListItem =
   | { type: 'header'; date: string; expenseTotalMinor: Minor; incomeTotalMinor: Minor }
   | { type: 'row'; tx: TxVersion; versionCount: number; lineIndex?: number };
 
@@ -63,9 +63,9 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
       const isIncome = tx.type === 'income';
       if (tx.occurredAt !== currentDate) {
         if (currentDayStartIndex !== -1) {
-          items[currentDayStartIndex] = { 
-            type: 'header', 
-            date: currentDate, 
+          items[currentDayStartIndex] = {
+            type: 'header',
+            date: currentDate,
             expenseTotalMinor: currentExpenseTotal,
             incomeTotalMinor: currentIncomeTotal,
           };
@@ -74,9 +74,9 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
         currentExpenseTotal = isIncome ? (0 as Minor) : tx.totalMinor;
         currentIncomeTotal = isIncome ? tx.totalMinor : (0 as Minor);
         currentDayStartIndex = items.length;
-        items.push({ 
-          type: 'header', 
-          date: currentDate, 
+        items.push({
+          type: 'header',
+          date: currentDate,
           expenseTotalMinor: 0 as Minor,
           incomeTotalMinor: 0 as Minor,
         });
@@ -87,7 +87,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
           currentExpenseTotal = (currentExpenseTotal + tx.totalMinor) as Minor;
         }
       }
-      
+
       if (tx.lines.length > 1 && tx.type !== 'transfer') {
         tx.lines.forEach((line, index) => {
           items.push({ type: 'row', tx, versionCount: versionCounts.get(tx.txId) || 1, lineIndex: index });
@@ -98,9 +98,9 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
     }
 
     if (currentDayStartIndex !== -1) {
-      items[currentDayStartIndex] = { 
-        type: 'header', 
-        date: currentDate, 
+      items[currentDayStartIndex] = {
+        type: 'header',
+        date: currentDate,
         expenseTotalMinor: currentExpenseTotal,
         incomeTotalMinor: currentIncomeTotal,
       };
@@ -122,8 +122,8 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
   const handleDelete = (tx: TxVersion) => {
     Alert.alert('Delete Transaction', 'Are you sure you want to delete this transaction?', [
       { text: 'Cancel', style: 'cancel' },
-      { 
-        text: 'Delete', 
+      {
+        text: 'Delete',
         style: 'destructive',
         onPress: () => {
           const tombstone = createTxVersion({
@@ -142,15 +142,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
     ]);
   };
 
-  const getCategoryName = (categoryId: string) => {
-    const cat = categories.find(c => c.categoryId === categoryId);
-    if (!cat) return categoryId;
-    if (cat.parentId) {
-      const parent = categories.find(c => c.categoryId === cat.parentId);
-      if (parent) return `${parent.name} - ${cat.name}`;
-    }
-    return cat.name;
-  };
+
 
   const handleEdit = (tx: TxVersion) => {
     setSelectedTx(null);
@@ -160,22 +152,22 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
   const renderItem = ({ item }: { item: ListItem }) => {
     if (item.type === 'header') {
       return (
-        <LedgerDailyHeader 
-          date={item.date} 
-          incomeTotalMinor={item.incomeTotalMinor} 
-          expenseTotalMinor={item.expenseTotalMinor} 
+        <LedgerDailyHeader
+          date={item.date}
+          incomeTotalMinor={item.incomeTotalMinor}
+          expenseTotalMinor={item.expenseTotalMinor}
         />
       );
     }
 
     return (
-      <LedgerRow 
-        tx={item.tx} 
-        versionCount={item.versionCount} 
+      <LedgerRow
+        tx={item.tx}
+        versionCount={item.versionCount}
         lineIndex={item.lineIndex}
-        accounts={accounts} 
-        categories={categories} 
-        onPress={setSelectedTx} 
+        accounts={accounts}
+        categories={categories}
+        onPress={setSelectedTx}
       />
     );
   };
@@ -209,54 +201,14 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
         }
       />
 
-      <Modal
-        transparent
-        animationType="slide"
-        visible={!!selectedTx}
-        onRequestClose={() => setSelectedTx(null)}
-      >
-        {selectedTx && (
-          <Pressable 
-            className="flex-1 bg-black/60 justify-end"
-            onPress={() => setSelectedTx(null)}
-          >
-            <Pressable 
-              className="bg-surface-container-highest rounded-t-3xl p-6 pb-10"
-              onPress={(e) => e.stopPropagation()}
-            >
-              <View className="items-center mb-6">
-                <View className="w-12 h-1 bg-outline rounded-full" />
-              </View>
-
-              <Text className="text-on-surface text-xl font-semibold mb-1 text-center font-mono">
-                {selectedTx.type === 'income' ? '+' : ''}{formatMinor(selectedTx.totalMinor, DEFAULT_CURRENCY)}
-              </Text>
-              <Text className="text-on-surface-variant text-sm mb-8 text-center font-sans">
-                {selectedTx.type === 'transfer' 
-                  ? `${accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} → ${accounts.find(a => a.accountId === selectedTx.transferAccountId)?.name || selectedTx.transferAccountId}`
-                  : `${accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} • ${selectedTx.occurredAt} • ${selectedTx.type === 'income' ? '💰 ' : ''}${selectedTx.lines.length > 1 ? 'Split Transaction' : getCategoryName(selectedTx.lines[0]?.categoryId)}`
-                }
-              </Text>
-
-              <View className="gap-3">
-                <Pressable
-                  className="bg-primary py-3.5 rounded-full items-center"
-                  onPress={() => handleEdit(selectedTx)}
-                >
-                  <Text className="text-on-primary font-semibold text-base font-sans">Edit</Text>
-                </Pressable>
-                
-                <Pressable
-                  className="bg-surface-container-highest border border-error py-3.5 rounded-full items-center"
-                  onPress={() => handleDelete(selectedTx)}
-                >
-                  <Text className="text-error font-semibold text-base font-sans">Delete</Text>
-                </Pressable>
-              </View>
-            </Pressable>
-          </Pressable>
-        )}
-      </Modal>
+      <LedgerDetailsModal
+        selectedTx={selectedTx}
+        accounts={accounts}
+        categories={categories}
+        onClose={() => setSelectedTx(null)}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
     </View>
   );
 }
