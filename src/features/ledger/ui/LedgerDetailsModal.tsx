@@ -23,14 +23,14 @@ export function LedgerDetailsModal({
 }: LedgerDetailsModalProps) {
   if (!selectedTx) return null;
 
-  const getCategoryName = (categoryId: string) => {
+  const getCategoryDetails = (categoryId: string) => {
     const cat = categories.find(c => c.categoryId === categoryId);
-    if (!cat) return categoryId;
+    if (!cat) return { name: categoryId, icon: '❓' };
     if (cat.parentId) {
       const parent = categories.find(c => c.categoryId === cat.parentId);
-      if (parent) return `${parent.name} - ${cat.name}`;
+      if (parent) return { name: `${parent.name} - ${cat.name}`, icon: cat.icon };
     }
-    return cat.name;
+    return { name: cat.name, icon: cat.icon };
   };
 
   const accountName = accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId;
@@ -38,7 +38,7 @@ export function LedgerDetailsModal({
 
   const subtitle = selectedTx.type === 'transfer'
     ? `${accountName} → ${transferAccountName}`
-    : `${accountName} • ${selectedTx.occurredAt} • ${selectedTx.type === 'income' ? '💰 ' : ''}${selectedTx.lines.length > 1 ? 'Split Transaction' : getCategoryName(selectedTx.lines[0]?.categoryId)}`;
+    : `${accountName} • ${selectedTx.occurredAt} • ${selectedTx.type === 'income' ? '💰 ' : ''}${selectedTx.lines.length > 1 ? 'Split Transaction' : getCategoryDetails(selectedTx.lines[0]?.categoryId).name}`;
 
   return (
     <Modal
@@ -63,9 +63,42 @@ export function LedgerDetailsModal({
             {selectedTx.type === 'income' ? '+' : ''}{formatMinor(selectedTx.totalMinor, DEFAULT_CURRENCY)}
           </Text>
           
-          <Text className="text-on-surface-variant text-sm mb-8 text-center font-sans">
+          <Text className="text-on-surface-variant text-sm mb-6 text-center font-sans">
             {subtitle}
           </Text>
+
+          {(selectedTx.payee || selectedTx.note || selectedTx.lines.length > 1) && (
+            <View className="mb-6 w-full bg-surface rounded-xl p-4 gap-4 border border-surface-variant">
+              {selectedTx.payee && (
+                <View>
+                  <Text className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Payee</Text>
+                  <Text className="text-on-surface text-base font-medium">{selectedTx.payee}</Text>
+                </View>
+              )}
+              {selectedTx.note && (
+                <View>
+                  <Text className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Note</Text>
+                  <Text className="text-on-surface text-base">{selectedTx.note}</Text>
+                </View>
+              )}
+              {selectedTx.lines.length > 1 && (
+                <View>
+                  <Text className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Split Breakdown</Text>
+                  <View className="gap-2">
+                    {selectedTx.lines.map((l, i) => {
+                      const catDetails = getCategoryDetails(l.categoryId);
+                      return (
+                        <View key={i} className="flex-row justify-between items-center bg-surface-container p-2 rounded-lg">
+                          <Text className="text-on-surface font-medium">{catDetails.icon} {catDetails.name}</Text>
+                          <Text className="text-on-surface font-mono font-medium text-sm">{formatMinor(l.amountMinor, DEFAULT_CURRENCY)}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
 
           <View className="gap-3">
             <Pressable
