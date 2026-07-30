@@ -1,6 +1,6 @@
 import type { TxLine, TxType, TxVersion } from '@/kernel';
 import { Minor } from '@/kernel/money';
-import { Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import { CategoryGrid } from './CategoryGrid';
 import { SplitEditor } from './SplitEditor';
 
@@ -64,7 +64,12 @@ export function TransactionEditor({
       selectedCategoryId={!isSplit && editingTx?.lines?.length === 1 ? editingTx.lines[0].categoryId : undefined}
       onSelectCategory={onSaveCategory}
       onSplit={(categories) => {
-        if (amountMinor > 0) onSetIsSplit(true, categories);
+        if (amountMinor <= 0) {
+          Alert.alert('Amount Required', 'Please enter an amount first');
+          return false;
+        }
+        onSetIsSplit(true, categories);
+        return true;
       }}
     />
   );

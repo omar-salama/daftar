@@ -7,7 +7,7 @@ import { SplitButton } from './SplitButton';
 interface CategoryGridProps {
   txType: TxType;
   onSelectCategory: (id: string) => void;
-  onSplit: (categories?: string[]) => void;
+  onSplit: (categories?: string[]) => boolean;
   selectedCategoryId?: string;
   isAddMode?: boolean; // When used inside SplitEditor to just add one category
   disabledCategoryIds?: string[];
@@ -75,14 +75,16 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
     if (!isMultiSelectMode) {
       setIsMultiSelectMode(true);
       setMultiSelectedIds([]);
-      return
+      return;
     }
     if (multiSelectedIds.length < 2) {
       setIsMultiSelectMode(false);
     } else {
-      onSplit(multiSelectedIds);
-      setIsMultiSelectMode(false);
-      setMultiSelectedIds([]);
+      const success = onSplit(multiSelectedIds);
+      if (success) {
+        setIsMultiSelectMode(false);
+        setMultiSelectedIds([]);
+      }
     }
   };
 

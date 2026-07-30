@@ -56,7 +56,7 @@ export function SplitEditor(props: SplitEditorProps) {
           <CategoryGrid 
             txType="expense" 
             onSelectCategory={handleAddCategory} 
-            onSplit={() => {}} 
+            onSplit={() => true} 
             isAddMode={true}
             disabledCategoryIds={lines.map(l => l.categoryId)}
           />
