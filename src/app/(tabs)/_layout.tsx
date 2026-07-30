@@ -23,7 +23,6 @@ export default function TabLayout() {
       >
         <Tabs.Screen name="index" options={{ title: 'Ledger', tabBarIcon: () => <></> }} />
         <Tabs.Screen name="accounts" options={{ title: 'Accounts', tabBarIcon: () => <></> }} />
-        <Tabs.Screen name="entry" options={{ title: 'Entry', tabBarIcon: () => <></>, href: '/entry' }} />
         <Tabs.Screen name="settings" options={{ title: 'Settings', tabBarIcon: () => <></> }} />
       </Tabs>
     );
@@ -41,11 +40,6 @@ export default function TabLayout() {
       <NativeTabs.Trigger name="accounts">
         <NativeTabs.Trigger.Label>Accounts</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'wallet.bifold', selected: 'wallet.bifold.fill' }} md="wallet" />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="entry">
-        <NativeTabs.Trigger.Label>Entry</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: 'plus.circle', selected: 'plus.circle.fill' }} md="add_circle" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="settings">
