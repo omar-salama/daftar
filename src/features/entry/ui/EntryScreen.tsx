@@ -143,24 +143,22 @@ function EntryForm({
         <View className='px-6 gap-6'>
           <AmountDisplay amount={amountMinor} txType={txType} />
 
-          {!isSplit && (
-            <TxControls
-              txType={txType}
-              date={date}
-              accountId={accountId}
-              transferAccountId={transferAccountId}
-              accounts={accounts}
-              showDetails={showDetails}
-              payee={payee}
-              note={note}
-              onPressDate={() => setShowDatePicker(true)}
-              onPressAccount={() => setShowAccountPicker(true)}
-              onPressTransferAccount={() => setShowTransferAccountPicker(true)}
-              onToggleDetails={() => setShowDetails(!showDetails)}
-              onChangePayee={setPayee}
-              onChangeNote={setNote}
-            />
-          )}
+          <TxControls
+            txType={txType}
+            date={date}
+            accountId={accountId}
+            transferAccountId={transferAccountId}
+            accounts={accounts}
+            showDetails={showDetails}
+            payee={payee}
+            note={note}
+            onPressDate={() => setShowDatePicker(true)}
+            onPressAccount={() => setShowAccountPicker(true)}
+            onPressTransferAccount={() => setShowTransferAccountPicker(true)}
+            onToggleDetails={() => setShowDetails(!showDetails)}
+            onChangePayee={setPayee}
+            onChangeNote={setNote}
+          />
         </View>
         <View className="flex-1 justify-end p-2 gap-3">
           <TransactionEditor
