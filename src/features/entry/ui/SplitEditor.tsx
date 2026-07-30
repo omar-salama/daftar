@@ -1,31 +1,36 @@
-import { TxLine } from '@/kernel';
+import { TxLine, TxVersion } from '@/kernel';
 import { Minor, formatMinor, DEFAULT_CURRENCY } from '@/kernel/money';
-import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { useCategories } from '../../categories/hooks';
+import { Keypad } from './Keypad';
+import { CategoryGrid } from './CategoryGrid';
+import { useSplitEditor } from '../hooks/useSplitEditor';
 
 interface SplitEditorProps {
   totalMinor: Minor;
+  initialCategoryIds?: string[];
+  editingTx?: TxVersion;
   onSave: (lines: TxLine[]) => void;
   onCancel: () => void;
 }
 
-export function SplitEditor({ totalMinor, onSave, onCancel }: SplitEditorProps) {
+export function SplitEditor(props: SplitEditorProps) {
   const { data: categories, isLoading } = useCategories();
   
-  const half = Math.floor(totalMinor / 2) as Minor;
-  const remainder = (totalMinor - half) as Minor;
-
-  const expenseCategories = categories?.filter(c => c.type === 'expense') || [];
-
-  const [lines] = useState<TxLine[]>([
-    { categoryId: expenseCategories[0]?.categoryId || 'cat-1', amountMinor: half },
-    { categoryId: expenseCategories[1]?.categoryId || 'cat-2', amountMinor: remainder },
-  ]);
-
-  const handleSave = () => {
-    onSave(lines);
-  };
+  const {
+    lines,
+    activeLineId,
+    isAddingCategory,
+    remainingMinor,
+    canSave,
+    setIsAddingCategory,
+    handleFocusLine,
+    handleDigit,
+    handleBackspace,
+    handleAddCategory,
+    handleRemoveLine,
+    handleSave
+  } = useSplitEditor(props);
 
   if (isLoading || !categories) {
     return (
@@ -35,36 +40,97 @@ export function SplitEditor({ totalMinor, onSave, onCancel }: SplitEditorProps) 
     );
   }
 
-  return (
-    <View className="flex-1 p-4 bg-surface border-t border-surface-variant">
-      <Text className="text-on-surface text-lg font-medium mb-4">
-        Split Transaction
-      </Text>
-      <ScrollView className="flex-1">
-        {lines.map((l, i) => (
-          <View 
-            key={i} 
-            className="flex-row justify-between py-2 border-b border-surface-variant"
-          >
-            <Text className="text-on-surface-variant">{categories.find(c => c.categoryId === l.categoryId)?.name || 'Unknown'}</Text>
-            <Text className="text-on-surface">{formatMinor(l.amountMinor, DEFAULT_CURRENCY)}</Text>
-          </View>
-        ))}
-      </ScrollView>
-      <View className="flex-row mt-4 gap-2">
-        <Pressable 
-          onPress={onCancel} 
-          className="flex-1 p-4 bg-surface-container-high rounded-xl items-center min-h-[44px]"
-        >
-          <Text className="text-on-surface font-medium">Cancel</Text>
-        </Pressable>
-        <Pressable 
-          onPress={handleSave} 
-          className="flex-1 p-4 bg-primary rounded-xl items-center min-h-[44px] active:bg-primary-container"
-        >
-          <Text className="text-on-surface font-medium">Save Split</Text>
-        </Pressable>
+  if (isAddingCategory) {
+    return (
+      <View className="flex-1 bg-surface border-t border-surface-variant">
+        <View className="p-4 flex-row items-center justify-between">
+          <Text className="text-on-surface text-lg font-medium">Add Split Category</Text>
+          {lines.length > 0 && (
+            <Pressable onPress={() => setIsAddingCategory(false)}>
+              <Text className="text-primary font-medium">Cancel</Text>
+            </Pressable>
+          )}
+        </View>
+        <ScrollView className="flex-1">
+          <CategoryGrid 
+            txType="expense" 
+            onSelectCategory={handleAddCategory} 
+            onSplit={() => {}} 
+            isAddMode={true}
+          />
+        </ScrollView>
       </View>
+    );
+  }
+
+  return (
+    <View className="flex-1 bg-surface border-t border-surface-variant flex-col">
+      <View className="p-4 flex-row justify-between items-center border-b border-surface-variant">
+        <Text className="text-on-surface text-lg font-medium">
+          Split Transaction
+        </Text>
+        <View className={`px-2 py-1 rounded-md ${remainingMinor === 0 ? 'bg-primary-container' : 'bg-error-container'}`}>
+          <Text className={`font-medium ${remainingMinor === 0 ? 'text-on-primary-container' : 'text-on-error-container'}`}>
+            {remainingMinor === 0 ? 'Balanced' : `${formatMinor(remainingMinor, DEFAULT_CURRENCY)} left`}
+          </Text>
+        </View>
+      </View>
+      
+      <ScrollView className="flex-1 px-4">
+        {lines.map((l) => {
+          const isActive = l.id === activeLineId;
+          const category = categories.find(c => c.categoryId === l.categoryId);
+          
+          return (
+            <Pressable 
+              key={l.id} 
+              onPress={() => handleFocusLine(l.id)}
+              className={`flex-row items-center justify-between py-3 border-b border-surface-variant ${isActive ? 'bg-surface-container-high rounded-lg px-2 -mx-2' : ''}`}
+            >
+              <View className="flex-row items-center gap-3">
+                <Pressable onPress={() => handleRemoveLine(l.id)} className="p-1">
+                  <Text className="text-error text-lg">❌</Text>
+                </Pressable>
+                <Text className="text-on-surface font-medium">
+                  {category?.icon} {category?.name || 'Unknown'}
+                </Text>
+              </View>
+              <Text className={`text-xl font-mono ${isActive ? 'text-primary font-bold' : 'text-on-surface'}`}>
+                {l.digits || '0'}
+              </Text>
+            </Pressable>
+          );
+        })}
+        
+        <Pressable 
+          onPress={() => setIsAddingCategory(true)}
+          className="flex-row items-center gap-2 py-4 mt-2 justify-center border border-dashed border-surface-variant rounded-xl active:bg-surface-container"
+        >
+          <Text className="text-on-surface-variant text-lg">➕</Text>
+          <Text className="text-on-surface-variant font-medium">Add Category</Text>
+        </Pressable>
+        
+        <View className="flex-row mt-6 gap-2 mb-4">
+          <Pressable 
+            onPress={props.onCancel} 
+            className="flex-1 p-4 bg-surface-container-high rounded-xl items-center min-h-[44px]"
+          >
+            <Text className="text-on-surface font-medium">Cancel Split</Text>
+          </Pressable>
+          <Pressable 
+            onPress={handleSave} 
+            disabled={!canSave}
+            className={`flex-1 p-4 rounded-xl items-center min-h-[44px] ${canSave ? 'bg-primary active:bg-primary-container' : 'bg-surface-variant opacity-50'}`}
+          >
+            <Text className={`${canSave ? 'text-on-primary' : 'text-on-surface-variant'} font-medium`}>Save Split</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+      
+      <Keypad 
+        onDigit={handleDigit}
+        onBackspace={handleBackspace}
+      />
     </View>
   );
 }

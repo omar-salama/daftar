@@ -30,6 +30,26 @@ export function minorFromDigits(digits: string): Minor {
   return value as Minor;
 }
 
+export function appendDigit(currentDigits: string, digit: string): string {
+  if (digit === '.') {
+    if (!currentDigits.includes('.')) {
+      return currentDigits === '' ? '0.' : currentDigits + '.';
+    }
+    return currentDigits;
+  }
+
+  if (currentDigits.includes('.')) {
+    const parts = currentDigits.split('.');
+    if (parts[1] && parts[1].length >= 2) return currentDigits;
+  }
+
+  if (currentDigits.length < 10) {
+    return currentDigits + digit;
+  }
+
+  return currentDigits;
+}
+
 export function addMinor(a: Minor, b: Minor): Minor {
   const result = a + b;
   if (!Number.isSafeInteger(result)) {

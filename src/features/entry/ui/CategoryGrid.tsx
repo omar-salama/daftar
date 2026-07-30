@@ -6,13 +6,16 @@ import { useCategories } from '../../categories/hooks';
 interface CategoryGridProps {
   txType: TxType;
   onSelectCategory: (id: string) => void;
-  onSplit: () => void;
+  onSplit: (categories?: string[]) => void;
   selectedCategoryId?: string;
+  isAddMode?: boolean; // When used inside SplitEditor to just add one category
 }
 
-export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCategoryId }: CategoryGridProps) {
+export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCategoryId, isAddMode }: CategoryGridProps) {
   const { data: categories, isLoading } = useCategories();
   const [expandedParentId, setExpandedParentId] = useState<string | null>(null);
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+  const [multiSelectedIds, setMultiSelectedIds] = useState<string[]>([]);
 
   if (isLoading || !categories) {
     return (
@@ -45,6 +48,21 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
     gridItems = [...parents, ...orphaned].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
+  const handlePressSplit = () => {
+    if (!isMultiSelectMode) {
+      setIsMultiSelectMode(true);
+      setMultiSelectedIds([]);
+    } else {
+      if (multiSelectedIds.length === 0) {
+        setIsMultiSelectMode(false);
+      } else {
+        onSplit(multiSelectedIds);
+        setIsMultiSelectMode(false);
+        setMultiSelectedIds([]);
+      }
+    }
+  };
+
   return (
     <View className="flex-row flex-wrap bg-surface">
       {expandedParentId && (
@@ -62,17 +80,33 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
       )}
 
       {gridItems.map(c => {
-        const isSelected = c.categoryId === selectedCategoryId;
+        const isSelected = isMultiSelectMode 
+          ? multiSelectedIds.includes(c.categoryId)
+          : c.categoryId === selectedCategoryId;
         const hasSubCategories = relevantCategories.some(sub => sub.parentId === c.categoryId);
         
         return (
           <View key={c.categoryId} className="w-1/4 px-0.5 pt-1">
             <Pressable
               onPress={() => {
-                if (!expandedParentId && hasSubCategories) {
+                if (isMultiSelectMode && !hasSubCategories) {
+                  setMultiSelectedIds(prev => 
+                    prev.includes(c.categoryId) 
+                      ? prev.filter(id => id !== c.categoryId)
+                      : [...prev, c.categoryId]
+                  );
+                } else if (!expandedParentId && hasSubCategories) {
                   setExpandedParentId(c.categoryId);
                 } else {
-                  onSelectCategory(c.categoryId);
+                  if (isMultiSelectMode) {
+                    setMultiSelectedIds(prev => 
+                      prev.includes(c.categoryId) 
+                        ? prev.filter(id => id !== c.categoryId)
+                        : [...prev, c.categoryId]
+                    );
+                  } else {
+                    onSelectCategory(c.categoryId);
+                  }
                 }
               }}
               testID={`category-${c.categoryId}`}
@@ -94,15 +128,17 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
         );
       })}
       
-      {!expandedParentId && txType === 'expense' && (
+      {!expandedParentId && txType === 'expense' && !isAddMode && (
         <View className="w-1/4 px-0.5 pt-1">
           <Pressable
-            onPress={onSplit}
-            className="items-center justify-center rounded gap-1 p-2 min-h-[52px] flex-col bg-surface-container border border-transparent active:opacity-70"
+            onPress={handlePressSplit}
+            className={`items-center justify-center rounded gap-1 p-2 min-h-[52px] flex-col border active:opacity-70 ${isMultiSelectMode ? (multiSelectedIds.length > 0 ? 'bg-primary-container border-primary' : 'bg-error-container border-error') : 'bg-surface-container border-transparent'}`}
           >
-            <Text className="text-lg">➗</Text>
-            <Text className="text-xs font-medium text-on-surface-variant">
-              Split
+            <Text className="text-lg">
+              {isMultiSelectMode ? (multiSelectedIds.length > 0 ? '✅' : '❌') : '➗'}
+            </Text>
+            <Text className={`text-xs font-medium ${isMultiSelectMode ? (multiSelectedIds.length > 0 ? 'text-on-primary-container' : 'text-on-error-container') : 'text-on-surface-variant'}`}>
+              {isMultiSelectMode ? (multiSelectedIds.length > 0 ? 'Next' : 'Cancel') : 'Split'}
             </Text>
           </Pressable>
         </View>

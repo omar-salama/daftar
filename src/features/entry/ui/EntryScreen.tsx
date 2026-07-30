@@ -1,7 +1,7 @@
 import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 import { useAppendTx, createTxVersion, useLedger } from '@/features/ledger/hooks/useLedger';
 import type { TxId, TxLine, TxType, TxVersion } from '@/kernel';
-import { minorFromDigits } from '@/kernel/money';
+import { minorFromDigits, appendDigit } from '@/kernel/money';
 import { generateUuid } from '@/lib/storage';
 
 import * as Haptics from 'expo-haptics';
@@ -57,6 +57,7 @@ function EntryForm({
   const [accountId, setAccountId] = useState<string>(() => editingTx?.accountId || '');
   const [transferAccountId, setTransferAccountId] = useState<string>(() => editingTx?.transferAccountId || '');
   const [isSplit, setIsSplit] = useState(() => (editingTx?.lines?.length ?? 0) > 1);
+  const [splitCategoryIds, setSplitCategoryIds] = useState<string[]>([]);
   const [txType, setTxType] = useState<TxType>(() => editingTx?.type ?? 'expense');
   const [showDetails, setShowDetails] = useState(() => !!(editingTx?.payee || editingTx?.note));
   const [payee, setPayee] = useState(() => editingTx?.payee || '');
@@ -74,21 +75,7 @@ function EntryForm({
   const appendTx = useAppendTx();
 
   const handleDigit = (d: string) => {
-    if (d === '.') {
-      if (!digits.includes('.')) {
-        setDigits(prev => (prev === '' ? '0.' : prev + '.'));
-      }
-      return;
-    }
-
-    if (digits.includes('.')) {
-      const parts = digits.split('.');
-      if (parts[1] && parts[1].length >= 2) return;
-    }
-
-    if (digits.length < 10) {
-      setDigits(prev => prev + d);
-    }
+    setDigits(prev => appendDigit(prev, d));
   };
 
   const handleBackspace = () => {
@@ -118,6 +105,7 @@ function EntryForm({
         setPayee('');
         setNote('');
         setIsSplit(false);
+        setSplitCategoryIds([]);
         setTxType('expense');
         if (router.canGoBack()) {
           router.back();
@@ -178,19 +166,25 @@ function EntryForm({
           <TransactionEditor
             txType={txType}
             isSplit={isSplit}
+            initialSplitCategoryIds={splitCategoryIds}
             amountMinor={amountMinor}
             transferAccountId={transferAccountId}
             editingTx={editingTx}
             onSaveTransfer={handleSaveTransfer}
             onSaveLines={saveLines}
-            onSetIsSplit={setIsSplit}
+            onSetIsSplit={(split, ids) => {
+              setIsSplit(split);
+              if (ids) setSplitCategoryIds(ids);
+            }}
             onSaveCategory={handleSaveCategory}
           />
 
-          <Keypad
-            onDigit={handleDigit}
-            onBackspace={handleBackspace}
-          />
+          {!isSplit && (
+            <Keypad
+              onDigit={handleDigit}
+              onBackspace={handleBackspace}
+            />
+          )}
         </View>
       </View>
 

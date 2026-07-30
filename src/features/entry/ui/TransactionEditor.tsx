@@ -7,18 +7,20 @@ import { SplitEditor } from './SplitEditor';
 interface TransactionEditorProps {
   txType: TxType;
   isSplit: boolean;
+  initialSplitCategoryIds: string[];
   amountMinor: Minor;
   transferAccountId: string;
   editingTx?: TxVersion;
   onSaveTransfer: () => void;
   onSaveLines: (lines: TxLine[]) => void;
-  onSetIsSplit: (isSplit: boolean) => void;
+  onSetIsSplit: (isSplit: boolean, categoryIds?: string[]) => void;
   onSaveCategory: (categoryId: string) => void;
 }
 
 export function TransactionEditor({
   txType,
   isSplit,
+  initialSplitCategoryIds,
   amountMinor,
   transferAccountId,
   editingTx,
@@ -48,8 +50,10 @@ export function TransactionEditor({
     return (
       <SplitEditor
         totalMinor={amountMinor}
+        initialCategoryIds={initialSplitCategoryIds}
+        editingTx={editingTx}
         onSave={onSaveLines}
-        onCancel={() => onSetIsSplit(false)}
+        onCancel={() => onSetIsSplit(false, [])}
       />
     );
   }
@@ -59,8 +63,8 @@ export function TransactionEditor({
       txType={txType}
       selectedCategoryId={!isSplit && editingTx?.lines?.length === 1 ? editingTx.lines[0].categoryId : undefined}
       onSelectCategory={onSaveCategory}
-      onSplit={() => {
-        if (amountMinor > 0) onSetIsSplit(true);
+      onSplit={(categories) => {
+        if (amountMinor > 0) onSetIsSplit(true, categories);
       }}
     />
   );

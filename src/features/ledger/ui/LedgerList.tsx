@@ -12,11 +12,9 @@ import { LedgerRow } from './LedgerRow';
 import { MonthSwiper } from './MonthSwiper';
 import { MonthTotals } from './MonthTotals';
 
-
-
 type ListItem = 
   | { type: 'header'; date: string; expenseTotalMinor: Minor; incomeTotalMinor: Minor }
-  | { type: 'row'; tx: TxVersion; versionCount: number };
+  | { type: 'row'; tx: TxVersion; versionCount: number; lineIndex?: number };
 
 export function LedgerList({ accountId }: { accountId?: string } = {}) {
   const { data: currentTxs = [] } = useLedger();
@@ -89,7 +87,14 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
           currentExpenseTotal = (currentExpenseTotal + tx.totalMinor) as Minor;
         }
       }
-      items.push({ type: 'row', tx, versionCount: versionCounts.get(tx.txId) || 1 });
+      
+      if (tx.lines.length > 1 && tx.type !== 'transfer') {
+        tx.lines.forEach((line, index) => {
+          items.push({ type: 'row', tx, versionCount: versionCounts.get(tx.txId) || 1, lineIndex: index });
+        });
+      } else {
+        items.push({ type: 'row', tx, versionCount: versionCounts.get(tx.txId) || 1 });
+      }
     }
 
     if (currentDayStartIndex !== -1) {
@@ -167,6 +172,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
       <LedgerRow 
         tx={item.tx} 
         versionCount={item.versionCount} 
+        lineIndex={item.lineIndex}
         accounts={accounts} 
         categories={categories} 
         onPress={setSelectedTx} 
@@ -193,7 +199,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
         data={listData}
         renderItem={renderItem}
         keyExtractor={(item, index) =>
-          item.type === 'header' ? `header-${item.date}` : `tx-${item.tx.rowId}-${index}`
+          item.type === 'header' ? `header-${item.date}` : `tx-${item.tx.rowId}-${item.lineIndex ?? 'all'}-${index}`
         }
         stickyHeaderIndices={stickyHeaderIndices}
         ListEmptyComponent={
@@ -228,7 +234,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
               <Text className="text-on-surface-variant text-sm mb-8 text-center font-sans">
                 {selectedTx.type === 'transfer' 
                   ? `${accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} → ${accounts.find(a => a.accountId === selectedTx.transferAccountId)?.name || selectedTx.transferAccountId}`
-                  : `${accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} • ${selectedTx.occurredAt} • ${selectedTx.type === 'income' ? '💰 ' : ''}${selectedTx.lines.length > 1 ? 'Split' : getCategoryName(selectedTx.lines[0]?.categoryId)}`
+                  : `${accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId} • ${selectedTx.occurredAt} • ${selectedTx.type === 'income' ? '💰 ' : ''}${selectedTx.lines.length > 1 ? 'Split Transaction' : getCategoryName(selectedTx.lines[0]?.categoryId)}`
                 }
               </Text>
 
