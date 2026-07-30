@@ -1,7 +1,7 @@
 import { AccountVersion } from '@/features/accounts/model';
 import { CategoryVersion } from '@/features/categories/model';
 import { TxVersion } from '@/kernel';
-import { formatMinor, DEFAULT_CURRENCY } from '@/kernel/money';
+import { DEFAULT_CURRENCY, formatMinor } from '@/kernel/money';
 import { Pressable, Text, View } from 'react-native';
 
 interface LedgerRowProps {
@@ -29,13 +29,11 @@ export function LedgerRow({ tx, versionCount, lineIndex, accounts, categories, o
     ? (accounts.find(a => a.accountId === tx.transferAccountId)?.name || tx.transferAccountId)
     : undefined;
     
-  // If it's part of a split, maybe add a subtle visual hint in the subtitle
   const isPartOfSplit = tx.lines.length > 1 && lineIndex !== undefined;
-  const subtitlePrefix = isPartOfSplit ? 'Part of Split • ' : '';
   
   const subtitle = isTransfer
     ? `${accountName} → ${transferAccountName}`
-    : `${subtitlePrefix}${[accountName, tx.payee, tx.note].filter(Boolean).join(' • ')}`;
+    : `${[accountName, tx.payee, tx.note].filter(Boolean).join(' • ')}`;
 
   const icon = isTransfer ? '⇄' : (catObj?.icon || '🪙');
 
@@ -46,8 +44,13 @@ export function LedgerRow({ tx, versionCount, lineIndex, accounts, categories, o
     >
       <View className="w-10 h-10 bg-surface-container rounded items-center justify-center mr-3 border border-surface-variant relative">
         <Text className="text-xl">{icon}</Text>
+        {versionCount > 1 && (
+          <View className="absolute -top-1 -right-1 bg-surface rounded-full w-3 h-3 items-center justify-center border border-surface">
+            <Text className="text-primary text-[12px] font-bold" style={{ lineHeight: 14 }}>*</Text>
+          </View>
+        )}
         {isPartOfSplit && (
-          <View className="absolute -top-1 -right-1 bg-surface-variant rounded-full w-4 h-4 items-center justify-center border border-surface">
+          <View className="absolute -bottom-1 -right-1 bg-surface-variant rounded-full w-4 h-4 items-center justify-center border border-surface">
             <Text className="text-[8px]">➗</Text>
           </View>
         )}
@@ -57,9 +60,6 @@ export function LedgerRow({ tx, versionCount, lineIndex, accounts, categories, o
           <Text className="text-on-surface font-sans text-base">
             {categoryName}
           </Text>
-          {versionCount > 1 && (
-            <Text className="text-primary text-sm font-bold">*</Text>
-          )}
         </View>
         <Text className="text-on-surface-variant text-sm mt-0.5 font-sans" numberOfLines={1}>
           {subtitle}
