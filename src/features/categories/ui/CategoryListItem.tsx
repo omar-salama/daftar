@@ -46,7 +46,7 @@ export function CategoryListItem({
       onPress={handleDelete}
       className="bg-error justify-center items-center px-5"
     >
-      <Text className="text-on-surface font-semibold text-base">Delete</Text>
+      <Text className="text-on-error font-semibold text-base">Delete</Text>
     </Pressable>
   );
 

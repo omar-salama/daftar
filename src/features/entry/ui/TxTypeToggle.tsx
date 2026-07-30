@@ -18,7 +18,9 @@ export function TxTypeToggle({ txType, onChangeType }: TxTypeToggleProps) {
               ${txType === type
                 ? type === 'expense'
                   ? 'bg-error'
-                  : 'bg-secondary-container'
+                  : type === 'income'
+                    ? 'bg-secondary-container'
+                    : 'bg-primary-container'
                 : ''
               }`}
           >
@@ -26,8 +28,10 @@ export function TxTypeToggle({ txType, onChangeType }: TxTypeToggleProps) {
               className={`text-sm font-semibold capitalize
                 ${txType === type
                   ? type === 'expense'
-                    ? 'text-error-container'
-                    : 'text-on-surface-variant'
+                    ? 'text-on-error'
+                    : type === 'income'
+                      ? 'text-on-secondary-container'
+                      : 'text-on-primary-container'
                   : 'text-on-surface-variant'
                 }`}
             >
