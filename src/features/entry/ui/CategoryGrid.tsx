@@ -2,6 +2,7 @@ import type { TxType } from '@/kernel';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { useCategories } from '../../categories/hooks';
+import { SplitButton } from './SplitButton';
 
 interface CategoryGridProps {
   txType: TxType;
@@ -24,7 +25,7 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
 
   const gridItems = useMemo(() => {
     const parents = relevantCategories.filter(c => !c.parentId).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    
+
     if (expandedParentId) {
       const parent = parents.find(p => p.categoryId === expandedParentId);
       if (parent) {
@@ -40,7 +41,7 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
     const orphaned = relevantCategories
       .filter(c => c.parentId && !parents.some(p => p.categoryId === c.parentId))
       .map(c => ({ ...c, isSubCategory: true }));
-      
+
     return [...parents, ...orphaned].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }, [relevantCategories, expandedParentId]);
 
@@ -59,8 +60,8 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
       setExpandedParentId(categoryId);
     } else {
       if (isMultiSelectMode) {
-        setMultiSelectedIds(prev => 
-          prev.includes(categoryId) 
+        setMultiSelectedIds(prev =>
+          prev.includes(categoryId)
             ? prev.filter(id => id !== categoryId)
             : [...prev, categoryId]
         );
@@ -74,14 +75,14 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
     if (!isMultiSelectMode) {
       setIsMultiSelectMode(true);
       setMultiSelectedIds([]);
+      return
+    }
+    if (multiSelectedIds.length < 2) {
+      setIsMultiSelectMode(false);
     } else {
-      if (multiSelectedIds.length === 0) {
-        setIsMultiSelectMode(false);
-      } else {
-        onSplit(multiSelectedIds);
-        setIsMultiSelectMode(false);
-        setMultiSelectedIds([]);
-      }
+      onSplit(multiSelectedIds);
+      setIsMultiSelectMode(false);
+      setMultiSelectedIds([]);
     }
   };
 
@@ -102,12 +103,12 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
       )}
 
       {gridItems.map(c => {
-        const isSelected = isMultiSelectMode 
+        const isSelected = isMultiSelectMode
           ? multiSelectedIds.includes(c.categoryId)
           : c.categoryId === selectedCategoryId;
         const hasSubCategories = relevantCategories.some(sub => sub.parentId === c.categoryId);
         const isDisabled = disabledCategoryIds.includes(c.categoryId);
-        
+
         return (
           <View key={c.categoryId} className="w-1/4 px-0.5 pt-1">
             <Pressable
@@ -116,11 +117,10 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
                 handlePressCategory(c.categoryId);
               }}
               testID={`category-${c.categoryId}`}
-              className={`items-center justify-center rounded gap-1 p-2 min-h-[52px] flex-col border relative ${
-                isSelected 
-                  ? 'border-primary bg-primary-container' 
-                  : (isDisabled && !hasSubCategories ? 'border-outline bg-surface opacity-40' : 'border-transparent bg-surface-container active:bg-surface-container-high')
-              }`}
+              className={`items-center justify-center rounded gap-1 p-2 min-h-[52px] flex-col border relative ${isSelected
+                ? 'border-primary bg-primary-container'
+                : (isDisabled && !hasSubCategories ? 'border-outline bg-surface opacity-40' : 'border-transparent bg-surface-container active:bg-surface-container-high')
+                }`}
             >
               <Text className="text-lg">{c.icon}</Text>
               <Text
@@ -136,21 +136,12 @@ export function CategoryGrid({ txType, onSelectCategory, onSplit, selectedCatego
           </View>
         );
       })}
-      
+
       {!expandedParentId && txType === 'expense' && !isAddMode && (
-        <View className="w-1/4 px-0.5 pt-1">
-          <Pressable
-            onPress={handlePressSplit}
-            className={`items-center justify-center rounded gap-1 p-2 min-h-[52px] flex-col border active:opacity-70 ${isMultiSelectMode ? (multiSelectedIds.length > 0 ? 'bg-primary-container border-primary' : 'bg-error-container border-error') : 'bg-surface-container border-transparent'}`}
-          >
-            <Text className="text-lg">
-              {isMultiSelectMode ? (multiSelectedIds.length > 0 ? '✅' : '❌') : '➗'}
-            </Text>
-            <Text className={`text-xs font-medium ${isMultiSelectMode ? (multiSelectedIds.length > 0 ? 'text-on-primary-container' : 'text-on-error-container') : 'text-on-surface-variant'}`}>
-              {isMultiSelectMode ? (multiSelectedIds.length > 0 ? 'Next' : 'Cancel') : 'Split'}
-            </Text>
-          </Pressable>
-        </View>
+        <SplitButton
+          isMultiSelectMode={isMultiSelectMode}
+          selectedCount={multiSelectedIds.length}
+          onPress={handlePressSplit} />
       )}
     </View>
   );
