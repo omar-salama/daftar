@@ -1,7 +1,7 @@
 import { AppHeader } from '@/components/ui/AppHeader';
-import { useNavigation } from 'expo-router';
-import { useEffect, useRef } from 'react';
-import { TextInput, View, Text, Switch } from 'react-native';
+import { useAutoFocus } from '@/hooks/useAutoFocus';
+import { useRef } from 'react';
+import { Switch, Text, TextInput, View } from 'react-native';
 import { NestableScrollContainer } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAccountTypeForm, UseAccountTypeFormProps } from '../hooks/useAccountTypeForm';
@@ -16,17 +16,8 @@ export function AccountTypeForm({ accountTypeId }: UseAccountTypeFormProps) {
     router,
   } = useAccountTypeForm({ accountTypeId });
 
-  const navigation = useNavigation();
   const nameInputRef = useRef<TextInput>(null);
-
-  useEffect(() => {
-    if (isEditing) return;
-    // @ts-ignore
-    const unsubscribe = navigation.addListener('transitionEnd', (e) => {
-      nameInputRef.current?.focus();
-    });
-    return unsubscribe;
-  }, [navigation]);
+  useAutoFocus(nameInputRef);
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>

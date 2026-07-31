@@ -1,6 +1,6 @@
 import { AppHeader } from '@/components/ui/AppHeader';
-import { useNavigation } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useAutoFocus } from '@/hooks/useAutoFocus';
+import { useRef } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { NestableScrollContainer } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,17 +24,8 @@ export function CategoryForm({ categoryId, defaultType, defaultParentId }: UseCa
     router,
   } = useCategoryForm({ categoryId, defaultType, defaultParentId });
 
-  const navigation = useNavigation();
   const nameInputRef = useRef<TextInput>(null);
-
-  useEffect(() => {
-    if (isEditing) return;
-    // @ts-ignore: transitionEnd is a valid event for Stack navigators but not typed by default in useNavigation
-    const unsubscribe = navigation.addListener('transitionEnd', (e) => {
-      nameInputRef.current?.focus();
-    });
-    return unsubscribe;
-  }, [navigation]);
+  useAutoFocus(nameInputRef, !isEditing);
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
