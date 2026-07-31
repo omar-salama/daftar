@@ -9,13 +9,13 @@ import { useAccounts } from './useAccounts';
 
 function initializeAccountStates(accounts: AccountVersion[]) {
   const balances: Record<string, number> = {};
-  const payableBalances: Record<string, number> = {};
+  const statementBalances: Record<string, number> = {};
   const prevClosingDates: Record<string, string> = {};
   const todayStr = getTodayString();
 
   for (const acc of accounts) {
     balances[acc.accountId] = acc.initialBalance || 0;
-    payableBalances[acc.accountId] = acc.initialBalance || 0;
+    statementBalances[acc.accountId] = acc.initialBalance || 0;
     
     if (acc.closingDay !== undefined) {
       const cycle = getBillingCycle(acc.closingDay, todayStr);
@@ -23,7 +23,7 @@ function initializeAccountStates(accounts: AccountVersion[]) {
     }
   }
 
-  return { balances, payableBalances, prevClosingDates };
+  return { balances, statementBalances, prevClosingDates };
 }
 
 /**
@@ -51,25 +51,25 @@ function applyCurrentBalance(tx: TxVersion, balances: Record<string, number>) {
   }
 }
 
-function applyPayableBalance(tx: TxVersion, payableBalances: Record<string, number>, prevClosingDates: Record<string, string>) {
+function applyStatementBalance(tx: TxVersion, statementBalances: Record<string, number>, prevClosingDates: Record<string, string>) {
   // Apply to source account
-  if (tx.accountId && payableBalances[tx.accountId] !== undefined) {
+  if (tx.accountId && statementBalances[tx.accountId] !== undefined) {
     const closingDate = prevClosingDates[tx.accountId];
     const isIncludedInStatement = !closingDate || tx.occurredAt <= closingDate;
     
     if (isIncludedInStatement) {
-      payableBalances[tx.accountId] += getAccountBalanceImpact(tx, tx.accountId);
+      statementBalances[tx.accountId] += getAccountBalanceImpact(tx, tx.accountId);
     }
   }
 
   // Apply to destination account
-  if (tx.transferAccountId && payableBalances[tx.transferAccountId] !== undefined) {
+  if (tx.transferAccountId && statementBalances[tx.transferAccountId] !== undefined) {
     const closingDate = prevClosingDates[tx.transferAccountId];
     const isIncludedInStatement = !closingDate || tx.occurredAt <= closingDate;
     const isPaymentAfterClosing = !isIncludedInStatement && tx.type === 'transfer';
     
     if (isIncludedInStatement || isPaymentAfterClosing) {
-      payableBalances[tx.transferAccountId] += getAccountBalanceImpact(tx, tx.transferAccountId);
+      statementBalances[tx.transferAccountId] += getAccountBalanceImpact(tx, tx.transferAccountId);
     }
   }
 }
@@ -77,12 +77,12 @@ function applyPayableBalance(tx: TxVersion, payableBalances: Record<string, numb
 function applyTransactions(
   txs: TxVersion[],
   balances: Record<string, number>,
-  payableBalances: Record<string, number>,
+  statementBalances: Record<string, number>,
   prevClosingDates: Record<string, string>
 ) {
   for (const tx of txs) {
     applyCurrentBalance(tx, balances);
-    applyPayableBalance(tx, payableBalances, prevClosingDates);
+    applyStatementBalance(tx, statementBalances, prevClosingDates);
   }
 }
 
@@ -111,16 +111,16 @@ export function useAccountBalances() {
   const { data: txs } = useLedger();
 
   return useMemo(() => {
-    if (!accounts) return { balances: {}, payableBalances: {}, totalAssets: 0, totalLiabilities: 0, netWorth: 0 };
+    if (!accounts) return { balances: {}, statementBalances: {}, totalAssets: 0, totalLiabilities: 0, netWorth: 0 };
 
-    const { balances, payableBalances, prevClosingDates } = initializeAccountStates(accounts);
+    const { balances, statementBalances, prevClosingDates } = initializeAccountStates(accounts);
     
     if (txs) {
-      applyTransactions(txs, balances, payableBalances, prevClosingDates);
+      applyTransactions(txs, balances, statementBalances, prevClosingDates);
     }
 
     const { totalAssets, totalLiabilities, netWorth } = calculateNetWorth(accounts, accountTypes || [], balances);
 
-    return { balances, payableBalances, totalAssets, totalLiabilities, netWorth };
+    return { balances, statementBalances, totalAssets, totalLiabilities, netWorth };
   }, [accounts, txs, accountTypes]);
 }
