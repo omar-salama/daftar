@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
-import { Minor, TxVersion } from '@/kernel';
-import { getBillingCycle, getPaymentDate, addDays } from '@/kernel/date';
 import { AccountVersion } from '@/features/accounts/model';
+import { Minor, TxVersion } from '@/kernel';
+import { addDays, getBillingCycle, getPaymentDate } from '@/kernel/date';
+import { useMemo, useState } from 'react';
 
 export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string, account?: AccountVersion) {
   const [currentCalendarDate, setCurrentCalendarDate] = useState(() => {
@@ -70,6 +70,13 @@ export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string,
         inc += tx.totalMinor;
       } else if (tx.type === 'expense') {
         exp += tx.totalMinor;
+        // for a specific account ledger, we calculate all money in & money out
+      } else if (tx.type === 'transfer' && accountId) {
+        if (tx.accountId === accountId) {
+          exp += tx.totalMinor;
+        } else if (tx.transferAccountId === accountId) {
+          inc += tx.totalMinor;
+        }
       }
     }
     return {
@@ -77,7 +84,7 @@ export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string,
       totalExpense: exp as Minor,
       totalNet: (inc - exp) as Minor
     };
-  }, [filteredTxs]);
+  }, [filteredTxs, accountId]);
 
   const periodName = useMemo(() => {
     if (isCreditCard && billingCycle) {

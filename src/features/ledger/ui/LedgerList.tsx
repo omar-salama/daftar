@@ -194,6 +194,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
           monthIncome={monthIncome}
           monthExpense={monthExpense}
           monthTotal={monthTotal}
+          isSpecificAccount={!!accountId}
         />
       </View>
 
