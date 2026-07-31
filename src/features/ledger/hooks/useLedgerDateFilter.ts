@@ -99,24 +99,6 @@ export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string,
     return new Date(Number(y), Number(m) - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
   }, [isCreditCard, billingCycle, currentMonthStr]);
 
-  const balancePayable = useMemo(() => {
-    if (!isCreditCard || !billingCycle || !account || !accountId) return null;
-    
-    let bal = account.initialBalance || 0;
-    for (const tx of currentTxs) {
-      if (tx.occurredAt <= billingCycle.closingDate) {
-        if (tx.accountId === accountId) {
-          if (tx.type === 'expense' || tx.type === 'transfer') bal -= tx.totalMinor;
-          if (tx.type === 'income') bal += tx.totalMinor;
-        }
-        if (tx.transferAccountId === accountId) {
-          if (tx.type === 'expense' || tx.type === 'transfer') bal += tx.totalMinor;
-        }
-      }
-    }
-    return bal as Minor;
-  }, [currentTxs, accountId, account, isCreditCard, billingCycle]);
-
   return {
     handlePrev,
     handleNext,
@@ -126,6 +108,5 @@ export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string,
     totalNet,
     periodName,
     paymentDate,
-    balancePayable,
   };
 }
