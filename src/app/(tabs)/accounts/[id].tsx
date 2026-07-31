@@ -1,8 +1,8 @@
+import { useAccountTypes } from '@/features/account-types/hooks';
 import { useAccountBalances } from '@/features/accounts/hooks/useAccountBalances';
 import { useAccounts } from '@/features/accounts/hooks/useAccounts';
-import { useAccountTypes } from '@/features/account-types/hooks';
 import { LedgerList } from '@/features/ledger/ui/LedgerList';
-import { formatMinor, Minor, DEFAULT_CURRENCY } from '@/kernel/money';
+import { DEFAULT_CURRENCY, formatMinor, Minor } from '@/kernel/money';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -55,9 +55,11 @@ export default function AccountDetailsScreen() {
 
       {/* Balance Summary */}
       <View className="px-4 py-6 bg-surface-container border-b border-surface-variant">
-        <Text className="text-sm text-on-surface-variant font-medium">CURRENT BALANCE</Text>
+        <Text className="text-sm text-on-surface-variant font-medium">
+          {isLiability ? 'OUTSTANDING BALANCE' : 'BALANCE'}
+        </Text>
         <Text className={`text-4xl font-bold ${isLiability && balance < 0 ? 'text-error' : 'text-on-surface'}`}>
-          {formatMinor(balance as Minor, DEFAULT_CURRENCY)}
+          {formatMinor(isLiability ? Math.abs(balance as number) as Minor : balance as Minor, DEFAULT_CURRENCY)}
         </Text>
       </View>
 

@@ -29,7 +29,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
   const [type, setType] = useState<AccountType>('');
   const [note, setNote] = useState('');
   const [balanceInput, setBalanceInput] = useState('');
-  
+  const [creditLimit, setCreditLimit] = useState('');
   const [closingDay, setClosingDay] = useState('');
   const [paymentDateValue, setPaymentDateValue] = useState('');
   
@@ -38,6 +38,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
       setName(existingAccount.name);
       setType(existingAccount.type);
       setNote(existingAccount.note || '');
+      setCreditLimit(existingAccount.creditLimit ? (existingAccount.creditLimit / 100).toString() : '');
       setClosingDay(existingAccount.closingDay ? String(existingAccount.closingDay) : '');
       setPaymentDateValue(existingAccount.paymentDateValue ? String(existingAccount.paymentDateValue) : '');
       
@@ -76,6 +77,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
       note: note.trim() || undefined,
       initialBalance,
       maxOrder,
+      creditLimit: isLiability && creditLimit ? minorFromDigits(creditLimit) : undefined,
       closingDay: isLiability && closingDay ? parseInt(closingDay, 10) : undefined,
       paymentDateType: isLiability && paymentDateValue ? 'days_after_closing' : undefined,
       paymentDateValue: isLiability && paymentDateValue ? parseInt(paymentDateValue, 10) : undefined,
@@ -121,7 +123,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
             placeholderTextColor="#71717a"
             value={balanceInput}
             onChangeText={setBalanceInput}
-            keyboardType="decimal-pad"
+            keyboardType="numbers-and-punctuation"
           />
         </View>
 
@@ -149,30 +151,43 @@ export function AccountForm({ accountId }: AccountFormProps) {
         </View>
 
         {isLiability && (
-          <View className="mb-6 flex-row gap-4">
-            <View className="flex-1">
-              <Text className="text-sm font-medium text-on-surface-variant mb-2">Closing Day (1-31)</Text>
+          <>
+            <View className="mb-6">
+              <Text className="text-sm font-medium text-on-surface-variant mb-2">Credit Limit (Optional)</Text>
               <TextInput
                 className="bg-surface-container text-on-surface p-3 rounded-xl border border-surface-variant text-base"
-                placeholder="15"
+                placeholder="5000.00"
                 placeholderTextColor="#71717a"
-                value={closingDay}
-                onChangeText={setClosingDay}
-                keyboardType="number-pad"
+                value={creditLimit}
+                onChangeText={setCreditLimit}
+                keyboardType="decimal-pad"
               />
             </View>
-            <View className="flex-1">
-              <Text className="text-sm font-medium text-on-surface-variant mb-2">Days to Pay</Text>
-              <TextInput
-                className="bg-surface-container text-on-surface p-3 rounded-xl border border-surface-variant text-base"
-                placeholder="21"
-                placeholderTextColor="#71717a"
-                value={paymentDateValue}
-                onChangeText={setPaymentDateValue}
-                keyboardType="number-pad"
-              />
+            <View className="mb-6 flex-row gap-4">
+              <View className="flex-1">
+                <Text className="text-sm font-medium text-on-surface-variant mb-2">Closing Day (1-31)</Text>
+                <TextInput
+                  className="bg-surface-container text-on-surface p-3 rounded-xl border border-surface-variant text-base"
+                  placeholder="15"
+                  placeholderTextColor="#71717a"
+                  value={closingDay}
+                  onChangeText={setClosingDay}
+                  keyboardType="number-pad"
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="text-sm font-medium text-on-surface-variant mb-2">Days to Pay</Text>
+                <TextInput
+                  className="bg-surface-container text-on-surface p-3 rounded-xl border border-surface-variant text-base"
+                  placeholder="21"
+                  placeholderTextColor="#71717a"
+                  value={paymentDateValue}
+                  onChangeText={setPaymentDateValue}
+                  keyboardType="number-pad"
+                />
+              </View>
             </View>
-          </View>
+          </>
         )}
 
         <View className="mb-6">

@@ -36,7 +36,7 @@ export default function AccountsTab() {
 
   const renderItem = ({ item, drag, isActive }: RenderItemParams<AccountVersion>) => {
     const balance = balances[item.accountId] || 0;
-    const accountTypeName = accountTypes.find(t => t.accountTypeId === item.type)?.name;
+    const accountTypeInfo = accountTypes.find(t => t.accountTypeId === item.type);
     
     return (
       <AccountListItem
@@ -44,7 +44,8 @@ export default function AccountsTab() {
         balance={balance}
         drag={drag}
         isActive={isActive}
-        accountTypeName={accountTypeName}
+        accountTypeName={accountTypeInfo?.name}
+        isLiability={accountTypeInfo?.isLiability}
       />
     );
   };

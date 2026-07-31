@@ -10,9 +10,10 @@ interface AccountListItemProps {
   drag: () => void;
   isActive: boolean;
   accountTypeName?: string;
+  isLiability?: boolean;
 }
 
-export function AccountListItem({ item, balance, drag, isActive, accountTypeName }: AccountListItemProps) {
+export function AccountListItem({ item, balance, drag, isActive, accountTypeName, isLiability }: AccountListItemProps) {
   const router = useRouter();
 
   return (
@@ -29,10 +30,17 @@ export function AccountListItem({ item, balance, drag, isActive, accountTypeName
           <Text className="text-lg font-semibold text-on-surface">{item.name}</Text>
           <Text className="text-sm text-on-surface-variant capitalize">{accountTypeName || item.type}</Text>
         </View>
-        <View className="items-end">
-          <Text className="text-lg font-semibold text-on-surface">
-            {formatMinor(balance as Minor, DEFAULT_CURRENCY)}
+        <View className="items-end flex-1">
+          <Text className={`text-lg font-semibold ${isLiability && balance < 0 ? 'text-error' : 'text-on-surface'}`}>
+            {formatMinor(isLiability ? Math.abs(balance as number) as Minor : balance as Minor, DEFAULT_CURRENCY)}
           </Text>
+          {isLiability && item.creditLimit !== undefined && (
+            <Text className="text-xs text-secondary mt-1">
+              Available: {formatMinor((item.creditLimit + balance) as Minor, DEFAULT_CURRENCY)}
+            </Text>
+          )}
+        </View>
+        <View className="pl-3">
           <Text className="text-xs text-on-surface-variant">☰</Text>
         </View>
       </Pressable>
