@@ -9,6 +9,10 @@ describe('money kernel', () => {
       expect(minorFromDigits('0.5')).toBe(50);
       expect(minorFromDigits('0')).toBe(0);
       expect(minorFromDigits('')).toBe(0);
+      expect(minorFromDigits('-')).toBe(0);
+      expect(minorFromDigits('-10')).toBe(-1000);
+      expect(minorFromDigits('-12.34')).toBe(-1234);
+      expect(minorFromDigits('-0.5')).toBe(-50);
     });
 
     it('throws on invalid float inputs', () => {
