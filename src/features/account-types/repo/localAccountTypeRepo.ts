@@ -4,7 +4,7 @@ import { AccountTypeId, AccountTypeRepo, AccountTypeVersion, resolveAccountTypeC
 
 const KEY_ACCOUNT_TYPE_VERSIONS = 'account-types.versions';
 
-function createSeedAccountType(id: string, name: string, order: number): AccountTypeVersion {
+function createSeedAccountType(id: string, name: string, order: number, isLiability: boolean = false): AccountTypeVersion {
   const { version, deviceId } = nextVersion();
 
   return {
@@ -15,6 +15,7 @@ function createSeedAccountType(id: string, name: string, order: number): Account
     isDeleted: false,
     name,
     order,
+    isLiability,
   };
 }
 
@@ -26,7 +27,7 @@ export const localAccountTypeRepo: AccountTypeRepo = {
     if (versions.length === 0) {
       const seeds = [
         createSeedAccountType('cash', 'Cash', 0),
-        createSeedAccountType('credit', 'Credit Card', 1),
+        createSeedAccountType('credit', 'Credit Card', 1, true),
         createSeedAccountType('bank', 'Bank Account', 2),
         createSeedAccountType('prepaid', 'Prepaid Card', 3),
         createSeedAccountType('savings', 'Savings', 4),

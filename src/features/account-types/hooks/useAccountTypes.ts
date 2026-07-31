@@ -52,6 +52,7 @@ export function useSaveAccountType() {
     mutationFn: async (data: {
       existingAccountType?: AccountTypeVersion;
       name: string;
+      isLiability: boolean;
       maxOrder: number;
     }) => {
       const { version, deviceId } = nextVersion();
@@ -60,6 +61,7 @@ export function useSaveAccountType() {
         return appendAccountType.mutateAsync({
           ...data.existingAccountType,
           name: data.name,
+          isLiability: data.isLiability,
           version,
         });
       } else {
@@ -76,6 +78,7 @@ export function useSaveAccountType() {
           deviceId,
           isDeleted: false,
           name: data.name,
+          isLiability: data.isLiability,
           order: data.maxOrder + 1,
         });
       }

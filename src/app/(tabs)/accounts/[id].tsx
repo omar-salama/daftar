@@ -1,5 +1,6 @@
 import { useAccountBalances } from '@/features/accounts/hooks/useAccountBalances';
 import { useAccounts } from '@/features/accounts/hooks/useAccounts';
+import { useAccountTypes } from '@/features/account-types/hooks';
 import { LedgerList } from '@/features/ledger/ui/LedgerList';
 import { formatMinor, Minor, DEFAULT_CURRENCY } from '@/kernel/money';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -11,10 +12,15 @@ export default function AccountDetailsScreen() {
   const router = useRouter();
   
   const { data: accounts = [] } = useAccounts();
+  const { data: accountTypes = [] } = useAccountTypes();
   const { balances } = useAccountBalances();
   
   const account = accounts.find(a => a.accountId === id);
   const balance = id ? (balances[id] || 0) : 0;
+
+  const accountTypeInfo = accountTypes.find(t => t.accountTypeId === account?.type);
+  const accountTypeName = accountTypeInfo?.name || account?.type;
+  const isLiability = accountTypeInfo?.isLiability || false;
 
   if (!account) {
     return (
@@ -40,7 +46,7 @@ export default function AccountDetailsScreen() {
         </Pressable>
         <View className="flex-1">
           <Text className="text-lg font-bold text-on-surface">{account.name}</Text>
-          <Text className="text-sm text-on-surface-variant capitalize">{account.type}</Text>
+          <Text className="text-sm text-on-surface-variant capitalize">{accountTypeName}</Text>
         </View>
         <Pressable onPress={handleEdit} className="bg-surface-container-high px-3 py-1.5 rounded-lg border border-surface-variant">
           <Text className="text-on-surface font-medium text-sm">Edit</Text>
@@ -50,7 +56,7 @@ export default function AccountDetailsScreen() {
       {/* Balance Summary */}
       <View className="px-4 py-6 bg-surface-container border-b border-surface-variant">
         <Text className="text-sm text-on-surface-variant font-medium">CURRENT BALANCE</Text>
-        <Text className={`text-4xl font-bold ${account.type === 'credit' && balance < 0 ? 'text-error' : 'text-on-surface'}`}>
+        <Text className={`text-4xl font-bold ${isLiability && balance < 0 ? 'text-error' : 'text-on-surface'}`}>
           {formatMinor(balance as Minor, DEFAULT_CURRENCY)}
         </Text>
       </View>

@@ -11,6 +11,7 @@ export interface AccountTypeVersion {
   name: string;
   icon?: string;
   order?: number;
+  isLiability?: boolean;
 }
 
 export interface AccountTypeRepo {

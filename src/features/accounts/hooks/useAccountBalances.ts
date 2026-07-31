@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 import { useLedger } from '@/features/ledger/hooks/useLedger';
 import { useAccounts } from './useAccounts';
+import { useAccountTypes } from '@/features/account-types/hooks';
 
 export function useAccountBalances() {
   const { data: accounts } = useAccounts();
+  const { data: accountTypes } = useAccountTypes();
   const { data: txs } = useLedger();
 
   return useMemo(() => {
@@ -39,9 +41,13 @@ export function useAccountBalances() {
     let totalAssets = 0;
     let totalLiabilities = 0;
 
+    const accountTypeMap = new Map(accountTypes?.map(t => [t.accountTypeId, t]));
+
     for (const acc of accounts) {
       const bal = balances[acc.accountId] || 0;
-      if (acc.type === 'credit') {
+      const typeInfo = accountTypeMap.get(acc.type as import('@/features/account-types/model').AccountTypeId);
+      
+      if (typeInfo?.isLiability) {
         // Credit accounts usually have negative balances when you owe money
         // We sum the outstanding credit (which is the negative balance) as a positive liability
         if (bal < 0) {
@@ -55,5 +61,5 @@ export function useAccountBalances() {
     const netWorth = totalAssets - totalLiabilities;
 
     return { balances, totalAssets, totalLiabilities, netWorth };
-  }, [accounts, txs]);
+  }, [accounts, txs, accountTypes]);
 }

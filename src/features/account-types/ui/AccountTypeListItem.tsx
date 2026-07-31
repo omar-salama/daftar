@@ -28,6 +28,7 @@ export function AccountTypeListItem({
       onDelete={() => onDelete(item)}
       onPress={() => router.push(`/account-type-form?accountTypeId=${item.accountTypeId}`)}
       entityName="Account Type"
+      badges={item.isLiability ? ['Liability'] : undefined}
       containerClassName={containerClassName}
     />
   );

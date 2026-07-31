@@ -20,6 +20,7 @@ export function useAccountTypeForm({ accountTypeId }: UseAccountTypeFormProps) {
   const isEditing = !!existingAccountType;
 
   const [name, setName] = useState(existingAccountType?.name || '');
+  const [isLiability, setIsLiability] = useState(existingAccountType?.isLiability || false);
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -27,6 +28,7 @@ export function useAccountTypeForm({ accountTypeId }: UseAccountTypeFormProps) {
     await saveAccountType.mutateAsync({
       existingAccountType,
       name: name.trim(),
+      isLiability,
       maxOrder: accountTypes.length > 0 ? Math.max(...accountTypes.map(c => c.order ?? 0)) : -1,
     });
     router.back();
@@ -35,6 +37,7 @@ export function useAccountTypeForm({ accountTypeId }: UseAccountTypeFormProps) {
   return {
     isEditing,
     name, setName,
+    isLiability, setIsLiability,
     handleSave,
     isPending: saveAccountType.isPending,
     router,

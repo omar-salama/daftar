@@ -9,13 +9,15 @@ export interface DraggableListItemProps {
   onPress: () => void;
   onDelete: () => void;
   entityName?: string; // used for delete alert, e.g. "Category"
-  
+
   // Optional sub-item props (used by categories)
   hasSubItems?: boolean;
   isExpanded?: boolean;
   onToggleExpand?: () => void;
   subItemCount?: number;
-  
+
+  badges?: string[];
+
   containerClassName?: string;
 }
 
@@ -31,6 +33,7 @@ export function DraggableListItem({
   isExpanded,
   onToggleExpand,
   subItemCount,
+  badges,
   containerClassName = 'bg-surface'
 }: DraggableListItemProps) {
   const handleDelete = () => {
@@ -64,17 +67,24 @@ export function DraggableListItem({
         `}
       >
         <Pressable
-          className="flex-row items-center flex-1 py-3"
+          className="flex-row items-center justify-between flex-1 py-3"
           onPress={onPress}
         >
-          {!!icon && <Text className="mr-3">{icon}</Text>}
           <View className="flex-row items-center flex-shrink">
+          {!!icon && <Text className="mr-3">{icon}</Text>}
             <Text className="text-on-surface" numberOfLines={1}>{title}</Text>
             {!!subItemCount && subItemCount > 0 && (
               <Text className="text-on-surface-variant text-sm ml-1">
                 ({subItemCount})
               </Text>
             )}
+          </View>
+          <View>
+            {badges?.map((badge, idx) => (
+              <View key={idx} className="ml-2 px-1.5 py-0.5 bg-surface-variant rounded">
+                <Text className="text-on-surface-variant text-xs font-medium uppercase tracking-wider">{badge}</Text>
+              </View>
+            ))}
           </View>
         </Pressable>
 

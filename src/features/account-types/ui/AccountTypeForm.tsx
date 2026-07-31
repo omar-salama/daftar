@@ -1,7 +1,7 @@
 import { AppHeader } from '@/components/ui/AppHeader';
 import { useNavigation } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import { TextInput, View, Text } from 'react-native';
+import { TextInput, View, Text, Switch } from 'react-native';
 import { NestableScrollContainer } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAccountTypeForm, UseAccountTypeFormProps } from '../hooks/useAccountTypeForm';
@@ -10,6 +10,7 @@ export function AccountTypeForm({ accountTypeId }: UseAccountTypeFormProps) {
   const {
     isEditing,
     name, setName,
+    isLiability, setIsLiability,
     handleSave,
     isPending,
     router,
@@ -50,6 +51,19 @@ export function AccountTypeForm({ accountTypeId }: UseAccountTypeFormProps) {
             placeholderTextColor="#71717a"
             value={name}
             onChangeText={setName}
+          />
+        </View>
+
+        <View className="flex-row items-center justify-between bg-surface-container rounded-xl border border-surface-variant p-4">
+          <View className="flex-1 mr-4">
+            <Text className="text-base font-semibold text-on-surface">Is Liability?</Text>
+            <Text className="text-sm text-on-surface-variant mt-1">
+              Mark this if accounts of this type represent debt or money you owe (e.g., Credit Cards).
+            </Text>
+          </View>
+          <Switch
+            value={isLiability}
+            onValueChange={setIsLiability}
           />
         </View>
       </NestableScrollContainer>
