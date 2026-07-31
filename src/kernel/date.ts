@@ -5,6 +5,11 @@ export function daysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate();
 }
 
+export function getTodayString(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
 export function getClosingDate(year: number, month: number, closingDay: number): string {
   const maxDay = daysInMonth(year, month);
   const actualDay = Math.min(closingDay, maxDay);
