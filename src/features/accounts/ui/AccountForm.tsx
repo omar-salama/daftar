@@ -8,15 +8,7 @@ import { useAccountBalances } from '../hooks/useAccountBalances';
 import { useAccounts, useSaveAccount } from '../hooks/useAccounts';
 import { AccountType } from '../model';
 
-const ACCOUNT_TYPES: { label: string; value: AccountType }[] = [
-  { label: 'Cash', value: 'cash' },
-  { label: 'Bank', value: 'bank' },
-  { label: 'Credit', value: 'credit' },
-  { label: 'Savings', value: 'savings' },
-  { label: 'Prepaid', value: 'prepaid' },
-  { label: 'Investment', value: 'investment' },
-  { label: 'Others', value: 'others' },
-];
+import { useAccountTypes } from '@/features/account-types/hooks';
 
 interface AccountFormProps {
   accountId?: string;
@@ -26,6 +18,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
   const router = useRouter();
   
   const { data: accounts = [] } = useAccounts();
+  const { data: accountTypes = [] } = useAccountTypes();
   const saveAccount = useSaveAccount();
   const { balances } = useAccountBalances();
   
@@ -33,7 +26,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
   const isEditing = !!existingAccount;
 
   const [name, setName] = useState('');
-  const [type, setType] = useState<AccountType>('cash');
+  const [type, setType] = useState<AccountType>('');
   const [note, setNote] = useState('');
   const [balanceInput, setBalanceInput] = useState('');
   
@@ -46,8 +39,10 @@ export function AccountForm({ accountId }: AccountFormProps) {
       const currentBalance = balances[existingAccount.accountId] || 0;
       const isWhole = currentBalance % 100 === 0;
       setBalanceInput(isWhole ? (currentBalance / 100).toString() : (currentBalance / 100).toFixed(2));
+    } else if (!type && accountTypes.length > 0) {
+      setType(accountTypes[0].accountTypeId);
     }
-  }, [existingAccount, balances]);
+  }, [existingAccount, balances, accountTypes, type]);
 
   const handleSave = () => {
     if (!name.trim()) return;
@@ -122,20 +117,20 @@ export function AccountForm({ accountId }: AccountFormProps) {
         <View className="mb-6">
           <Text className="text-sm font-medium text-on-surface-variant mb-2">Account Type</Text>
           <View className="flex-row flex-wrap gap-2">
-            {ACCOUNT_TYPES.map((t) => (
+            {accountTypes.map((t) => (
               <Pressable
-                key={t.value}
-                onPress={() => setType(t.value)}
+                key={t.accountTypeId}
+                onPress={() => setType(t.accountTypeId)}
                 className={`px-4 py-2 rounded-lg border ${
-                  type === t.value 
+                  type === t.accountTypeId 
                     ? 'bg-primary border-primary' 
                     : 'bg-surface-container border-surface-variant'
                 }`}
               >
                 <Text className={`font-medium ${
-                  type === t.value ? 'text-surface' : 'text-on-surface'
+                  type === t.accountTypeId ? 'text-surface' : 'text-on-surface'
                 }`}>
-                  {t.label}
+                  {t.icon ? `${t.icon} ` : ''}{t.name}
                 </Text>
               </Pressable>
             ))}

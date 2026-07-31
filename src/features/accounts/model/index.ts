@@ -2,7 +2,7 @@ import { RowId } from '@/kernel';
 
 export type AccountId = string & { __brand: 'AccountId' };
 
-export type AccountType = 'cash' | 'credit' | 'bank' | 'prepaid' | 'savings' | 'investment' | 'others';
+export type AccountType = string;
 
 export interface AccountVersion {
   rowId: RowId;

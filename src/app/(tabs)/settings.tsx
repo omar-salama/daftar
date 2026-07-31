@@ -18,6 +18,10 @@ export default function SettingsTab() {
             label="Income Categories" 
             href="/settings/categories?type=income" 
           />
+          <SettingRow 
+            label="Account Types" 
+            href="/settings/account-types" 
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
