@@ -1,26 +1,61 @@
-import { Modal, Pressable, Text, View } from 'react-native';
+import DateTimePicker from '@expo/ui/community/datetime-picker';
+import { useEffect, useState } from 'react';
+import { Modal, Platform, Pressable, Text, View } from 'react-native';
 
 interface DatePickerModalProps {
   visible: boolean;
+  currentDate?: string;
   onClose: () => void;
   onSelectDate: (date: string) => void;
 }
 
-export function DatePickerModal({ visible, onClose, onSelectDate }: DatePickerModalProps) {
-  const getQuickDates = () => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
+export function DatePickerModal({ visible, currentDate, onClose, onSelectDate }: DatePickerModalProps) {
+  const [date, setDate] = useState(() => {
+    if (currentDate) {
+      const [y, m, d] = currentDate.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    return new Date();
+  });
 
-    const dayBefore = new Date(today);
-    dayBefore.setDate(today.getDate() - 2);
+  useEffect(() => {
+    if (currentDate) {
+      const [y, m, d] = currentDate.split('-').map(Number);
+      setDate(new Date(y, m - 1, d));
+    }
+  }, [currentDate]);
 
-    return [
-      { label: 'Today', value: today.toISOString().split('T')[0] },
-      { label: 'Yesterday', value: yesterday.toISOString().split('T')[0] },
-      { label: dayBefore.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }), value: dayBefore.toISOString().split('T')[0] },
-    ];
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      onClose(); // Android dismisses modal on selection or cancel
+      if (event.type === 'set' && selectedDate) {
+        setDate(selectedDate);
+        onSelectDate(
+          `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
+        );
+      }
+    } else {
+      if (selectedDate) {
+        setDate(selectedDate);
+        onSelectDate(
+          `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
+        );
+      }
+    }
   };
+
+  if (!visible) return null;
+
+  if (Platform.OS === 'android') {
+    return (
+      <DateTimePicker
+        value={date}
+        mode="date"
+        display="default"
+        onChange={handleDateChange}
+      />
+    );
+  }
 
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
@@ -28,20 +63,23 @@ export function DatePickerModal({ visible, onClose, onSelectDate }: DatePickerMo
         className="flex-1 bg-black/60 justify-center items-center"
         onPress={onClose}
       >
-        <View className="w-[80%] bg-surface-container rounded-2xl p-4 gap-3 border border-outline">
+        <View 
+          className="w-[90%] bg-surface-container rounded-2xl p-4 gap-3 border border-outline"
+          onStartShouldSetResponder={() => true}
+        >
           <Text className="text-on-surface text-lg font-semibold text-center mb-1">Select Date</Text>
-          {getQuickDates().map((d) => (
-            <Pressable
-              key={d.value}
-              onPress={() => {
-                onSelectDate(d.value);
-                onClose();
-              }}
-              className="bg-surface-container-high p-3.5 rounded-lg items-center"
-            >
-              <Text className="text-on-surface text-base font-medium">{d.label} ({d.value})</Text>
-            </Pressable>
-          ))}
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="inline"
+            onChange={handleDateChange}
+          />
+          <Pressable
+            onPress={onClose}
+            className="bg-primary p-3 rounded-lg items-center mt-2"
+          >
+            <Text className="text-on-primary text-base font-semibold">Done</Text>
+          </Pressable>
         </View>
       </Pressable>
     </Modal>

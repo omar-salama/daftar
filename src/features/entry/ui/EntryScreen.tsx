@@ -188,6 +188,7 @@ function EntryForm({
 
       <DatePickerModal
         visible={showDatePicker}
+        currentDate={date}
         onClose={() => setShowDatePicker(false)}
         onSelectDate={setDate}
       />
