@@ -31,7 +31,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
   const [balanceInput, setBalanceInput] = useState('');
   const [creditLimit, setCreditLimit] = useState('');
   const [closingDay, setClosingDay] = useState('');
-  const [paymentDateValue, setPaymentDateValue] = useState('');
+  const [paymentDay, setPaymentDay] = useState('');
   
   useEffect(() => {
     if (existingAccount) {
@@ -40,7 +40,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
       setNote(existingAccount.note || '');
       setCreditLimit(existingAccount.creditLimit ? (existingAccount.creditLimit / 100).toString() : '');
       setClosingDay(existingAccount.closingDay ? String(existingAccount.closingDay) : '');
-      setPaymentDateValue(existingAccount.paymentDateValue ? String(existingAccount.paymentDateValue) : '');
+      setPaymentDay(existingAccount.paymentDay ? String(existingAccount.paymentDay) : '');
       
       const currentBalance = balances[existingAccount.accountId] || 0;
       const isWhole = currentBalance % 100 === 0;
@@ -79,8 +79,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
       maxOrder,
       creditLimit: isLiability && creditLimit ? minorFromDigits(creditLimit) : undefined,
       closingDay: isLiability && closingDay ? parseInt(closingDay, 10) : undefined,
-      paymentDateType: isLiability && paymentDateValue ? 'days_after_closing' : undefined,
-      paymentDateValue: isLiability && paymentDateValue ? parseInt(paymentDateValue, 10) : undefined,
+      paymentDay: isLiability && paymentDay ? parseInt(paymentDay, 10) : undefined,
     }, {
       onSuccess: () => router.back()
     });
@@ -176,13 +175,13 @@ export function AccountForm({ accountId }: AccountFormProps) {
                 />
               </View>
               <View className="flex-1">
-                <Text className="text-sm font-medium text-on-surface-variant mb-2">Days to Pay</Text>
+                <Text className="text-sm font-medium text-on-surface-variant mb-2">Payment Day (1-31)</Text>
                 <TextInput
                   className="bg-surface-container text-on-surface p-3 rounded-xl border border-surface-variant text-base"
-                  placeholder="21"
+                  placeholder="25"
                   placeholderTextColor="#71717a"
-                  value={paymentDateValue}
-                  onChangeText={setPaymentDateValue}
+                  value={paymentDay}
+                  onChangeText={setPaymentDay}
                   keyboardType="number-pad"
                 />
               </View>

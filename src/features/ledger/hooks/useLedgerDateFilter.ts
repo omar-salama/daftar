@@ -22,7 +22,7 @@ export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string,
 
   const paymentDate = useMemo(() => {
     if (!billingCycle || !account) return null;
-    return getPaymentDate(billingCycle.closingDate, account.paymentDateType, account.paymentDateValue);
+    return getPaymentDate(billingCycle.closingDate, account.paymentDay);
   }, [billingCycle, account]);
 
   const handlePrev = () => {

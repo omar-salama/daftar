@@ -59,8 +59,7 @@ export function useSaveAccount() {
       maxOrder: number;
       creditLimit?: number;
       closingDay?: number;
-      paymentDateType?: 'fixed_day' | 'days_after_closing';
-      paymentDateValue?: number;
+      paymentDay?: number;
     }) => {
       const now = Date.now();
       const { version, deviceId } = nextVersion();
@@ -74,8 +73,7 @@ export function useSaveAccount() {
             initialBalance: data.initialBalance !== undefined ? data.initialBalance : data.existingAccount.initialBalance,
             creditLimit: data.creditLimit !== undefined ? data.creditLimit : data.existingAccount.creditLimit,
             closingDay: data.closingDay !== undefined ? data.closingDay : data.existingAccount.closingDay,
-            paymentDateType: data.paymentDateType !== undefined ? data.paymentDateType : data.existingAccount.paymentDateType,
-            paymentDateValue: data.paymentDateValue !== undefined ? data.paymentDateValue : data.existingAccount.paymentDateValue,
+            paymentDay: data.paymentDay !== undefined ? data.paymentDay : (data.existingAccount as any).paymentDay || (data.existingAccount as any).paymentDateValue,
             version,
           }
         : {
@@ -93,8 +91,7 @@ export function useSaveAccount() {
             createdAt: new Date(now).toISOString(),
             creditLimit: data.creditLimit,
             closingDay: data.closingDay,
-            paymentDateType: data.paymentDateType,
-            paymentDateValue: data.paymentDateValue,
+            paymentDay: data.paymentDay,
           };
 
       return appendAccount.mutateAsync(payload);

@@ -71,25 +71,16 @@ export function getBillingCycle(closingDay: number, calendarDate: string): Billi
 
 export function getPaymentDate(
   closingDate: string,
-  paymentDateType?: 'fixed_day' | 'days_after_closing',
-  paymentDateValue?: number
+  paymentDay?: number
 ): string | undefined {
-  if (!paymentDateType || paymentDateValue === undefined) return undefined;
+  if (paymentDay === undefined) return undefined;
   
-  if (paymentDateType === 'days_after_closing') {
-    return addDays(closingDate, paymentDateValue);
+  const [y, m] = closingDate.split('-').map(Number);
+  let nextY = y;
+  let nextM = m + 1;
+  if (nextM === 13) {
+    nextM = 1;
+    nextY += 1;
   }
-  
-  if (paymentDateType === 'fixed_day') {
-    const [y, m] = closingDate.split('-').map(Number);
-    let nextY = y;
-    let nextM = m + 1;
-    if (nextM === 13) {
-      nextM = 1;
-      nextY += 1;
-    }
-    return getClosingDate(nextY, nextM, paymentDateValue);
-  }
-  
-  return undefined;
+  return getClosingDate(nextY, nextM, paymentDay);
 }

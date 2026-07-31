@@ -97,20 +97,16 @@ describe('getBillingCycle', () => {
 });
 
 describe('getPaymentDate', () => {
-  it('calculates days_after_closing correctly', () => {
-    expect(getPaymentDate('2026-07-15', 'days_after_closing', 20)).toBe('2026-08-04');
-  });
-  
   it('calculates fixed_day correctly (next month)', () => {
-    expect(getPaymentDate('2026-07-15', 'fixed_day', 10)).toBe('2026-08-10');
+    expect(getPaymentDate('2026-07-15', 10)).toBe('2026-08-10');
   });
   
   it('clamps fixed_day to month length', () => {
-    expect(getPaymentDate('2026-01-15', 'fixed_day', 31)).toBe('2026-02-28');
-    expect(getPaymentDate('2024-01-15', 'fixed_day', 31)).toBe('2024-02-29');
+    expect(getPaymentDate('2026-01-15', 31)).toBe('2026-02-28');
+    expect(getPaymentDate('2024-01-15', 31)).toBe('2024-02-29');
   });
   
   it('handles year boundary for fixed_day', () => {
-    expect(getPaymentDate('2026-12-15', 'fixed_day', 10)).toBe('2027-01-10');
+    expect(getPaymentDate('2026-12-15', 10)).toBe('2027-01-10');
   });
 });

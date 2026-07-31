@@ -21,8 +21,7 @@ export interface AccountVersion {
   // Credit card specific configuration
   creditLimit?: number;
   closingDay?: number;
-  paymentDateType?: 'fixed_day' | 'days_after_closing';
-  paymentDateValue?: number;
+  paymentDay?: number;
 }
 
 export interface AccountRepo {
