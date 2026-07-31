@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, FlatList, Text, View } from 'react-native';
 import { createTxVersion, useAppendTx, useLedger, useLedgerAllVersions } from '../hooks/useLedger';
-import { useMonthlyLedger } from '../hooks/useMonthlyLedger';
+import { useLedgerDateFilter } from '../hooks/useLedgerDateFilter';
 import { LedgerDailyHeader } from './LedgerDailyHeader';
 import { LedgerDetailsModal } from './LedgerDetailsModal';
 import { LedgerRow } from './LedgerRow';
@@ -26,15 +26,18 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
 
   const [selectedTx, setSelectedTx] = useState<TxVersion | null>(null);
 
+  const account = useMemo(() => accounts.find(a => a.accountId === accountId), [accounts, accountId]);
+
   const {
-    handlePrevMonth,
-    handleNextMonth,
+    handlePrev: handlePrevMonth,
+    handleNext: handleNextMonth,
     filteredTxs,
-    monthIncome,
-    monthExpense,
-    monthTotal,
-    monthName,
-  } = useMonthlyLedger(currentTxs, accountId);
+    totalIncome: monthIncome,
+    totalExpense: monthExpense,
+    totalNet: monthTotal,
+    periodName: monthName,
+    paymentDate,
+  } = useLedgerDateFilter(currentTxs, accountId, account);
 
   const versionCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -180,6 +183,13 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
           onPrevMonth={handlePrevMonth}
           onNextMonth={handleNextMonth}
         />
+        {paymentDate && (
+          <View className="py-2">
+            <Text className="text-sm text-center text-on-surface-variant">
+              Payment due: {paymentDate}
+            </Text>
+          </View>
+        )}
         <MonthTotals
           monthIncome={monthIncome}
           monthExpense={monthExpense}

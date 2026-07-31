@@ -20,3 +20,4 @@ export {
   buildTxVersion,
   resolveCurrent,
 } from './tx';
+export * from './date';

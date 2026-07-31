@@ -30,11 +30,16 @@ export function AccountForm({ accountId }: AccountFormProps) {
   const [note, setNote] = useState('');
   const [balanceInput, setBalanceInput] = useState('');
   
+  const [closingDay, setClosingDay] = useState('');
+  const [paymentDateValue, setPaymentDateValue] = useState('');
+  
   useEffect(() => {
     if (existingAccount) {
       setName(existingAccount.name);
       setType(existingAccount.type);
       setNote(existingAccount.note || '');
+      setClosingDay(existingAccount.closingDay ? String(existingAccount.closingDay) : '');
+      setPaymentDateValue(existingAccount.paymentDateValue ? String(existingAccount.paymentDateValue) : '');
       
       const currentBalance = balances[existingAccount.accountId] || 0;
       const isWhole = currentBalance % 100 === 0;
@@ -43,6 +48,9 @@ export function AccountForm({ accountId }: AccountFormProps) {
       setType(accountTypes[0].accountTypeId);
     }
   }, [existingAccount, balances, accountTypes, type]);
+
+  const selectedTypeInfo = accountTypes.find(t => t.accountTypeId === type);
+  const isLiability = selectedTypeInfo?.isLiability;
 
   const handleSave = () => {
     if (!name.trim()) return;
@@ -68,6 +76,9 @@ export function AccountForm({ accountId }: AccountFormProps) {
       note: note.trim() || undefined,
       initialBalance,
       maxOrder,
+      closingDay: isLiability && closingDay ? parseInt(closingDay, 10) : undefined,
+      paymentDateType: isLiability && paymentDateValue ? 'days_after_closing' : undefined,
+      paymentDateValue: isLiability && paymentDateValue ? parseInt(paymentDateValue, 10) : undefined,
     }, {
       onSuccess: () => router.back()
     });
@@ -136,6 +147,33 @@ export function AccountForm({ accountId }: AccountFormProps) {
             ))}
           </View>
         </View>
+
+        {isLiability && (
+          <View className="mb-6 flex-row gap-4">
+            <View className="flex-1">
+              <Text className="text-sm font-medium text-on-surface-variant mb-2">Closing Day (1-31)</Text>
+              <TextInput
+                className="bg-surface-container text-on-surface p-3 rounded-xl border border-surface-variant text-base"
+                placeholder="15"
+                placeholderTextColor="#71717a"
+                value={closingDay}
+                onChangeText={setClosingDay}
+                keyboardType="number-pad"
+              />
+            </View>
+            <View className="flex-1">
+              <Text className="text-sm font-medium text-on-surface-variant mb-2">Days to Pay</Text>
+              <TextInput
+                className="bg-surface-container text-on-surface p-3 rounded-xl border border-surface-variant text-base"
+                placeholder="21"
+                placeholderTextColor="#71717a"
+                value={paymentDateValue}
+                onChangeText={setPaymentDateValue}
+                keyboardType="number-pad"
+              />
+            </View>
+          </View>
+        )}
 
         <View className="mb-6">
           <Text className="text-sm font-medium text-on-surface-variant mb-2">Note (Optional)</Text>

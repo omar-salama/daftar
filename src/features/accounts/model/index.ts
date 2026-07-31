@@ -17,6 +17,12 @@ export interface AccountVersion {
   note?: string;
   initialBalance?: number;
   createdAt?: string;
+
+  // Credit card specific configuration
+  creditLimit?: number;
+  closingDay?: number;
+  paymentDateType?: 'fixed_day' | 'days_after_closing';
+  paymentDateValue?: number;
 }
 
 export interface AccountRepo {
