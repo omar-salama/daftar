@@ -1,62 +1,42 @@
-import { useEffect, useState } from 'react';
-import { View } from 'react-native';
-import { NestableDraggableFlatList, RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useReorderAccountTypes } from '../hooks';
 import { AccountTypeVersion } from '../model';
 import { AccountTypeListItem } from './AccountTypeListItem';
+import { DraggableList } from '@/components/ui/DraggableList';
 
 export interface DraggableAccountTypeListProps {
   accountTypes: AccountTypeVersion[];
   onDelete: (item: AccountTypeVersion) => void;
   withDividers?: boolean;
   containerClassName?: string;
-  renderItem?: (params: RenderItemParams<AccountTypeVersion>) => React.ReactNode;
+  renderItemContent?: (params: import('react-native-draggable-flatlist').RenderItemParams<AccountTypeVersion>) => React.ReactNode;
 }
 
 export function DraggableAccountTypeList({
-  accountTypes: initialAccountTypes,
+  accountTypes,
   onDelete,
   withDividers = false,
   containerClassName,
-  renderItem,
+  renderItemContent,
 }: DraggableAccountTypeListProps) {
-  const [accountTypes, setAccountTypes] = useState(initialAccountTypes);
   const reorderAccountTypes = useReorderAccountTypes();
 
-  useEffect(() => {
-    setAccountTypes(initialAccountTypes);
-  }, [initialAccountTypes]);
-
-  const handleDragEnd = ({ data }: { data: AccountTypeVersion[] }) => {
-    setAccountTypes(data);
-    reorderAccountTypes.mutate(data);
-  };
-
-  const defaultRenderItem = ({ item, drag, isActive, getIndex }: RenderItemParams<AccountTypeVersion>) => {
-    const index = getIndex() ?? 0;
-    const showDivider = withDividers && index < accountTypes.length - 1;
-    
-    return (
-      <ScaleDecorator>
-        <View className={showDivider ? 'border-b border-surface-variant' : ''}>
+  return (
+    <DraggableList
+      items={accountTypes}
+      onReorder={(data) => reorderAccountTypes.mutate(data)}
+      keyExtractor={(item) => item.accountTypeId}
+      withDividers={withDividers}
+      renderItemContent={(params) => 
+        renderItemContent ? renderItemContent(params) : (
           <AccountTypeListItem
-            item={item}
-            isActive={isActive}
-            drag={drag}
+            item={params.item}
+            isActive={params.isActive}
+            drag={params.drag}
             onDelete={onDelete}
             containerClassName={containerClassName}
           />
-        </View>
-      </ScaleDecorator>
-    );
-  };
-
-  return (
-    <NestableDraggableFlatList
-      data={accountTypes}
-      onDragEnd={handleDragEnd}
-      keyExtractor={(item) => item.accountTypeId}
-      renderItem={renderItem ?? defaultRenderItem}
+        )
+      }
     />
   );
 }

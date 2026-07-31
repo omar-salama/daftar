@@ -53,7 +53,7 @@ export default function CategoryManagementScreen() {
               categories={data}
               type={type}
               onDelete={(item) => deleteCategory.mutate(item)}
-              renderItem={renderItem}
+              renderItemContent={renderItem}
             />
           </NestableScrollContainer>
         )}

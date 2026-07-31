@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
-import { View } from 'react-native';
-import { NestableDraggableFlatList, RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useReorderCategories } from '../hooks';
 import { CategoryVersion } from '../model';
 import { CategoryListItem } from './CategoryListItem';
+import { DraggableList } from '@/components/ui/DraggableList';
 
 export interface DraggableCategoryListProps {
   categories: CategoryVersion[];
@@ -12,56 +10,38 @@ export interface DraggableCategoryListProps {
   isSubCategory?: boolean;
   withDividers?: boolean;
   containerClassName?: string;
-  renderItem?: (params: RenderItemParams<CategoryVersion>) => React.ReactNode;
+  renderItemContent?: (params: import('react-native-draggable-flatlist').RenderItemParams<CategoryVersion>) => React.ReactNode;
 }
 
 export function DraggableCategoryList({
-  categories: initialCategories,
+  categories,
   type,
   onDelete,
   isSubCategory = false,
   withDividers = false,
   containerClassName,
-  renderItem,
+  renderItemContent,
 }: DraggableCategoryListProps) {
-  const [categories, setCategories] = useState(initialCategories);
   const reorderCategories = useReorderCategories();
 
-  useEffect(() => {
-    setCategories(initialCategories);
-  }, [initialCategories]);
-
-  const handleDragEnd = ({ data }: { data: CategoryVersion[] }) => {
-    setCategories(data);
-    reorderCategories.mutate(data);
-  };
-
-  const defaultRenderItem = ({ item, drag, isActive, getIndex }: RenderItemParams<CategoryVersion>) => {
-    const index = getIndex() ?? 0;
-    const showDivider = withDividers && index < categories.length - 1;
-    
-    return (
-      <ScaleDecorator>
-        <View className={showDivider ? 'border-b border-surface-variant' : ''}>
+  return (
+    <DraggableList
+      items={categories}
+      onReorder={(data) => reorderCategories.mutate(data)}
+      keyExtractor={(item) => item.categoryId}
+      withDividers={withDividers}
+      renderItemContent={(params) => 
+        renderItemContent ? renderItemContent(params) : (
           <CategoryListItem
-            item={item}
+            item={params.item}
             type={type}
-            isActive={isActive}
-            drag={drag}
+            isActive={params.isActive}
+            drag={params.drag}
             onDelete={onDelete}
             containerClassName={containerClassName}
           />
-        </View>
-      </ScaleDecorator>
-    );
-  };
-
-  return (
-    <NestableDraggableFlatList
-      data={categories}
-      onDragEnd={handleDragEnd}
-      keyExtractor={(item) => item.categoryId}
-      renderItem={renderItem ?? defaultRenderItem}
+        )
+      }
     />
   );
 }

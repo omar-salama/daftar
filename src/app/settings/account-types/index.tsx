@@ -45,7 +45,7 @@ export default function AccountTypeManagementScreen() {
             <DraggableAccountTypeList
               accountTypes={data}
               onDelete={(item) => deleteAccountType.mutate(item)}
-              renderItem={renderItem}
+              renderItemContent={renderItem}
             />
           </NestableScrollContainer>
         )}
