@@ -1,3 +1,4 @@
+import { useAccountTypes } from '@/features/account-types/hooks';
 import { useAccountBalances } from '@/features/accounts/hooks/useAccountBalances';
 import { useAccounts, useReorderAccounts } from '@/features/accounts/hooks/useAccounts';
 import { AccountVersion } from '@/features/accounts/model';
@@ -11,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AccountsTab() {
   const { data: accounts = [] } = useAccounts();
+  const { data: accountTypes = [] } = useAccountTypes();
   const { balances, totalAssets, totalLiabilities, netWorth } = useAccountBalances();
   const reorderAccounts = useReorderAccounts();
   const router = useRouter();
@@ -34,6 +36,7 @@ export default function AccountsTab() {
 
   const renderItem = ({ item, drag, isActive }: RenderItemParams<AccountVersion>) => {
     const balance = balances[item.accountId] || 0;
+    const accountTypeName = accountTypes.find(t => t.accountTypeId === item.type)?.name;
     
     return (
       <AccountListItem
@@ -41,6 +44,7 @@ export default function AccountsTab() {
         balance={balance}
         drag={drag}
         isActive={isActive}
+        accountTypeName={accountTypeName}
       />
     );
   };

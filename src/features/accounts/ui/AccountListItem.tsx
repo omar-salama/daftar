@@ -9,9 +9,10 @@ interface AccountListItemProps {
   balance: number;
   drag: () => void;
   isActive: boolean;
+  accountTypeName?: string;
 }
 
-export function AccountListItem({ item, balance, drag, isActive }: AccountListItemProps) {
+export function AccountListItem({ item, balance, drag, isActive, accountTypeName }: AccountListItemProps) {
   const router = useRouter();
 
   return (
@@ -26,7 +27,7 @@ export function AccountListItem({ item, balance, drag, isActive }: AccountListIt
       >
         <View>
           <Text className="text-lg font-semibold text-on-surface">{item.name}</Text>
-          <Text className="text-sm text-on-surface-variant capitalize">{item.type}</Text>
+          <Text className="text-sm text-on-surface-variant capitalize">{accountTypeName || item.type}</Text>
         </View>
         <View className="items-end">
           <Text className="text-lg font-semibold text-on-surface">
