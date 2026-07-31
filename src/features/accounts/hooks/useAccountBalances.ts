@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useLedger } from '@/features/ledger/hooks/useLedger';
 import { useAccounts } from './useAccounts';
 import { useAccountTypes } from '@/features/account-types/hooks';
+import { getBillingCycle, addDays } from '@/kernel/date';
 
 export function useAccountBalances() {
   const { data: accounts } = useAccounts();
@@ -10,29 +11,62 @@ export function useAccountBalances() {
 
   return useMemo(() => {
     const balances: Record<string, number> = {};
-    if (!accounts) return { balances, totalAssets: 0, totalLiabilities: 0, netWorth: 0 };
+    const payableBalances: Record<string, number> = {};
+    const prevClosingDates: Record<string, string> = {};
+
+    if (!accounts) return { balances, payableBalances, totalAssets: 0, totalLiabilities: 0, netWorth: 0 };
+
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     // Initialize balances
     for (const acc of accounts) {
       balances[acc.accountId] = acc.initialBalance || 0;
+      payableBalances[acc.accountId] = acc.initialBalance || 0;
+      
+      if (acc.closingDay !== undefined) {
+        const cycle = getBillingCycle(acc.closingDay, todayStr);
+        prevClosingDates[acc.accountId] = addDays(cycle.periodStart, -1);
+      }
     }
 
     // Calculate balances
     if (txs) {
       for (const tx of txs) {
+        // Current Balances
         if (tx.accountId && balances[tx.accountId] !== undefined) {
-          if (tx.type === 'expense') {
-            balances[tx.accountId] -= tx.totalMinor;
-          } else if (tx.type === 'income') {
-            balances[tx.accountId] += tx.totalMinor;
-          } else if (tx.type === 'transfer') {
-            balances[tx.accountId] -= tx.totalMinor;
-          }
+          if (tx.type === 'expense') balances[tx.accountId] -= tx.totalMinor;
+          else if (tx.type === 'income') balances[tx.accountId] += tx.totalMinor;
+          else if (tx.type === 'transfer') balances[tx.accountId] -= tx.totalMinor;
         }
         
         if (tx.transferAccountId && balances[tx.transferAccountId] !== undefined) {
+          if (tx.type === 'expense' || tx.type === 'transfer') balances[tx.transferAccountId] += tx.totalMinor;
+        }
+
+        // Payable Balances
+        if (tx.accountId && payableBalances[tx.accountId] !== undefined) {
+          const prevClosingDate = prevClosingDates[tx.accountId];
+          const shouldApplyNormally = !prevClosingDate || tx.occurredAt <= prevClosingDate;
+          
+          if (shouldApplyNormally) {
+            if (tx.type === 'expense' || tx.type === 'transfer') payableBalances[tx.accountId] -= tx.totalMinor;
+            else if (tx.type === 'income') payableBalances[tx.accountId] += tx.totalMinor;
+          }
+        }
+
+        if (tx.transferAccountId && payableBalances[tx.transferAccountId] !== undefined) {
+          const prevClosingDate = prevClosingDates[tx.transferAccountId];
+          const shouldApplyNormally = !prevClosingDate || tx.occurredAt <= prevClosingDate;
+          
           if (tx.type === 'expense' || tx.type === 'transfer') {
-            balances[tx.transferAccountId] += tx.totalMinor;
+            if (shouldApplyNormally) {
+              payableBalances[tx.transferAccountId] += tx.totalMinor;
+            } else if (tx.type === 'transfer') {
+              // It's AFTER the closing date, but it's a TRANSFER (payment) into this account.
+              // Apply it to reduce the payable balance.
+              payableBalances[tx.transferAccountId] += tx.totalMinor;
+            }
           }
         }
       }
@@ -48,11 +82,7 @@ export function useAccountBalances() {
       const typeInfo = accountTypeMap.get(acc.type as import('@/features/account-types/model').AccountTypeId);
       
       if (typeInfo?.isLiability) {
-        // Credit accounts usually have negative balances when you owe money
-        // We sum the outstanding credit (which is the negative balance) as a positive liability
-        if (bal < 0) {
-          totalLiabilities += Math.abs(bal);
-        }
+        if (bal < 0) totalLiabilities += Math.abs(bal);
       } else {
         totalAssets += bal;
       }
@@ -60,6 +90,6 @@ export function useAccountBalances() {
 
     const netWorth = totalAssets - totalLiabilities;
 
-    return { balances, totalAssets, totalLiabilities, netWorth };
+    return { balances, payableBalances, totalAssets, totalLiabilities, netWorth };
   }, [accounts, txs, accountTypes]);
 }

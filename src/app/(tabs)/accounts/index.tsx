@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function AccountsTab() {
   const { data: accounts = [] } = useAccounts();
   const { data: accountTypes = [] } = useAccountTypes();
-  const { balances, totalAssets, totalLiabilities, netWorth } = useAccountBalances();
+  const { balances, payableBalances, totalAssets, totalLiabilities, netWorth } = useAccountBalances();
   const reorderAccounts = useReorderAccounts();
   const router = useRouter();
 
@@ -36,12 +36,14 @@ export default function AccountsTab() {
 
   const renderItem = ({ item, drag, isActive }: RenderItemParams<AccountVersion>) => {
     const balance = balances[item.accountId] || 0;
+    const balancePayable = payableBalances[item.accountId] || 0;
     const accountTypeInfo = accountTypes.find(t => t.accountTypeId === item.type);
     
     return (
       <AccountListItem
         item={item}
         balance={balance}
+        balancePayable={balancePayable}
         drag={drag}
         isActive={isActive}
         accountTypeName={accountTypeInfo?.name}

@@ -7,13 +7,14 @@ import { AccountVersion } from '../model';
 interface AccountListItemProps {
   item: AccountVersion;
   balance: number;
+  balancePayable?: number;
   drag: () => void;
   isActive: boolean;
   accountTypeName?: string;
   isLiability?: boolean;
 }
 
-export function AccountListItem({ item, balance, drag, isActive, accountTypeName, isLiability }: AccountListItemProps) {
+export function AccountListItem({ item, balance, balancePayable = 0, drag, isActive, accountTypeName, isLiability }: AccountListItemProps) {
   const router = useRouter();
 
   return (
@@ -35,9 +36,14 @@ export function AccountListItem({ item, balance, drag, isActive, accountTypeName
             {formatMinor(isLiability ? Math.abs(balance as number) as Minor : balance as Minor, DEFAULT_CURRENCY)}
           </Text>
           {isLiability && item.creditLimit !== undefined && (
-            <Text className="text-xs text-secondary mt-1">
-              Available: {formatMinor((item.creditLimit + balance) as Minor, DEFAULT_CURRENCY)}
-            </Text>
+            <View className="flex-row mt-1">
+              <Text className="text-xs text-secondary mr-2">
+                Available: {formatMinor((item.creditLimit + balance) as Minor, DEFAULT_CURRENCY)}
+              </Text>
+              <Text className="text-xs text-error">
+                Payable: {formatMinor(Math.max(0, -(balancePayable as number)) as Minor, DEFAULT_CURRENCY)}
+              </Text>
+            </View>
           )}
         </View>
         <View className="pl-3">
