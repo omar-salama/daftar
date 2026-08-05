@@ -13,7 +13,7 @@ export function useAutoFocus(inputRef: RefObject<TextInput | null>, shouldFocus:
   useEffect(() => {
     if (!shouldFocus) return;
 
-    // @ts-ignore: transitionEnd is a valid event for Stack navigators but not typed by default in useNavigation
+    // @ts-expect-error: transitionEnd is a valid event for Stack navigators but not typed by default in useNavigation
     const unsubscribe = navigation.addListener('transitionEnd', () => {
       inputRef.current?.focus();
     });

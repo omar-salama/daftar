@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { AccountTypeId } from '../model';
+
 import { useAccountTypes, useSaveAccountType } from './useAccountTypes';
 
 export interface UseAccountTypeFormProps {

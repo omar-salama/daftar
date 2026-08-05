@@ -7,7 +7,7 @@ export interface DraggableCategoryListProps {
   categories: CategoryVersion[];
   type: string;
   onDelete: (item: CategoryVersion) => void;
-  isSubCategory?: boolean;
+
   withDividers?: boolean;
   containerClassName?: string;
   renderItemContent?: (params: import('react-native-draggable-flatlist').RenderItemParams<CategoryVersion>) => React.ReactNode;
@@ -17,7 +17,7 @@ export function DraggableCategoryList({
   categories,
   type,
   onDelete,
-  isSubCategory = false,
+
   withDividers = false,
   containerClassName,
   renderItemContent,

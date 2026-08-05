@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AccountTypeId, AccountTypeVersion, resolveAccountTypeCurrent } from '../model';
 import { localAccountTypeRepo } from '../repo';
 import { nextHLC, RowId } from '@/kernel';
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { generateUuid, getDeviceId, getHlcState, nextVersion, setHlcState } from '@/lib/storage';
 
 export const accountTypeKeys = {

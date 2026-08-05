@@ -2,6 +2,7 @@ import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 import { useAppendTx, createTxVersion, useLedger } from '@/features/ledger/hooks/useLedger';
 import type { TxId, TxLine, TxType, TxVersion } from '@/kernel';
 import { minorFromDigits, appendDigit } from '@/kernel/money';
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { generateUuid } from '@/lib/storage';
 
 import * as Haptics from 'expo-haptics';

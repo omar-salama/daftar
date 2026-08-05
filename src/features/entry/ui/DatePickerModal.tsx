@@ -25,7 +25,7 @@ export function DatePickerModal({ visible, currentDate, onClose, onSelectDate }:
     }
   }, [currentDate]);
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
+  const handleDateChange = (event: { type?: string }, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
       onClose(); // Android dismisses modal on selection or cancel
       if (event.type === 'set' && selectedDate) {

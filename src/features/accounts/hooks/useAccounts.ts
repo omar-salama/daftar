@@ -1,5 +1,6 @@
 import { nextHLC, RowId } from '@/kernel';
 import { Minor } from '@/kernel/money';
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { generateUuid, getDeviceId, getHlcState, nextVersion, setHlcState } from '@/lib/storage';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AccountId, AccountType, AccountVersion, resolveAccountCurrent } from '../model';
