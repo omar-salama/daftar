@@ -9,21 +9,21 @@ import { useAccounts } from './useAccounts';
 
 function initializeAccountStates(accounts: AccountVersion[]) {
   const balances: Record<string, number> = {};
-  const statementBalances: Record<string, number> = {};
-  const prevClosingDates: Record<string, string> = {};
+  const dueAmounts: Record<string, number> = {};
+  const prevBillingCycleEndDates: Record<string, string> = {};
   const todayStr = getTodayString();
 
   for (const acc of accounts) {
     balances[acc.accountId] = acc.initialBalance || 0;
-    statementBalances[acc.accountId] = acc.initialBalance || 0;
-    
-    if (acc.closingDay !== undefined) {
-      const cycle = getBillingCycle(acc.closingDay, todayStr);
-      prevClosingDates[acc.accountId] = addDays(cycle.periodStart, -1);
+    dueAmounts[acc.accountId] = acc.initialBalance || 0;
+
+    if (acc.billingCycleStartDay !== undefined) {
+      const cycle = getBillingCycle(acc.billingCycleStartDay, todayStr);
+      prevBillingCycleEndDates[acc.accountId] = addDays(cycle.startDate, -1);
     }
   }
 
-  return { balances, statementBalances, prevClosingDates };
+  return { balances, dueAmounts, prevBillingCycleEndDates };
 }
 
 /**
@@ -51,25 +51,25 @@ function applyCurrentBalance(tx: TxVersion, balances: Record<string, number>) {
   }
 }
 
-function applyStatementBalance(tx: TxVersion, statementBalances: Record<string, number>, prevClosingDates: Record<string, string>) {
+function ApplyDueAmount(tx: TxVersion, dueAmounts: Record<string, number>, prevBillingCycleEndDates: Record<string, string>) {
   // Apply to source account
-  if (tx.accountId && statementBalances[tx.accountId] !== undefined) {
-    const closingDate = prevClosingDates[tx.accountId];
-    const isIncludedInStatement = !closingDate || tx.occurredAt <= closingDate;
-    
-    if (isIncludedInStatement) {
-      statementBalances[tx.accountId] += getAccountBalanceImpact(tx, tx.accountId);
+  if (tx.accountId && dueAmounts[tx.accountId] !== undefined) {
+    const billingCycleEndDate = prevBillingCycleEndDates[tx.accountId];
+    const isIncludedInCycle = !billingCycleEndDate || tx.occurredAt <= billingCycleEndDate;
+
+    if (isIncludedInCycle) {
+      dueAmounts[tx.accountId] += getAccountBalanceImpact(tx, tx.accountId);
     }
   }
 
   // Apply to destination account
-  if (tx.transferAccountId && statementBalances[tx.transferAccountId] !== undefined) {
-    const closingDate = prevClosingDates[tx.transferAccountId];
-    const isIncludedInStatement = !closingDate || tx.occurredAt <= closingDate;
-    const isPaymentAfterClosing = !isIncludedInStatement && tx.type === 'transfer';
-    
-    if (isIncludedInStatement || isPaymentAfterClosing) {
-      statementBalances[tx.transferAccountId] += getAccountBalanceImpact(tx, tx.transferAccountId);
+  if (tx.transferAccountId && dueAmounts[tx.transferAccountId] !== undefined) {
+    const billingCycleEndDate = prevBillingCycleEndDates[tx.transferAccountId];
+    const isIncludedInCycle = !billingCycleEndDate || tx.occurredAt <= billingCycleEndDate;
+    const isPaymentAfterBillingCycleEnd = !isIncludedInCycle && tx.type === 'transfer';
+
+    if (isIncludedInCycle || isPaymentAfterBillingCycleEnd) {
+      dueAmounts[tx.transferAccountId] += getAccountBalanceImpact(tx, tx.transferAccountId);
     }
   }
 }
@@ -77,12 +77,12 @@ function applyStatementBalance(tx: TxVersion, statementBalances: Record<string, 
 function applyTransactions(
   txs: TxVersion[],
   balances: Record<string, number>,
-  statementBalances: Record<string, number>,
-  prevClosingDates: Record<string, string>
+  dueAmounts: Record<string, number>,
+  prevBillingCycleEndDates: Record<string, string>
 ) {
   for (const tx of txs) {
     applyCurrentBalance(tx, balances);
-    applyStatementBalance(tx, statementBalances, prevClosingDates);
+    ApplyDueAmount(tx, dueAmounts, prevBillingCycleEndDates);
   }
 }
 
@@ -94,7 +94,7 @@ function calculateNetWorth(accounts: AccountVersion[], accountTypes: AccountType
   for (const acc of accounts) {
     const bal = balances[acc.accountId] || 0;
     const typeInfo = accountTypeMap.get(acc.type as import('@/features/account-types/model').AccountTypeId);
-    
+
     if (typeInfo?.isLiability) {
       if (bal < 0) totalLiabilities += Math.abs(bal);
     } else {
@@ -111,16 +111,16 @@ export function useAccountBalances() {
   const { data: txs } = useLedger();
 
   return useMemo(() => {
-    if (!accounts) return { balances: {}, statementBalances: {}, totalAssets: 0, totalLiabilities: 0, netWorth: 0 };
+    if (!accounts) return { balances: {}, dueAmounts: {}, totalAssets: 0, totalLiabilities: 0, netWorth: 0 };
 
-    const { balances, statementBalances, prevClosingDates } = initializeAccountStates(accounts);
-    
+    const { balances, dueAmounts, prevBillingCycleEndDates } = initializeAccountStates(accounts);
+
     if (txs) {
-      applyTransactions(txs, balances, statementBalances, prevClosingDates);
+      applyTransactions(txs, balances, dueAmounts, prevBillingCycleEndDates);
     }
 
     const { totalAssets, totalLiabilities, netWorth } = calculateNetWorth(accounts, accountTypes || [], balances);
 
-    return { balances, statementBalances, totalAssets, totalLiabilities, netWorth };
+    return { balances, dueAmounts, totalAssets, totalLiabilities, netWorth };
   }, [accounts, txs, accountTypes]);
 }

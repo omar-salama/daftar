@@ -20,7 +20,7 @@ export interface AccountVersion {
 
   // Credit card specific configuration
   creditLimit?: number;
-  closingDay?: number;
+  billingCycleStartDay?: number;
   paymentDay?: number;
 }
 

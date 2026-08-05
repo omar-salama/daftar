@@ -1,4 +1,4 @@
-import { formatMinor, Minor, DEFAULT_CURRENCY } from '@/kernel/money';
+import { DEFAULT_CURRENCY, formatMinor, Minor } from '@/kernel/money';
 import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { ScaleDecorator } from 'react-native-draggable-flatlist';
@@ -7,14 +7,14 @@ import { AccountVersion } from '../model';
 interface AccountListItemProps {
   item: AccountVersion;
   balance: number;
-  statementBalance?: number;
+  dueAmount?: number;
   drag: () => void;
   isActive: boolean;
   accountTypeName?: string;
   isLiability?: boolean;
 }
 
-export function AccountListItem({ item, balance, statementBalance = 0, drag, isActive, accountTypeName, isLiability }: AccountListItemProps) {
+export function AccountListItem({ item, balance, dueAmount = 0, drag, isActive, accountTypeName, isLiability }: AccountListItemProps) {
   const router = useRouter();
 
   return (
@@ -41,7 +41,7 @@ export function AccountListItem({ item, balance, statementBalance = 0, drag, isA
                 Available: {formatMinor((item.creditLimit + balance) as Minor, DEFAULT_CURRENCY)}
               </Text>
               <Text className="text-xs text-error">
-                Statement: {formatMinor(Math.max(0, -(statementBalance as number)) as Minor, DEFAULT_CURRENCY)}
+                Due: {formatMinor(Math.max(0, -(dueAmount as number)) as Minor, DEFAULT_CURRENCY)}
               </Text>
             </View>
           )}

@@ -1,6 +1,6 @@
 import { AccountVersion } from '@/features/accounts/model';
 import { Minor, TxVersion } from '@/kernel';
-import { addDays, getBillingCycle, getPaymentDate } from '@/kernel/date';
+import { addDays, getBillingCycle } from '@/kernel/date';
 import { useMemo, useState } from 'react';
 
 export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string, account?: AccountVersion) {
@@ -9,25 +9,22 @@ export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string,
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   });
 
-  const isCreditCard = account?.closingDay !== undefined;
+  const isCreditCard = account?.billingCycleStartDay !== undefined;
 
   // Monthly logic
   const currentMonthStr = currentCalendarDate.substring(0, 7);
   
   // Billing cycle logic
   const billingCycle = useMemo(() => {
-    if (!isCreditCard || account.closingDay === undefined) return null;
-    return getBillingCycle(account.closingDay, currentCalendarDate);
-  }, [isCreditCard, account?.closingDay, currentCalendarDate]);
+    if (!isCreditCard || account?.billingCycleStartDay === undefined || account?.paymentDay === undefined) return null;
+    return getBillingCycle(account.billingCycleStartDay, currentCalendarDate, account.paymentDay);
+  }, [isCreditCard, account?.billingCycleStartDay, account?.paymentDay, currentCalendarDate]);
 
-  const paymentDate = useMemo(() => {
-    if (!billingCycle || !account) return null;
-    return getPaymentDate(billingCycle.closingDate, account.paymentDay);
-  }, [billingCycle, account]);
+  const paymentDate = billingCycle?.paymentDate || null;
 
   const handlePrev = () => {
     if (isCreditCard && billingCycle) {
-      setCurrentCalendarDate(addDays(billingCycle.periodStart, -1));
+      setCurrentCalendarDate(addDays(billingCycle.startDate, -1));
     } else {
       const [y, m] = currentMonthStr.split('-');
       const date = new Date(Number(y), Number(m) - 2);
@@ -37,7 +34,7 @@ export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string,
 
   const handleNext = () => {
     if (isCreditCard && billingCycle) {
-      setCurrentCalendarDate(addDays(billingCycle.closingDate, 1));
+      setCurrentCalendarDate(addDays(billingCycle.endDate, 1));
     } else {
       const [y, m] = currentMonthStr.split('-');
       const date = new Date(Number(y), Number(m));
@@ -50,7 +47,7 @@ export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string,
     
     if (isCreditCard && billingCycle) {
       filtered = filtered.filter(tx => 
-        tx.occurredAt >= billingCycle.periodStart && tx.occurredAt <= billingCycle.closingDate
+        tx.occurredAt >= billingCycle.startDate && tx.occurredAt <= billingCycle.endDate
       );
     } else {
       filtered = filtered.filter(tx => tx.occurredAt.startsWith(currentMonthStr));
@@ -93,7 +90,7 @@ export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string,
         const [y, m, d] = dStr.split('-').map(Number);
         return new Date(y, m - 1, d).toLocaleString('en-US', { month: 'short', day: 'numeric' });
       };
-      return `${formatStr(billingCycle.periodStart)} – ${formatStr(billingCycle.closingDate)}`;
+      return `${formatStr(billingCycle.startDate)} – ${formatStr(billingCycle.endDate)}`;
     }
     const [y, m] = currentMonthStr.split('-');
     return new Date(Number(y), Number(m) - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });

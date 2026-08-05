@@ -1,9 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { nextHLC, RowId } from '@/kernel';
+import { Minor } from '@/kernel/money';
+import { generateUuid, getDeviceId, getHlcState, nextVersion, setHlcState } from '@/lib/storage';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AccountId, AccountType, AccountVersion, resolveAccountCurrent } from '../model';
 import { localAccountRepo } from '../repo/localAccountRepo';
-import { nextHLC, RowId } from '@/kernel';
-import { generateUuid, getDeviceId, getHlcState, nextVersion, setHlcState } from '@/lib/storage';
-import { Minor } from '@/kernel/money';
 
 export const accountKeys = {
   all: ['accounts'] as const,
@@ -58,7 +58,7 @@ export function useSaveAccount() {
       initialBalance?: Minor;
       maxOrder: number;
       creditLimit?: number;
-      closingDay?: number;
+      billingCycleStartDay?: number;
       paymentDay?: number;
     }) => {
       const now = Date.now();
@@ -70,10 +70,10 @@ export function useSaveAccount() {
             name: data.name,
             type: data.type,
             note: data.note,
-            initialBalance: data.initialBalance !== undefined ? data.initialBalance : data.existingAccount.initialBalance,
-            creditLimit: data.creditLimit !== undefined ? data.creditLimit : data.existingAccount.creditLimit,
-            closingDay: data.closingDay !== undefined ? data.closingDay : data.existingAccount.closingDay,
-            paymentDay: data.paymentDay !== undefined ? data.paymentDay : (data.existingAccount as any).paymentDay || (data.existingAccount as any).paymentDateValue,
+            initialBalance: data.initialBalance ?? data.existingAccount.initialBalance,
+            creditLimit: data.creditLimit ?? data.existingAccount.creditLimit,
+            billingCycleStartDay: data.billingCycleStartDay ?? data.existingAccount.billingCycleStartDay,
+            paymentDay: data.paymentDay ?? data.existingAccount.paymentDay,
             version,
           }
         : {
@@ -90,7 +90,7 @@ export function useSaveAccount() {
             initialBalance: data.initialBalance ?? 0,
             createdAt: new Date(now).toISOString(),
             creditLimit: data.creditLimit,
-            closingDay: data.closingDay,
+            billingCycleStartDay: data.billingCycleStartDay,
             paymentDay: data.paymentDay,
           };
 
