@@ -26,6 +26,10 @@ export default function SettingsTab() {
             label="Account Types" 
             href="/settings/account-types" 
           />
+          <SettingRow 
+            label="Recurring Entries" 
+            href="/settings/recurring" 
+          />
         </View>
       </ScrollView>
     </SafeAreaView>

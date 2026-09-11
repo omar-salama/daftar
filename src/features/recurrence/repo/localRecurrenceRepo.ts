@@ -1,5 +1,5 @@
 import { getJSON, setJSON, outboxAppend, nextVersion, generateUuid } from '@/lib/storage';
-import { RecurrenceRule, RecurrenceId, resolveCurrentRules, buildRecurrenceRule, BuildRecurrenceRuleInput, RowId } from '@/kernel';
+import { RecurrenceRule, RecurrenceId, RecurrenceMode, resolveCurrentRules, buildRecurrenceRule, BuildRecurrenceRuleInput, RowId } from '@/kernel';
 import { RecurrenceRepo } from '../model';
 
 export function createRecurrenceRule(input: Omit<BuildRecurrenceRuleInput, 'deviceId' | 'rowId' | 'recurrenceId'> & { recurrenceId?: RecurrenceId }): RecurrenceRule {
@@ -19,9 +19,13 @@ export function createRecurrenceRule(input: Omit<BuildRecurrenceRuleInput, 'devi
 const KEY_RECURRENCE_VERSIONS = 'recurrence.versions';
 
 export const localRecurrenceRepo: RecurrenceRepo = {
-  async listCurrent(): Promise<RecurrenceRule[]> {
+  async listCurrent(filters?: { mode?: RecurrenceMode }): Promise<RecurrenceRule[]> {
     const versions = getJSON<RecurrenceRule[]>(KEY_RECURRENCE_VERSIONS) ?? [];
-    return resolveCurrentRules(versions);
+    let current = resolveCurrentRules(versions);
+    if (filters?.mode) {
+      current = current.filter(r => r.mode === filters.mode);
+    }
+    return current;
   },
 
   async listAll(): Promise<RecurrenceRule[]> {

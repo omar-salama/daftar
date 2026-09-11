@@ -2,6 +2,7 @@ export {
   type Minor,
   type CurrencyConfig,
   DEFAULT_CURRENCY,
+  SUPPORTED_CURRENCIES,
   minorFromDigits,
   addMinor,
   negateMinor,

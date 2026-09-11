@@ -1,15 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { RecurrenceRule, resolveCurrentRules } from '@/kernel';
+import { RecurrenceRule, resolveCurrentRules, RecurrenceMode } from '@/kernel';
 import { localRecurrenceRepo, createRecurrenceRule } from '../repo/localRecurrenceRepo';
 
 export const recurrenceKeys = {
   all: ['recurrence'] as const,
 };
 
-export function useRecurrenceRules() {
+export function useRecurrenceRules(filters?: { mode?: RecurrenceMode }) {
   return useQuery({
-    queryKey: recurrenceKeys.all,
-    queryFn: () => localRecurrenceRepo.listCurrent(),
+    queryKey: [...recurrenceKeys.all, filters],
+    queryFn: () => localRecurrenceRepo.listCurrent(filters),
   });
 }
 
