@@ -4,7 +4,7 @@ import { useMainCurrency } from '@/features/settings/hooks/useSettings';
 import { createTxVersion, useAppendTx, useLedger } from '@/features/ledger/hooks/useLedger';
 import { createRecurrenceRule, useAppendRecurrenceRule } from '@/features/recurrence/hooks/useRecurrenceRules';
 import type { TxId, TxLine, TxType, TxVersion } from '@/kernel';
-import { divideInstallments, RecurrenceMode } from '@/kernel';
+import { divideInstallments, RecurrenceMode, RecurrenceFrequency } from '@/kernel';
 import { appendDigit, minorFromDigits, Minor, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/kernel/money';
 
 
@@ -71,7 +71,7 @@ function EntryForm({
   const [exchangeRateOverrideDigits, setExchangeRateOverrideDigits] = useState(() => editingTx?.exchangeRate ? editingTx.exchangeRate.toString() : '');
 
   const [recurrenceMode, setRecurrenceMode] = useState<RecurrenceMode | 'none'>('none');
-  const [dayOfMonth, setDayOfMonth] = useState(() => new Date().getDate() > 28 ? 28 : new Date().getDate());
+  const [frequency, setFrequency] = useState<RecurrenceFrequency | 'none'>('monthly');
   const [installmentCount, setInstallmentCount] = useState(12);
   const [showRecurrenceConfig, setShowRecurrenceConfig] = useState(false);
   
@@ -202,7 +202,7 @@ function EntryForm({
         payee: payee || undefined,
         note: note || undefined,
         exchangeRate,
-        dayOfMonth,
+        frequency: frequency as RecurrenceFrequency,
         startDate: date,
         totalInstallments: recurrenceMode === 'installment' ? installmentCount : undefined,
         originalTotalMinor: originalTotalMinor,
@@ -312,6 +312,7 @@ function EntryForm({
             payee={payee}
             note={note}
             recurrenceMode={recurrenceMode}
+        frequency={frequency}
             onPressDate={() => setShowDatePicker(true)}
             onPressAccount={() => setShowAccountPicker(true)}
             onPressTransferAccount={() => setShowTransferAccountPicker(true)}
@@ -373,12 +374,12 @@ function EntryForm({
       <RecurrenceConfigModal
         visible={showRecurrenceConfig}
         mode={recurrenceMode}
-        dayOfMonth={dayOfMonth}
+        frequency={frequency}
         installmentCount={installmentCount}
         onClose={() => setShowRecurrenceConfig(false)}
         onConfirm={(config) => {
           setRecurrenceMode(config.mode);
-          setDayOfMonth(config.dayOfMonth);
+          setFrequency(config.frequency);
           if (config.mode === 'installment') {
             setInstallmentCount(config.installmentCount);
           }

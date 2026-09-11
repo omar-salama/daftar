@@ -11,6 +11,7 @@ interface TxControlsProps {
   payee: string;
   note: string;
   recurrenceMode: RecurrenceMode | 'none';
+  frequency: string;
   onPressDate: () => void;
   onPressAccount: () => void;
   onPressTransferAccount: () => void;
@@ -30,6 +31,7 @@ export function TxControls({
   payee,
   note,
   recurrenceMode,
+  frequency,
   onPressDate,
   onPressAccount,
   onPressTransferAccount,
@@ -82,7 +84,7 @@ export function TxControls({
               className="bg-surface-container px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
             >
               <Text className="text-on-surface-variant font-medium text-sm">
-                🔁 {recurrenceMode === 'none' ? 'Once' : recurrenceMode === 'recurring' ? 'Monthly' : 'Installments'}
+                🔁 {recurrenceMode === 'none' ? 'Once' : recurrenceMode === 'recurring' ? frequency.charAt(0).toUpperCase() + frequency.slice(1) : 'Installments'}
               </Text>
             </Pressable>
           )}

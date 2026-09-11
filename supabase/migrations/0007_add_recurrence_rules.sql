@@ -25,8 +25,8 @@ create table if not exists recurrence_rule_versions (
   note                 text,
   exchange_rate        double precision,
 
-  day_of_month         integer     not null
-                       constraint day_of_month_check check (day_of_month between 1 and 28),
+  frequency            text        not null
+                       constraint frequency_check check (frequency in ('daily', 'weekly', 'monthly', 'yearly')),
   start_date           date        not null,
 
   total_installments   integer,                                          -- null for recurring mode

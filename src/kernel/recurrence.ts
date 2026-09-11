@@ -1,6 +1,6 @@
 import { type Minor, addMinor } from './money';
 import { type TxId, type RowId, type TxType, type TxLine } from './tx';
-import { getDateString } from './date';
+import { getDateString, addDays } from './date';
 
 // ---------------------------------------------------------------------------
 // Branded types
@@ -8,6 +8,7 @@ import { getDateString } from './date';
 
 export type RecurrenceId = string & { __brand: 'RecurrenceId' };
 export type RecurrenceMode = 'recurring' | 'installment';
+export type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 // ---------------------------------------------------------------------------
 // RecurrenceRule — one immutable row per version (same pattern as TxVersion).
@@ -34,7 +35,7 @@ export interface RecurrenceRule {
   readonly exchangeRate?: number;
 
   // Schedule
-  readonly dayOfMonth: number;            // 1–28 (clamped to avoid month-length issues)
+  readonly frequency: RecurrenceFrequency;
   readonly startDate: string;             // 'YYYY-MM-DD' — first occurrence
 
   // Installment-specific
@@ -70,7 +71,7 @@ export interface BuildRecurrenceRuleInput {
   readonly note?: string;
   readonly exchangeRate?: number;
 
-  readonly dayOfMonth: number;
+  readonly frequency: RecurrenceFrequency;
   readonly startDate: string;
 
   readonly totalInstallments?: number;
@@ -90,8 +91,8 @@ export function buildRecurrenceRule(
   input: BuildRecurrenceRuleInput,
   versionString: string
 ): RecurrenceRule {
-  if (input.dayOfMonth < 1 || input.dayOfMonth > 28) {
-    throw new Error('buildRecurrenceRule: dayOfMonth must be between 1 and 28');
+  if (!['daily', 'weekly', 'monthly', 'yearly'].includes(input.frequency)) {
+    throw new Error('buildRecurrenceRule: invalid frequency');
   }
 
   if (input.mode === 'installment') {
@@ -132,7 +133,7 @@ export function buildRecurrenceRule(
     note: input.note,
     exchangeRate: input.exchangeRate,
 
-    dayOfMonth: input.dayOfMonth,
+    frequency: input.frequency,
     startDate: input.startDate,
 
     totalInstallments: input.totalInstallments,
@@ -202,25 +203,35 @@ export function divideInstallments(totalMinor: Minor, count: number): Minor[] {
 }
 
 // ---------------------------------------------------------------------------
-// nextMonthDate — advance a date to the next month, clamped to dayOfMonth.
+// nextOccurrenceDate — advance a date based on frequency.
 // Internal helper for pendingMaterializationDates.
 // ---------------------------------------------------------------------------
 
-function nextMonthDate(dateStr: string, dayOfMonth: number): string {
+function nextOccurrenceDate(dateStr: string, frequency: RecurrenceFrequency, originalStartDate: string): string {
+  if (frequency === 'daily') return addDays(dateStr, 1);
+  if (frequency === 'weekly') return addDays(dateStr, 7);
+
   const [y, m] = dateStr.split('-').map(Number);
-  let nextY = y;
-  let nextM = m + 1;
-  if (nextM > 12) {
-    nextM = 1;
-    nextY += 1;
+  const origD = Number(originalStartDate.split('-')[2]);
+
+  if (frequency === 'monthly') {
+    let nextY = y;
+    let nextM = m + 1;
+    if (nextM > 12) {
+      nextM = 1;
+      nextY += 1;
+    }
+    return getDateString(nextY, nextM, origD);
   }
-  return getDateString(nextY, nextM, dayOfMonth);
+
+  // yearly
+  return getDateString(y + 1, m, origD);
 }
 
 // ---------------------------------------------------------------------------
-// pendingMaterializationDates — compute which months need new TxVersions.
+// pendingMaterializationDates — compute which dates need new TxVersions.
 //
-// For recurring: all months from (lastMaterialized + 1 month) to today.
+// For recurring: all dates from (lastMaterialized + frequency) to today.
 // For installment: same, but stops once materializedCount reaches totalInstallments.
 // ---------------------------------------------------------------------------
 
@@ -232,7 +243,7 @@ export function pendingMaterializationDates(
 
   const dates: string[] = [];
   let cursor = rule.lastMaterializedDate
-    ? nextMonthDate(rule.lastMaterializedDate, rule.dayOfMonth)
+    ? nextOccurrenceDate(rule.lastMaterializedDate, rule.frequency, rule.startDate)
     : rule.startDate;
 
   while (cursor <= today) {
@@ -244,7 +255,7 @@ export function pendingMaterializationDates(
       break;
     }
     dates.push(cursor);
-    cursor = nextMonthDate(cursor, rule.dayOfMonth);
+    cursor = nextOccurrenceDate(cursor, rule.frequency, rule.startDate);
   }
 
   return dates;

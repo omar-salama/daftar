@@ -3,6 +3,7 @@ import { CategoryVersion } from '@/features/categories/model';
 import { DEFAULT_CURRENCY, TxVersion } from '@/kernel';
 import { formatMinor, SUPPORTED_CURRENCIES } from '@/kernel/money';
 import { Modal, Pressable, Text, View } from 'react-native';
+import { useRecurrenceRules } from '@/features/recurrence/hooks';
 
 interface LedgerDetailsModalProps {
   selectedTx: TxVersion | null;
@@ -21,7 +22,12 @@ export function LedgerDetailsModal({
   onEdit,
   onDelete,
 }: LedgerDetailsModalProps) {
+  const { data: rules } = useRecurrenceRules();
+
   if (!selectedTx) return null;
+
+  const rule = selectedTx.recurrenceId ? rules?.find(r => r.recurrenceId === selectedTx.recurrenceId) : undefined;
+  const frequencyLabel = rule?.frequency ? (rule.frequency.charAt(0).toUpperCase() + rule.frequency.slice(1)) : 'Monthly';
 
   const getCategoryDetails = (categoryId: string) => {
     const cat = categories.find(c => c.categoryId === categoryId);
@@ -108,7 +114,7 @@ export function LedgerDetailsModal({
                   <Text className="text-on-surface text-base">
                     {selectedTx.totalInstallments 
                       ? `Installment ${selectedTx.installmentNumber || 1} of ${selectedTx.totalInstallments}` 
-                      : 'Recurring monthly'}
+                      : frequencyLabel}
                   </Text>
                 </View>
               )}

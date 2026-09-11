@@ -23,7 +23,7 @@ export {
 
 export {
   type RecurrenceId,
-  type RecurrenceMode,
+  type RecurrenceMode, RecurrenceFrequency,
   type RecurrenceRule,
   type BuildRecurrenceRuleInput,
   buildRecurrenceRule,

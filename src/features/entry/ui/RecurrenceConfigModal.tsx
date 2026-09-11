@@ -1,39 +1,47 @@
-import { RecurrenceMode } from '@/kernel';
+import { RecurrenceMode, RecurrenceFrequency } from '@/kernel';
 import { useState } from 'react';
 import { Modal, Pressable, Text, TextInput, View } from 'react-native';
 
 interface RecurrenceConfigModalProps {
   visible: boolean;
   mode: RecurrenceMode | 'none';
-  dayOfMonth: number;
+  frequency: RecurrenceFrequency | 'none';
   installmentCount: number;
   onClose: () => void;
-  onConfirm: (config: { mode: RecurrenceMode | 'none'; dayOfMonth: number; installmentCount: number }) => void;
+  onConfirm: (config: { mode: RecurrenceMode | 'none'; frequency: RecurrenceFrequency | 'none'; installmentCount: number }) => void;
 }
 
 export function RecurrenceConfigModal({
   visible,
   mode: initialMode,
-  dayOfMonth: initialDayOfMonth,
+  frequency: initialFrequency,
   installmentCount: initialInstallmentCount,
   onClose,
   onConfirm,
 }: RecurrenceConfigModalProps) {
-  const [localMode, setLocalMode] = useState<RecurrenceMode | 'none'>(initialMode);
-  const [localDayOfMonth, setLocalDayOfMonth] = useState(initialDayOfMonth.toString());
+  // We combine 'none' and 'recurring' into a single 'repeat' tab
+  const initialTab = initialMode === 'installment' ? 'installment' : 'repeat';
+  const [activeTab, setActiveTab] = useState<'repeat' | 'installment'>(initialTab);
+  
+  // local frequency can be 'none' when in 'repeat' tab
+  const [localFrequency, setLocalFrequency] = useState(initialMode === 'none' ? 'none' : initialFrequency);
   const [localInstallmentCount, setLocalInstallmentCount] = useState(initialInstallmentCount.toString());
 
   if (!visible) return null;
 
   const handleConfirm = () => {
-    let day = parseInt(localDayOfMonth, 10);
-    if (isNaN(day) || day < 1) day = 1;
-    if (day > 28) day = 28;
-
     let count = parseInt(localInstallmentCount, 10);
     if (isNaN(count) || count < 1) count = 1;
 
-    onConfirm({ mode: localMode, dayOfMonth: day, installmentCount: count });
+    if (activeTab === 'installment') {
+      onConfirm({ mode: 'installment', frequency: 'monthly', installmentCount: count });
+    } else {
+      if (localFrequency === 'none') {
+        onConfirm({ mode: 'none', frequency: 'monthly', installmentCount: count });
+      } else {
+        onConfirm({ mode: 'recurring', frequency: localFrequency, installmentCount: count });
+      }
+    }
   };
 
   return (
@@ -52,14 +60,14 @@ export function RecurrenceConfigModal({
           </Text>
 
           <View className="flex-row justify-between mb-6 bg-surface-container p-1 rounded-xl">
-            {(['none', 'recurring', 'installment'] as const).map((m) => {
-              const isSelected = localMode === m;
-              const label = m === 'none' ? 'Once' : m === 'recurring' ? 'Monthly' : 'Installments';
+            {(['repeat', 'installment'] as const).map((tab) => {
+              const isSelected = activeTab === tab;
+              const label = tab === 'repeat' ? 'Repeat' : 'Installments';
               return (
                 <Pressable
-                  key={m}
+                  key={tab}
                   className={`flex-1 py-2 items-center rounded-lg ${isSelected ? 'bg-primary' : 'bg-transparent'}`}
-                  onPress={() => setLocalMode(m)}
+                  onPress={() => setActiveTab(tab)}
                 >
                   <Text className={`font-semibold ${isSelected ? 'text-on-primary' : 'text-on-surface-variant'}`}>
                     {label}
@@ -69,33 +77,39 @@ export function RecurrenceConfigModal({
             })}
           </View>
 
-          {localMode !== 'none' && (
-            <View className="mb-6 gap-y-4">
+          <View className="h-40 mb-6 gap-y-4">
+            {activeTab === 'repeat' && (
+              <View className="flex-row flex-wrap justify-between gap-2">
+                {(['none', 'daily', 'weekly', 'monthly', 'yearly'] as const).map((freq) => {
+                  const isSelected = localFrequency === freq;
+                  return (
+                    <Pressable
+                      key={freq}
+                      className={`px-4 py-3 rounded-xl border ${isSelected ? 'border-primary bg-primary/10' : 'border-outline bg-surface'}`}
+                      onPress={() => setLocalFrequency(freq)}
+                    >
+                      <Text className={`text-center font-medium ${isSelected ? 'text-primary' : 'text-on-surface'}`}>
+                        {freq.charAt(0).toUpperCase() + freq.slice(1)}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
+
+            {activeTab === 'installment' && (
               <View className="flex-row justify-between items-center bg-surface p-4 rounded-xl">
-                <Text className="text-on-surface text-base">Repeats on day [1-28]</Text>
+                <Text className="text-on-surface text-base">Number of installments</Text>
                 <TextInput
                   className="bg-surface-container text-on-surface text-center p-2 rounded-lg w-16 text-lg font-mono"
                   keyboardType="number-pad"
-                  value={localDayOfMonth}
-                  onChangeText={setLocalDayOfMonth}
-                  maxLength={2}
+                  value={localInstallmentCount}
+                  onChangeText={setLocalInstallmentCount}
+                  maxLength={3}
                 />
               </View>
-
-              {localMode === 'installment' && (
-                <View className="flex-row justify-between items-center bg-surface p-4 rounded-xl">
-                  <Text className="text-on-surface text-base">Number of installments</Text>
-                  <TextInput
-                    className="bg-surface-container text-on-surface text-center p-2 rounded-lg w-16 text-lg font-mono"
-                    keyboardType="number-pad"
-                    value={localInstallmentCount}
-                    onChangeText={setLocalInstallmentCount}
-                    maxLength={3}
-                  />
-                </View>
-              )}
-            </View>
-          )}
+            )}
+          </View>
 
           <Pressable
             className="bg-primary py-4 rounded-full items-center mt-2"

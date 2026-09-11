@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Minor } from './money';
-import { RowId, TxId } from './tx';
+import { RowId } from './tx';
 import {
   buildRecurrenceRule,
   divideInstallments,
   materializationTxId,
   pendingMaterializationDates,
   resolveCurrentRules,
-  type RecurrenceId,
+  type RecurrenceId, type RecurrenceFrequency,
   type RecurrenceRule,
 } from './recurrence';
 
@@ -23,7 +23,7 @@ function makeRule(overrides: Partial<RecurrenceRule> = {}): RecurrenceRule {
     mode: 'recurring',
     accountId: 'acc-1',
     lines: [{ categoryId: 'cat-1', amountMinor: 5000 as Minor }],
-    dayOfMonth: 1,
+    frequency: 'monthly',
     startDate: '2026-01-01',
     ...overrides,
   }, 'v1');
@@ -102,7 +102,7 @@ describe('buildRecurrenceRule', () => {
         { categoryId: 'cat1', amountMinor: 100 as Minor },
         { categoryId: 'cat2', amountMinor: 50 as Minor },
       ],
-      dayOfMonth: 15,
+      frequency: 'monthly',
       startDate: '2026-01-15',
     }, 'v1');
     expect(rule.totalMinor).toBe(150);
@@ -115,10 +115,9 @@ describe('buildRecurrenceRule', () => {
     expect(rule.isActive).toBe(true);
   });
 
-  it('throws if dayOfMonth < 1 or > 28', () => {
-    expect(() => makeRule({ dayOfMonth: 0 } as Partial<RecurrenceRule>)).toThrow(/dayOfMonth/);
-    expect(() => makeRule({ dayOfMonth: 29 } as Partial<RecurrenceRule>)).toThrow(/dayOfMonth/);
-    expect(() => makeRule({ dayOfMonth: 31 } as Partial<RecurrenceRule>)).toThrow(/dayOfMonth/);
+  it('throws if frequency is invalid', () => {
+    expect(() => makeRule({ frequency: 'hourly' as unknown as RecurrenceFrequency })).toThrow(/invalid frequency/);
+    expect(() => makeRule({ frequency: 'none' as unknown as RecurrenceFrequency })).toThrow(/invalid frequency/);
   });
 
   it('throws if installment mode without totalInstallments', () => {
@@ -129,7 +128,7 @@ describe('buildRecurrenceRule', () => {
       mode: 'installment',
       accountId: 'acc1',
       lines: [{ categoryId: 'cat1', amountMinor: 100 as Minor }],
-      dayOfMonth: 1,
+      frequency: 'monthly',
       startDate: '2026-01-01',
       originalTotalMinor: 1200 as Minor,
       // missing totalInstallments
@@ -144,7 +143,7 @@ describe('buildRecurrenceRule', () => {
       mode: 'installment',
       accountId: 'acc1',
       lines: [{ categoryId: 'cat1', amountMinor: 100 as Minor }],
-      dayOfMonth: 1,
+      frequency: 'monthly',
       startDate: '2026-01-01',
       totalInstallments: 12,
       // missing originalTotalMinor
@@ -159,7 +158,7 @@ describe('buildRecurrenceRule', () => {
       mode: 'recurring',
       accountId: 'acc1',
       lines: [],
-      dayOfMonth: 1,
+      frequency: 'monthly',
       startDate: '2026-01-01',
     }, 'v1')).toThrow(/at least one line/);
   });
@@ -173,7 +172,7 @@ describe('buildRecurrenceRule', () => {
       isDeleted: true,
       accountId: 'acc1',
       lines: [],
-      dayOfMonth: 1,
+      frequency: 'monthly',
       startDate: '2026-01-01',
     }, 'v1');
     expect(rule.isDeleted).toBe(true);
@@ -187,7 +186,7 @@ describe('buildRecurrenceRule', () => {
       mode: 'recurring',
       accountId: 'acc1',
       lines: [{ categoryId: 'cat1', amountMinor: 12.34 as unknown as Minor }],
-      dayOfMonth: 1,
+      frequency: 'monthly',
       startDate: '2026-01-01',
     }, 'v1')).toThrow(/Unsafe integer/);
   });
@@ -207,7 +206,7 @@ describe('resolveCurrentRules', () => {
       mode: 'recurring',
       accountId: 'acc-1',
       lines: [{ categoryId: 'cat-1', amountMinor: 5000 as Minor }],
-      dayOfMonth: 1,
+      frequency: 'monthly',
       startDate: '2026-01-01',
     }, '0000100-0000-A');
 
@@ -218,7 +217,7 @@ describe('resolveCurrentRules', () => {
       mode: 'recurring',
       accountId: 'acc-1',
       lines: [{ categoryId: 'cat-1', amountMinor: 9999 as Minor }],
-      dayOfMonth: 1,
+      frequency: 'monthly',
       startDate: '2026-01-01',
     }, '0000200-0000-A');
 
@@ -237,7 +236,7 @@ describe('resolveCurrentRules', () => {
       mode: 'recurring',
       accountId: 'acc-1',
       lines: [{ categoryId: 'cat-1', amountMinor: 5000 as Minor }],
-      dayOfMonth: 1,
+      frequency: 'monthly',
       startDate: '2026-01-01',
     }, '0000100-0000-A');
 
@@ -249,7 +248,7 @@ describe('resolveCurrentRules', () => {
       isDeleted: true,
       accountId: 'acc-1',
       lines: [],
-      dayOfMonth: 1,
+      frequency: 'monthly',
       startDate: '2026-01-01',
     }, '0000200-0000-A');
 
@@ -266,7 +265,7 @@ describe('resolveCurrentRules', () => {
       mode: 'installment',
       accountId: 'acc-1',
       lines: [{ categoryId: 'cat-1', amountMinor: 1000 as Minor }],
-      dayOfMonth: 15,
+      frequency: 'monthly',
       startDate: '2026-03-15',
       totalInstallments: 6,
       originalTotalMinor: 6000 as Minor,
@@ -324,7 +323,7 @@ describe('pendingMaterializationDates', () => {
       mode: 'installment',
       accountId: 'acc1',
       lines: [{ categoryId: 'cat1', amountMinor: 500 as Minor }],
-      dayOfMonth: 1,
+      frequency: 'monthly',
       startDate: '2026-01-01',
       totalInstallments: 3,
       originalTotalMinor: 1500 as Minor,
@@ -343,7 +342,7 @@ describe('pendingMaterializationDates', () => {
       mode: 'installment',
       accountId: 'acc1',
       lines: [{ categoryId: 'cat1', amountMinor: 500 as Minor }],
-      dayOfMonth: 1,
+      frequency: 'monthly',
       startDate: '2026-01-01',
       totalInstallments: 3,
       originalTotalMinor: 1500 as Minor,
@@ -359,7 +358,7 @@ describe('pendingMaterializationDates', () => {
   it('handles year boundary correctly', () => {
     const rule = makeRule({
       startDate: '2026-11-01',
-      dayOfMonth: 1,
+      frequency: 'monthly',
     } as Partial<RecurrenceRule>);
     const dates = pendingMaterializationDates(rule, '2027-02-15');
     expect(dates).toEqual(['2026-11-01', '2026-12-01', '2027-01-01', '2027-02-01']);
@@ -368,7 +367,7 @@ describe('pendingMaterializationDates', () => {
   it('uses dayOfMonth for non-start-date months', () => {
     const rule = makeRule({
       startDate: '2026-01-15',
-      dayOfMonth: 15,
+      frequency: 'monthly',
     } as Partial<RecurrenceRule>);
     const dates = pendingMaterializationDates(rule, '2026-03-20');
     expect(dates).toEqual(['2026-01-15', '2026-02-15', '2026-03-15']);

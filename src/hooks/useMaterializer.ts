@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useRecurrenceRules, useAppendRecurrenceRule, createRecurrenceRule } from '@/features/recurrence/hooks';
 import { useAppendTx, createTxVersion } from '@/features/ledger/hooks/useLedger';
-import { pendingMaterializationDates, materializationTxId, divideInstallments } from '@/kernel';
+import { pendingMaterializationDates, materializationTxId, divideInstallments, Minor } from '@/kernel';
 import { getTodayString } from '@/kernel/date';
 
 export function useMaterializer() {
@@ -25,7 +25,7 @@ export function useMaterializer() {
       let newMaterializedCount = rule.materializedCount;
       let lastMaterializedDate = rule.lastMaterializedDate;
       
-      let installmentAmounts: number[] = [];
+      let installmentAmounts: Minor[] = [];
       if (rule.mode === 'installment' && rule.originalTotalMinor && rule.totalInstallments) {
         installmentAmounts = divideInstallments(rule.originalTotalMinor, rule.totalInstallments);
       }
@@ -84,7 +84,7 @@ export function useMaterializer() {
           payee: rule.payee,
           note: rule.note,
           exchangeRate: rule.exchangeRate,
-          dayOfMonth: rule.dayOfMonth,
+          frequency: rule.frequency,
           startDate: rule.startDate,
           totalInstallments: rule.totalInstallments,
           originalTotalMinor: rule.originalTotalMinor,
