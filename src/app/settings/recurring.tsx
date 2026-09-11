@@ -39,6 +39,8 @@ function formatDate(dateStr: string) {
   return `${months[parseInt(m, 10) - 1]} ${parseInt(d, 10)}`;
 }
 
+import { useRouter } from "expo-router";
+
 function RecurrenceListItem({
   rule,
   onToggle,
@@ -48,6 +50,7 @@ function RecurrenceListItem({
   onToggle: (isActive: boolean) => void;
   onDelete: () => void;
 }) {
+  const router = useRouter();
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
   const { data: mainCurrency = 'EGP' } = useMainCurrency();
@@ -94,7 +97,10 @@ function RecurrenceListItem({
       renderRightActions={renderRightActions}
       overshootRight={false}
     >
-      <View className="flex-row items-center px-4 py-2 border-b border-surface-container-highest bg-surface">
+      <Pressable 
+        onPress={() => router.push({ pathname: "/entry", params: { ruleId: rule.recurrenceId } })}
+        className="flex-row items-center px-4 py-2 border-b border-surface-container-highest bg-surface"
+      >
         <View className="flex-1 flex-row gap-x-2 items-start">
           <Text>{icon}</Text>
           <View>
@@ -118,7 +124,7 @@ function RecurrenceListItem({
         <View>
           <Switch value={rule.isActive} onValueChange={onToggle} />
         </View>
-      </View>
+      </Pressable>
     </ReanimatedSwipeable>
   );
 }
