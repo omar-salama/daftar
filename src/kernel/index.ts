@@ -20,4 +20,17 @@ export {
   buildTxVersion,
   resolveCurrent,
 } from './tx';
+
+export {
+  type RecurrenceId,
+  type RecurrenceMode,
+  type RecurrenceRule,
+  type BuildRecurrenceRuleInput,
+  buildRecurrenceRule,
+  resolveCurrentRules,
+  divideInstallments,
+  pendingMaterializationDates,
+  materializationTxId,
+} from './recurrence';
+
 export * from './date';

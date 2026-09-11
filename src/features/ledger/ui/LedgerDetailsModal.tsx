@@ -76,7 +76,7 @@ export function LedgerDetailsModal({
             {subtitle}
           </Text>
 
-          {(selectedTx.payee || selectedTx.note || selectedTx.lines.length > 1 || selectedTx.exchangeRate !== undefined || selectedTx.transferExchangeRate !== undefined) && (
+          {(selectedTx.payee || selectedTx.note || selectedTx.lines.length > 1 || selectedTx.exchangeRate !== undefined || selectedTx.transferExchangeRate !== undefined || selectedTx.recurrenceId) && (
             <View className="mb-6 w-full bg-surface rounded-xl p-4 gap-4 border border-surface-variant">
               {selectedTx.payee && (
                 <View>
@@ -100,6 +100,16 @@ export function LedgerDetailsModal({
                 <View>
                   <Text className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Note</Text>
                   <Text className="text-on-surface text-base">{selectedTx.note}</Text>
+                </View>
+              )}
+              {selectedTx.recurrenceId && (
+                <View>
+                  <Text className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Recurrence</Text>
+                  <Text className="text-on-surface text-base">
+                    {selectedTx.totalInstallments 
+                      ? `Installment ${selectedTx.installmentNumber || 1} of ${selectedTx.totalInstallments}` 
+                      : 'Recurring monthly'}
+                  </Text>
                 </View>
               )}
               {selectedTx.lines.length > 1 && (

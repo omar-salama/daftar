@@ -2,7 +2,9 @@ import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 import { exchangeRateService } from '@/features/exchange-rates/ExchangeRateService';
 import { useMainCurrency } from '@/features/settings/hooks/useSettings';
 import { createTxVersion, useAppendTx, useLedger } from '@/features/ledger/hooks/useLedger';
+import { createRecurrenceRule, useAppendRecurrenceRule } from '@/features/recurrence/hooks/useRecurrenceRules';
 import type { TxId, TxLine, TxType, TxVersion } from '@/kernel';
+import { divideInstallments, RecurrenceMode } from '@/kernel';
 import { appendDigit, minorFromDigits, Minor, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/kernel/money';
 
 
@@ -18,6 +20,7 @@ import { Keypad } from './Keypad';
 import { TransactionEditor } from './TransactionEditor';
 import { TxControls } from './TxControls';
 import { TxTypeToggle } from './TxTypeToggle';
+import { RecurrenceConfigModal } from './RecurrenceConfigModal';
 
 export function EntryScreen() {
   const { txId } = useLocalSearchParams<{ txId?: string }>();
@@ -66,6 +69,11 @@ function EntryForm({
   const [payee, setPayee] = useState(() => editingTx?.payee || '');
   const [note, setNote] = useState(() => editingTx?.note || '');
   const [exchangeRateOverrideDigits, setExchangeRateOverrideDigits] = useState(() => editingTx?.exchangeRate ? editingTx.exchangeRate.toString() : '');
+
+  const [recurrenceMode, setRecurrenceMode] = useState<RecurrenceMode | 'none'>('none');
+  const [dayOfMonth, setDayOfMonth] = useState(() => new Date().getDate() > 28 ? 28 : new Date().getDate());
+  const [installmentCount, setInstallmentCount] = useState(12);
+  const [showRecurrenceConfig, setShowRecurrenceConfig] = useState(false);
   
   // Cross-currency transfer
   const [transferDigits, setTransferDigits] = useState(() => {
@@ -85,6 +93,7 @@ function EntryForm({
 
   const amountMinor = minorFromDigits(digits);
   const appendTx = useAppendTx();
+  const appendRecurrenceRule = useAppendRecurrenceRule();
 
   const account = accounts.find(a => a.accountId === accountId);
   const transferAccount = accounts.find(a => a.accountId === transferAccountId);
@@ -149,18 +158,67 @@ function EntryForm({
       }
     }
 
-    const tx = createTxVersion({
-      txId: editingTxId ? (editingTxId as TxId) : undefined,
+    let txLines = processedLines;
+    let txAmount = amountMinor;
+    let originalTotalMinor: Minor | undefined = undefined;
+
+    if (recurrenceMode === 'installment') {
+      const installments = divideInstallments(amountMinor, installmentCount);
+      txAmount = installments[0];
+      txLines = processedLines.map(line => {
+        if (line.amountMinor === amountMinor) {
+          return { ...line, amountMinor: txAmount, mainCurrencyAmountMinor: exchangeRate ? Math.round(txAmount * exchangeRate) as Minor : txAmount };
+        }
+        // Simplified proportion logic for split lines in installments
+        const ratio = line.amountMinor / amountMinor;
+        const newMinor = Math.round(txAmount * ratio) as Minor;
+        return { ...line, amountMinor: newMinor, mainCurrencyAmountMinor: exchangeRate ? Math.round(newMinor * exchangeRate) as Minor : newMinor };
+      });
+      originalTotalMinor = amountMinor;
+    }
+
+    const baseTx = {
       type: txType,
       occurredAt: date,
       accountId,
       transferAccountId: txType === 'transfer' ? transferAccountId : undefined,
       payee: payee || undefined,
       note: note || undefined,
-      lines: processedLines,
+      lines: txLines,
       exchangeRate,
       transferAmountMinor,
       transferExchangeRate,
+    };
+
+    let recurrenceId: string | undefined;
+
+    if (recurrenceMode !== 'none') {
+      const rule = createRecurrenceRule({
+        mode: recurrenceMode,
+        type: txType,
+        accountId,
+        transferAccountId: txType === 'transfer' ? transferAccountId : undefined,
+        lines: txLines,
+        payee: payee || undefined,
+        note: note || undefined,
+        exchangeRate,
+        dayOfMonth,
+        startDate: date,
+        totalInstallments: recurrenceMode === 'installment' ? installmentCount : undefined,
+        originalTotalMinor: originalTotalMinor,
+        lastMaterializedDate: date,
+        materializedCount: 1,
+      });
+      recurrenceId = rule.recurrenceId;
+      appendRecurrenceRule.mutate(rule);
+    }
+
+    const tx = createTxVersion({
+      ...baseTx,
+      txId: editingTxId ? (editingTxId as TxId) : undefined,
+      recurrenceId,
+      installmentNumber: recurrenceMode === 'installment' ? 1 : undefined,
+      totalInstallments: recurrenceMode === 'installment' ? installmentCount : undefined,
     });
 
     appendTx.mutate(tx, {
@@ -172,6 +230,7 @@ function EntryForm({
         setIsSplit(false);
         setSplitCategoryIds([]);
         setTxType('expense');
+        setRecurrenceMode('none');
         if (router.canGoBack()) {
           router.back();
         } else {
@@ -206,7 +265,14 @@ function EntryForm({
       <View className="flex-1 bg-surface gap-6">
         <TxTypeToggle txType={txType} onChangeType={handleToggleType} />
         <View className='px-6 gap-6'>
-          <AmountDisplay amount={amountMinor} txType={txType} currencyConfig={currencyConfig} />
+          <AmountDisplay 
+            amount={recurrenceMode === 'installment' ? divideInstallments(amountMinor, installmentCount)[0] : amountMinor} 
+            txType={txType} 
+            currencyConfig={currencyConfig} 
+            isInstallment={recurrenceMode === 'installment'}
+            installmentCount={installmentCount}
+            totalAmount={amountMinor}
+          />
           
           {isCrossCurrencyTransfer && (
             <View className="bg-surface-container rounded-xl p-3 border border-surface-variant flex-row justify-between items-center">
@@ -245,12 +311,14 @@ function EntryForm({
             showDetails={showDetails}
             payee={payee}
             note={note}
+            recurrenceMode={recurrenceMode}
             onPressDate={() => setShowDatePicker(true)}
             onPressAccount={() => setShowAccountPicker(true)}
             onPressTransferAccount={() => setShowTransferAccountPicker(true)}
             onToggleDetails={() => setShowDetails(!showDetails)}
             onChangePayee={setPayee}
             onChangeNote={setNote}
+            onPressRecurrence={() => setShowRecurrenceConfig(true)}
           />
         </View>
         <View className="flex-1 justify-end p-2 gap-3">
@@ -300,6 +368,22 @@ function EntryForm({
         accounts={accounts.filter(a => a.accountId !== accountId)}
         onClose={() => setShowTransferAccountPicker(false)}
         onSelectAccount={setTransferAccountId}
+      />
+
+      <RecurrenceConfigModal
+        visible={showRecurrenceConfig}
+        mode={recurrenceMode}
+        dayOfMonth={dayOfMonth}
+        installmentCount={installmentCount}
+        onClose={() => setShowRecurrenceConfig(false)}
+        onConfirm={(config) => {
+          setRecurrenceMode(config.mode);
+          setDayOfMonth(config.dayOfMonth);
+          if (config.mode === 'installment') {
+            setInstallmentCount(config.installmentCount);
+          }
+          setShowRecurrenceConfig(false);
+        }}
       />
     </SafeAreaView>
   );

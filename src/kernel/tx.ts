@@ -27,6 +27,9 @@ export interface TxVersion {
   exchangeRate?: number; // exchange rate at the time of transaction
   transferAmountMinor?: Minor; // for cross-currency transfers, the amount in destination account currency
   transferExchangeRate?: number; // actual rate for cross-currency transfers
+  recurrenceId?: string; // links to the RecurrenceRule that created this tx
+  installmentNumber?: number; // e.g. 3 of 12 — only for installment-mode txs
+  totalInstallments?: number; // e.g. 3 of 12
 }
 
 export interface BuildTxVersionInput {
@@ -44,6 +47,9 @@ export interface BuildTxVersionInput {
   exchangeRate?: number;
   transferAmountMinor?: Minor;
   transferExchangeRate?: number;
+  recurrenceId?: string;
+  installmentNumber?: number;
+  totalInstallments?: number;
 }
 
 export function buildTxVersion(input: BuildTxVersionInput, versionString: string): TxVersion {
@@ -76,6 +82,9 @@ export function buildTxVersion(input: BuildTxVersionInput, versionString: string
     exchangeRate: input.exchangeRate,
     transferAmountMinor: input.transferAmountMinor,
     transferExchangeRate: input.transferExchangeRate,
+    recurrenceId: input.recurrenceId,
+    installmentNumber: input.installmentNumber,
+    totalInstallments: input.totalInstallments,
   };
 }
 

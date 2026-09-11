@@ -1,4 +1,4 @@
-import type { TxType } from '@/kernel';
+import type { RecurrenceMode, TxType } from '@/kernel';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
 interface TxControlsProps {
@@ -10,12 +10,14 @@ interface TxControlsProps {
   showDetails: boolean;
   payee: string;
   note: string;
+  recurrenceMode: RecurrenceMode | 'none';
   onPressDate: () => void;
   onPressAccount: () => void;
   onPressTransferAccount: () => void;
   onToggleDetails: () => void;
   onChangePayee: (val: string) => void;
   onChangeNote: (val: string) => void;
+  onPressRecurrence: () => void;
 }
 
 export function TxControls({
@@ -27,12 +29,14 @@ export function TxControls({
   showDetails,
   payee,
   note,
+  recurrenceMode,
   onPressDate,
   onPressAccount,
   onPressTransferAccount,
   onToggleDetails,
   onChangePayee,
   onChangeNote,
+  onPressRecurrence,
 }: TxControlsProps) {
   const displayDateStr = date === new Date().toISOString().split('T')[0] ? 'Today' : date.slice(5);
 
@@ -70,6 +74,17 @@ export function TxControls({
                 </Text>
               </Pressable>
             </View>
+          )}
+
+          {txType !== 'transfer' && (
+            <Pressable
+              onPress={onPressRecurrence}
+              className="bg-surface-container px-3 py-1.5 rounded-lg min-h-[36px] justify-center"
+            >
+              <Text className="text-on-surface-variant font-medium text-sm">
+                🔁 {recurrenceMode === 'none' ? 'Once' : recurrenceMode === 'recurring' ? 'Monthly' : 'Installments'}
+              </Text>
+            </Pressable>
           )}
         </View>
 

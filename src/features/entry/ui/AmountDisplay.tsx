@@ -6,9 +6,19 @@ interface AmountDisplayProps {
   amount: Minor;
   txType?: TxType;
   currencyConfig?: typeof DEFAULT_CURRENCY;
+  isInstallment?: boolean;
+  installmentCount?: number;
+  totalAmount?: Minor;
 }
 
-export function AmountDisplay({ amount, txType = 'expense', currencyConfig = DEFAULT_CURRENCY }: AmountDisplayProps) {
+export function AmountDisplay({
+  amount,
+  txType = 'expense',
+  currencyConfig = DEFAULT_CURRENCY,
+  isInstallment,
+  installmentCount,
+  totalAmount,
+}: AmountDisplayProps) {
   const formatted = formatMinor(amount, currencyConfig);
   const isZero = amount === 0;
 
@@ -16,7 +26,7 @@ export function AmountDisplay({ amount, txType = 'expense', currencyConfig = DEF
     ? 'text-on-surface-variant'
     : txType === 'income'
       ? 'text-secondary'
-      : 'text-on-surface'
+      : 'text-on-surface';
 
   return (
     <View className="items-center justify-center">
@@ -27,8 +37,13 @@ export function AmountDisplay({ amount, txType = 'expense', currencyConfig = DEF
         testID="AmountDisplay"
       >
         {txType === 'income' && !isZero ? '+' : ''}{formatted}
-
       </Text>
+      
+      {isInstallment && installmentCount ? (
+        <Text className="text-on-surface-variant text-sm text-center mt-1">
+          total {formatMinor(totalAmount || (0 as Minor), currencyConfig)} ÷ {installmentCount} months
+        </Text>
+      ) : null}
     </View>
   );
 }

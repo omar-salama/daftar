@@ -72,6 +72,16 @@ export function LedgerRow({ tx, versionCount, lineIndex, accounts, categories, o
           <Text className="text-on-surface font-sans text-base">
             {categoryName}
           </Text>
+          {tx.recurrenceId && tx.totalInstallments && (
+            <View className="bg-surface-container-high px-1.5 py-0.5 rounded">
+              <Text className="text-on-surface-variant text-[10px] font-medium">
+                {tx.installmentNumber || 1}/{tx.totalInstallments}
+              </Text>
+            </View>
+          )}
+          {tx.recurrenceId && !tx.totalInstallments && (
+            <Text className="text-[12px]">🔁</Text>
+          )}
         </View>
         <Text className="text-on-surface-variant text-sm mt-0.5 font-sans" numberOfLines={1}>
           {subtitle}
