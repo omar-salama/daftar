@@ -1,5 +1,5 @@
 import { Minor } from '@/kernel';
-import { formatMinor, DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/kernel/money';
+import { formatMinor, DEFAULT_CURRENCY, DEFAULT_CURRENCY_CODE, SUPPORTED_CURRENCIES } from '@/kernel/money';
 import { useMainCurrency } from '@/features/settings/hooks/useSettings';
 import { Text, View } from 'react-native';
 
@@ -11,7 +11,7 @@ interface LedgerDailyHeaderProps {
 }
 
 export function LedgerDailyHeader({ date, incomeTotalMinor, expenseTotalMinor, accountCurrency }: LedgerDailyHeaderProps) {
-  const { data: mainCurrency = 'EGP' } = useMainCurrency();
+  const { data: mainCurrency = DEFAULT_CURRENCY_CODE } = useMainCurrency();
   const currencyConfig = accountCurrency ? (SUPPORTED_CURRENCIES[accountCurrency] || DEFAULT_CURRENCY) : (SUPPORTED_CURRENCIES[mainCurrency] || DEFAULT_CURRENCY);
   
   const hasIncome = incomeTotalMinor > 0;

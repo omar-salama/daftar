@@ -1,4 +1,4 @@
-import type { TxLine } from '@/kernel';
+import type { TxLine } from '@/kernel/tx';
 import type { Minor } from '@/kernel/money';
 
 /**

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addMinor, formatMinor, Minor, minorFromDigits, negateMinor } from './money';
+import { addMinor, digitsFromMinor, formatMinor, Minor, minorFromDigits, negateMinor } from './money';
 
 describe('money kernel', () => {
   describe('minorFromDigits', () => {
@@ -49,6 +49,32 @@ describe('money kernel', () => {
       expect(formatMinor(1234 as Minor, { symbol: '$', decimals: 2 })).toBe('$12.34');
       expect(formatMinor(10 as Minor, { symbol: '£', decimals: 2 })).toBe('£0.10');
       expect(formatMinor(500 as Minor, { symbol: '¥', decimals: 0 })).toBe('¥500');
+    });
+  });
+
+  describe('digitsFromMinor', () => {
+    it('returns "0" for zero', () => {
+      expect(digitsFromMinor(0 as Minor)).toBe('0');
+    });
+
+    it('returns whole numbers without decimals', () => {
+      expect(digitsFromMinor(1000 as Minor)).toBe('10');
+      expect(digitsFromMinor(100 as Minor)).toBe('1');
+      expect(digitsFromMinor(500 as Minor)).toBe('5');
+    });
+
+    it('returns fractional amounts with two decimals', () => {
+      expect(digitsFromMinor(1234 as Minor)).toBe('12.34');
+      expect(digitsFromMinor(50 as Minor)).toBe('0.50');
+      expect(digitsFromMinor(1 as Minor)).toBe('0.01');
+      expect(digitsFromMinor(99 as Minor)).toBe('0.99');
+    });
+
+    it('round-trips with minorFromDigits', () => {
+      const values = [0, 1, 50, 99, 100, 1234, 10000, 99999] as Minor[];
+      for (const m of values) {
+        expect(minorFromDigits(digitsFromMinor(m))).toBe(m);
+      }
     });
   });
 });

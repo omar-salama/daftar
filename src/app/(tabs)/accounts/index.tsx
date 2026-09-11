@@ -6,6 +6,7 @@ import { AccountListItem, AccountsSummaryHeader } from '@/features/accounts/ui';
 import { exchangeRateService } from '@/features/exchange-rates/ExchangeRateService';
 import { useMainCurrency } from '@/features/settings/hooks/useSettings';
 import { getTodayString } from '@/kernel/date';
+import { DEFAULT_CURRENCY_CODE } from '@/kernel/money';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -19,7 +20,7 @@ export default function AccountsTab() {
   const { balances, dueAmounts, assetsByCurrency, liabilitiesByCurrency } = useAccountBalances();
   const reorderAccounts = useReorderAccounts();
   const router = useRouter();
-  const { data: mainCurrency = 'EGP' } = useMainCurrency();
+  const { data: mainCurrency = DEFAULT_CURRENCY_CODE } = useMainCurrency();
 
   const [totalAssets, setTotalAssets] = useState(0);
   const [totalLiabilities, setTotalLiabilities] = useState(0);

@@ -1,5 +1,5 @@
 import { Minor } from '@/kernel';
-import { DEFAULT_CURRENCY, formatMinor, SUPPORTED_CURRENCIES } from '@/kernel/money';
+import { DEFAULT_CURRENCY, DEFAULT_CURRENCY_CODE, formatMinor, SUPPORTED_CURRENCIES } from '@/kernel/money';
 import { useMainCurrency } from '@/features/settings/hooks/useSettings';
 import { Text, View } from 'react-native';
 
@@ -11,7 +11,7 @@ interface MonthTotalsProps {
 }
 
 export function MonthTotals({ monthIncome, monthExpense, monthTotal, accountCurrency }: MonthTotalsProps) {
-  const { data: mainCurrency = 'EGP' } = useMainCurrency();
+  const { data: mainCurrency = DEFAULT_CURRENCY_CODE } = useMainCurrency();
   const currencyConfig = accountCurrency ? (SUPPORTED_CURRENCIES[accountCurrency] || DEFAULT_CURRENCY) : (SUPPORTED_CURRENCIES[mainCurrency] || DEFAULT_CURRENCY);
 
   return (

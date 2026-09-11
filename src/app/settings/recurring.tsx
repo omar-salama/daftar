@@ -12,6 +12,7 @@ import {
   formatMinor,
   SUPPORTED_CURRENCIES,
   DEFAULT_CURRENCY,
+  DEFAULT_CURRENCY_CODE,
 } from '@/kernel';
 import { Stack } from 'expo-router';
 import { Alert, FlatList, Pressable, Switch, Text, View } from 'react-native';
@@ -53,7 +54,7 @@ function RecurrenceListItem({
   const router = useRouter();
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
-  const { data: mainCurrency = 'EGP' } = useMainCurrency();
+  const { data: mainCurrency = DEFAULT_CURRENCY_CODE } = useMainCurrency();
   const currencyConfig = SUPPORTED_CURRENCIES[mainCurrency] || DEFAULT_CURRENCY;
 
   const primaryLine = rule.lines[0];

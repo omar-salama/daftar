@@ -15,8 +15,9 @@ export const SUPPORTED_CURRENCIES: Record<string, CurrencyConfig> = {
   AUD: { symbol: 'A$', decimals: 2 },
 };
 
-// Default base currency config used throughout the app for totals.
-export const DEFAULT_CURRENCY: CurrencyConfig = SUPPORTED_CURRENCIES['EGP'];
+// Default base currency code and config used throughout the app for totals.
+export const DEFAULT_CURRENCY_CODE = 'EGP';
+export const DEFAULT_CURRENCY: CurrencyConfig = SUPPORTED_CURRENCIES[DEFAULT_CURRENCY_CODE];
 export function minorFromDigits(digits: string): Minor {
   if (digits === '' || digits === '.' || digits === '-') {
     return 0 as Minor;

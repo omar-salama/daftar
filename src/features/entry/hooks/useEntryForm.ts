@@ -3,7 +3,7 @@ import { RecurrenceRule } from '@/kernel';
 import { useMainCurrency } from '@/features/settings/hooks/useSettings';
 import type { TxType, TxVersion } from '@/kernel';
 import { RecurrenceMode, RecurrenceFrequency } from '@/kernel';
-import { appendDigit, minorFromDigits, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, digitsFromMinor } from '@/kernel/money';
+import { appendDigit, minorFromDigits, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, DEFAULT_CURRENCY_CODE, digitsFromMinor } from '@/kernel/money';
 
 import * as Haptics from 'expo-haptics';
 import { useEffect, useReducer, useMemo } from 'react';
@@ -219,7 +219,7 @@ export interface UseEntryFormOptions {
 }
 
 export function useEntryForm({ editingTx, editingRule, accounts }: UseEntryFormOptions) {
-  const { data: mainCurrency = 'EGP' } = useMainCurrency();
+  const { data: mainCurrency = DEFAULT_CURRENCY_CODE } = useMainCurrency();
 
   const initialState = useMemo(
     () => buildInitialState(editingTx, editingRule),
@@ -242,7 +242,7 @@ export function useEntryForm({ editingTx, editingRule, accounts }: UseEntryFormO
   const account = accounts.find(a => a.accountId === state.accountId);
   const transferAccount = accounts.find(a => a.accountId === state.transferAccountId);
 
-  const fromCurrency = account?.currency || 'EGP';
+  const fromCurrency = account?.currency || DEFAULT_CURRENCY_CODE;
   const currencyConfig = SUPPORTED_CURRENCIES[fromCurrency] || DEFAULT_CURRENCY;
   const toCurrency = transferAccount?.currency || fromCurrency;
   const isCrossCurrencyTransfer = state.txType === 'transfer' && fromCurrency !== toCurrency;

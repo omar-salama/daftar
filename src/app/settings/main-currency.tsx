@@ -1,13 +1,13 @@
 import { AppHeader } from '@/components/ui/AppHeader';
 import { useMainCurrency, useSetMainCurrency } from '@/features/settings/hooks/useSettings';
-import { SUPPORTED_CURRENCIES } from '@/kernel/money';
+import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY_CODE } from '@/kernel/money';
 import { Stack, useRouter } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MainCurrencyScreen() {
   const router = useRouter();
-  const { data: mainCurrency = 'EGP' } = useMainCurrency();
+  const { data: mainCurrency = DEFAULT_CURRENCY_CODE } = useMainCurrency();
   const updateCurrency = useSetMainCurrency();
 
   const handleSelectCurrency = (code: string) => {
