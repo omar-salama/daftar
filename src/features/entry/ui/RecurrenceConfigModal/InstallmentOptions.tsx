@@ -25,8 +25,8 @@ export function InstallmentOptions({
               key={preset}
               className={`py-3 rounded-xl border items-center flex-1 ${
                 isSelected
-                  ? 'border-primary bg-primary/10'
-                  : 'border-outline bg-surface'
+                  ? 'bg-primary border-primary'
+                  : 'bg-surface-container border-surface-variant'
               }`}
               onPress={() => {
                 if (isCustomPreset) {
@@ -39,7 +39,7 @@ export function InstallmentOptions({
             >
               <Text
                 className={`font-medium ${
-                  isSelected ? 'text-primary' : 'text-on-surface'
+                  isSelected ? 'text-surface' : 'text-on-surface'
                 }`}
               >
                 {preset}
@@ -50,7 +50,7 @@ export function InstallmentOptions({
       </View>
 
       {isCustom && (
-        <View className="flex-row items-center bg-surface-container rounded-xl border border-outline h-12 px-4">
+        <View className="flex-row items-center bg-surface-container rounded-xl border border-surface-variant h-12 px-4">
           <TextInput
             className="flex-1 text-on-surface text-lg font-mono h-full"
             style={{ lineHeight: 0 }}

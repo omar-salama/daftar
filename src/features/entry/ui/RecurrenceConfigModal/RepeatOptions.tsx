@@ -15,11 +15,11 @@ export function RepeatOptions({
         return (
           <View key={freq} className="w-1/3 pb-2 px-1">
             <Pressable
-              className={`px-4 py-3 rounded-xl border ${isSelected ? 'border-primary bg-primary/10' : 'border-outline bg-surface'}`}
+              className={`px-4 py-3 rounded-xl border ${isSelected ? 'bg-primary border-primary' : 'bg-surface-container border-surface-variant'}`}
               onPress={() => setLocalFrequency(freq)}
             >
               <Text
-                className={`text-center font-medium ${isSelected ? 'text-primary' : 'text-on-surface'}`}
+                className={`text-center font-medium ${isSelected ? 'text-surface' : 'text-on-surface'}`}
               >
                 {freq.charAt(0).toUpperCase() + freq.slice(1)}
               </Text>

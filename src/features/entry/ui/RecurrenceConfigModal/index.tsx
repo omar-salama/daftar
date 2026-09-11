@@ -80,7 +80,7 @@ export function RecurrenceConfigModal({
       >
         <Pressable className="flex-1 bg-black/60 justify-end" onPress={onClose}>
           <Pressable
-            className="bg-surface-container-highest rounded-t-3xl p-6 pb-10"
+            className="bg-surface-container rounded-t-3xl p-6 pb-10"
             onPress={(e) => e.stopPropagation()}
           >
             <View className="items-center mb-6">

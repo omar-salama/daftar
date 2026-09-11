@@ -8,7 +8,7 @@ export function RecurrenceTabs({
   onTabChange: (tab: 'repeat' | 'installment') => void;
 }) {
   return (
-    <View className="flex-row justify-between mb-6 bg-surface-container p-1 rounded-xl">
+    <View className="flex-row justify-between mb-6 bg-surface-container-high p-1 rounded-xl">
       {(['repeat', 'installment'] as const).map((tab) => {
         const isSelected = activeTab === tab;
         const label = tab === 'repeat' ? 'Repeat' : 'Installments';
