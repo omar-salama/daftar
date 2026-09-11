@@ -2,7 +2,7 @@ import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 import { RecurrenceRule } from '@/kernel';
 import { useMainCurrency } from '@/features/settings/hooks/useSettings';
 import type { TxType, TxVersion } from '@/kernel';
-import { RecurrenceMode, RecurrenceFrequency } from '@/kernel';
+import { RecurrenceMode, RecurrenceFrequency, getTodayString } from '@/kernel';
 import { appendDigit, minorFromDigits, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, DEFAULT_CURRENCY_CODE, digitsFromMinor } from '@/kernel/money';
 
 import * as Haptics from 'expo-haptics';
@@ -135,7 +135,7 @@ export function buildInitialState(
   editingTx?: TxVersion,
   editingRule?: RecurrenceRule,
 ): EntryFormState {
-  const defaultDate = new Date().toISOString().split('T')[0];
+  const defaultDate = getTodayString();
 
   const base: EntryFormState = {
     digits: '',

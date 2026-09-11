@@ -1,4 +1,4 @@
-import type { RecurrenceMode, TxType } from '@/kernel';
+import { getTodayString, type RecurrenceMode, type TxType } from '@/kernel';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
 interface TxControlsProps {
@@ -40,7 +40,7 @@ export function TxControls({
   onChangeNote,
   onPressRecurrence,
 }: TxControlsProps) {
-  const displayDateStr = date === new Date().toISOString().split('T')[0] ? 'Today' : date.slice(5);
+  const displayDateStr = date === getTodayString() ? 'Today' : date.slice(5);
 
   return (
     <View>
