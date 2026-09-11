@@ -37,7 +37,7 @@ function getAccountBalanceImpact(tx: TxVersion, accountId: string): number {
     if (tx.type === 'income') return tx.totalMinor;
   }
   if (tx.transferAccountId === accountId) {
-    if (tx.type === 'expense' || tx.type === 'transfer') return tx.totalMinor;
+    if (tx.type === 'expense' || tx.type === 'transfer') return tx.transferAmountMinor ?? tx.totalMinor;
   }
   return 0;
 }
