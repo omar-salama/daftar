@@ -9,6 +9,7 @@ import { useAccounts, useSaveAccount } from '../hooks/useAccounts';
 import { AccountType } from '../model';
 
 import { useAccountTypes } from '@/features/account-types/hooks';
+import { useMainCurrency } from '@/features/settings/hooks/useSettings';
 
 interface AccountFormProps {
   accountId?: string;
@@ -19,6 +20,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
   
   const { data: accounts = [] } = useAccounts();
   const { data: accountTypes = [] } = useAccountTypes();
+  const { data: mainCurrency } = useMainCurrency();
   const saveAccount = useSaveAccount();
   const { balances } = useAccountBalances();
   
@@ -27,7 +29,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
 
   const [name, setName] = useState('');
   const [type, setType] = useState<AccountType>('');
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState(mainCurrency || 'USD');
   const [note, setNote] = useState('');
   const [balanceInput, setBalanceInput] = useState('');
   const [creditLimit, setCreditLimit] = useState('');
@@ -38,7 +40,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
     if (existingAccount) {
       setName(existingAccount.name);
       setType(existingAccount.type);
-      setCurrency(existingAccount.currency || 'USD');
+      setCurrency(existingAccount.currency || mainCurrency || 'USD');
       setNote(existingAccount.note || '');
       setCreditLimit(existingAccount.creditLimit ? (existingAccount.creditLimit / 100).toString() : '');
       setBillingCycleStartDay(existingAccount.billingCycleStartDay ? String(existingAccount.billingCycleStartDay) : '');
