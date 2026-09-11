@@ -4,7 +4,7 @@ import { useMainCurrency } from '@/features/settings/hooks/useSettings';
 import { createTxVersion, useAppendTx, useLedger } from '@/features/ledger/hooks/useLedger';
 import { createRecurrenceRule, useAppendRecurrenceRule } from '@/features/recurrence/hooks/useRecurrenceRules';
 import type { TxId, TxLine, TxType, TxVersion } from '@/kernel';
-import { divideInstallments, RecurrenceMode, RecurrenceFrequency } from '@/kernel';
+import { divideInstallments, RecurrenceMode, RecurrenceFrequency, getBillingCycle } from '@/kernel';
 import { appendDigit, minorFromDigits, Minor, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/kernel/money';
 
 
@@ -177,9 +177,25 @@ function EntryForm({
       originalTotalMinor = amountMinor;
     }
 
+    let computedDate = date;
+
+    if (recurrenceMode === 'installment') {
+      const selectedAccount = accounts.find((a) => a.accountId === accountId);
+      if (selectedAccount?.billingCycleStartDay && selectedAccount?.paymentDay) {
+        const cycle = getBillingCycle(
+          selectedAccount.billingCycleStartDay,
+          date,
+          selectedAccount.paymentDay
+        );
+        if (cycle.paymentDate) {
+          computedDate = cycle.paymentDate;
+        }
+      }
+    }
+
     const baseTx = {
       type: txType,
-      occurredAt: date,
+      occurredAt: computedDate,
       accountId,
       transferAccountId: txType === 'transfer' ? transferAccountId : undefined,
       payee: payee || undefined,
@@ -203,10 +219,10 @@ function EntryForm({
         note: note || undefined,
         exchangeRate,
         frequency: frequency as RecurrenceFrequency,
-        startDate: date,
+        startDate: computedDate,
         totalInstallments: recurrenceMode === 'installment' ? installmentCount : undefined,
         originalTotalMinor: originalTotalMinor,
-        lastMaterializedDate: date,
+        lastMaterializedDate: computedDate,
         materializedCount: 1,
       });
       recurrenceId = rule.recurrenceId;
