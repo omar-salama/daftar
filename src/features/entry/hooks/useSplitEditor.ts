@@ -1,5 +1,5 @@
 import { TxLine, TxVersion } from '@/kernel';
-import { Minor, minorFromDigits, appendDigit } from '@/kernel/money';
+import { Minor, minorFromDigits, appendDigit, digitsFromMinor } from '@/kernel/money';
 import { useState, useMemo, useEffect } from 'react';
 
 export type EditorLine = {
@@ -42,8 +42,7 @@ export function applyPristineDistribution(lines: EditorLine[], totalMinor: Minor
       leftOver -= 1;
     }
 
-    const isWhole = share % 100 === 0;
-    const digits = share === 0 ? '0' : (isWhole ? (share / 100).toString() : (share / 100).toFixed(2));
+    const digits = digitsFromMinor(share as Minor);
     
     return { ...line, digits };
   });
@@ -62,11 +61,10 @@ export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSa
 
     if (editingTx && editingTx.lines.length > 1) {
       const initialLines = editingTx.lines.map((l, i) => {
-        const isWhole = l.amountMinor % 100 === 0;
         return {
           id: `line-${i}`,
           categoryId: l.categoryId,
-          digits: isWhole ? (l.amountMinor / 100).toString() : (l.amountMinor / 100).toFixed(2),
+          digits: digitsFromMinor(l.amountMinor),
           isPristine: false,
         };
       });

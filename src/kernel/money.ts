@@ -84,3 +84,10 @@ export function formatMinor(m: Minor, config: CurrencyConfig): string {
   
   return `${config.symbol}${value.toFixed(config.decimals)}`;
 }
+
+export function digitsFromMinor(minor: Minor): string {
+  if (minor === 0) return '0';
+  return minor % 100 === 0
+    ? (minor / 100).toString()
+    : (minor / 100).toFixed(2);
+}

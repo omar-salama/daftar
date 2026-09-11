@@ -7,6 +7,7 @@ export {
   addMinor,
   negateMinor,
   formatMinor,
+  digitsFromMinor,
 } from './money';
 
 export { type HLCState, nextHLC } from './hlc';
