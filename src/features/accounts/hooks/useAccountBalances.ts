@@ -86,23 +86,27 @@ function applyTransactions(
   }
 }
 
-function calculateNetWorth(accounts: AccountVersion[], accountTypes: AccountTypeVersion[], balances: Record<string, number>) {
-  let totalAssets = 0;
-  let totalLiabilities = 0;
+function calculateNetWorthByCurrency(accounts: AccountVersion[], accountTypes: AccountTypeVersion[], balances: Record<string, number>) {
+  const assetsByCurrency: Record<string, number> = {};
+  const liabilitiesByCurrency: Record<string, number> = {};
   const accountTypeMap = new Map(accountTypes.map(t => [t.accountTypeId, t]));
 
   for (const acc of accounts) {
     const bal = balances[acc.accountId] || 0;
     const typeInfo = accountTypeMap.get(acc.type as import('@/features/account-types/model').AccountTypeId);
+    const currency = acc.currency || 'EGP';
+
+    if (!assetsByCurrency[currency]) assetsByCurrency[currency] = 0;
+    if (!liabilitiesByCurrency[currency]) liabilitiesByCurrency[currency] = 0;
 
     if (typeInfo?.isLiability) {
-      if (bal < 0) totalLiabilities += Math.abs(bal);
+      if (bal < 0) liabilitiesByCurrency[currency] += Math.abs(bal);
     } else {
-      totalAssets += bal;
+      assetsByCurrency[currency] += bal;
     }
   }
 
-  return { totalAssets, totalLiabilities, netWorth: totalAssets - totalLiabilities };
+  return { assetsByCurrency, liabilitiesByCurrency };
 }
 
 export function useAccountBalances() {
@@ -111,7 +115,7 @@ export function useAccountBalances() {
   const { data: txs } = useLedger();
 
   return useMemo(() => {
-    if (!accounts) return { balances: {}, dueAmounts: {}, totalAssets: 0, totalLiabilities: 0, netWorth: 0 };
+    if (!accounts) return { balances: {}, dueAmounts: {}, assetsByCurrency: {}, liabilitiesByCurrency: {} };
 
     const { balances, dueAmounts, prevBillingCycleEndDates } = initializeAccountStates(accounts);
 
@@ -119,8 +123,8 @@ export function useAccountBalances() {
       applyTransactions(txs, balances, dueAmounts, prevBillingCycleEndDates);
     }
 
-    const { totalAssets, totalLiabilities, netWorth } = calculateNetWorth(accounts, accountTypes || [], balances);
+    const { assetsByCurrency, liabilitiesByCurrency } = calculateNetWorthByCurrency(accounts, accountTypes || [], balances);
 
-    return { balances, dueAmounts, totalAssets, totalLiabilities, netWorth };
+    return { balances, dueAmounts, assetsByCurrency, liabilitiesByCurrency };
   }, [accounts, txs, accountTypes]);
 }

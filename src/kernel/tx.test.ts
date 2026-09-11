@@ -103,6 +103,39 @@ describe('tx kernel', () => {
       expect(v.type).toBe('income');
       expect(v.totalMinor).toBe(500000);
     });
+
+    it('retains exchange rate and converted amounts', () => {
+      const v = buildTxVersion({
+        rowId: 'r1' as RowId,
+        txId: 'tx1' as TxId,
+        deviceId: 'deviceA',
+        occurredAt: '2026-07-24',
+        accountId: 'acc1',
+        exchangeRate: 50.62,
+        lines: [{ categoryId: 'cat1', amountMinor: 10000 as Minor, mainCurrencyAmountMinor: 506200 as Minor }],
+      }, 'v1');
+      
+      expect(v.exchangeRate).toBe(50.62);
+      expect(v.lines[0].mainCurrencyAmountMinor).toBe(506200);
+    });
+
+    it('retains transfer amounts and rates for cross-currency transfers', () => {
+      const v = buildTxVersion({
+        rowId: 'r1' as RowId,
+        txId: 'tx1' as TxId,
+        deviceId: 'deviceA',
+        type: 'transfer',
+        occurredAt: '2026-07-24',
+        accountId: 'acc1',
+        transferAccountId: 'acc2',
+        lines: [{ categoryId: 'transfer', amountMinor: 10000 as Minor }], // 100 USD
+        transferAmountMinor: 495000 as Minor, // 4950 EGP
+        transferExchangeRate: 49.5,
+      }, 'v1');
+      
+      expect(v.transferAmountMinor).toBe(495000);
+      expect(v.transferExchangeRate).toBe(49.5);
+    });
   });
 
   describe('resolveCurrent', () => {

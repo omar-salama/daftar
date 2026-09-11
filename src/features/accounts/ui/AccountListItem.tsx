@@ -1,4 +1,4 @@
-import { DEFAULT_CURRENCY, formatMinor, Minor } from '@/kernel/money';
+import { DEFAULT_CURRENCY, formatMinor, Minor, SUPPORTED_CURRENCIES } from '@/kernel/money';
 import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { ScaleDecorator } from 'react-native-draggable-flatlist';
@@ -16,6 +16,7 @@ interface AccountListItemProps {
 
 export function AccountListItem({ item, balance, dueAmount = 0, drag, isActive, accountTypeName, isLiability }: AccountListItemProps) {
   const router = useRouter();
+  const accountCurrency = SUPPORTED_CURRENCIES[item.currency] || DEFAULT_CURRENCY;
 
   return (
     <ScaleDecorator>
@@ -33,15 +34,15 @@ export function AccountListItem({ item, balance, dueAmount = 0, drag, isActive, 
         </View>
         <View className="items-end flex-1">
           <Text className={`text-lg font-semibold ${isLiability && balance < 0 ? 'text-error' : 'text-on-surface'}`}>
-            {formatMinor(isLiability ? Math.abs(balance as number) as Minor : balance as Minor, DEFAULT_CURRENCY)}
+            {formatMinor(isLiability ? Math.abs(balance as number) as Minor : balance as Minor, accountCurrency)}
           </Text>
           {isLiability && item.creditLimit !== undefined && (
             <View className="flex-row mt-1">
               <Text className="text-xs text-secondary mr-2">
-                Available: {formatMinor((item.creditLimit + balance) as Minor, DEFAULT_CURRENCY)}
+                Available: {formatMinor((item.creditLimit + balance) as Minor, accountCurrency)}
               </Text>
               <Text className="text-xs text-error">
-                Due: {formatMinor(Math.max(0, -(dueAmount as number)) as Minor, DEFAULT_CURRENCY)}
+                Due: {formatMinor(Math.max(0, -(dueAmount as number)) as Minor, accountCurrency)}
               </Text>
             </View>
           )}

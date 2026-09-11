@@ -5,10 +5,18 @@ export interface CurrencyConfig {
   decimals: number;
 }
 
-// Default currency config used throughout the app.
-// Pass a different CurrencyConfig to formatMinor for multi-currency support.
-export const DEFAULT_CURRENCY: CurrencyConfig = { symbol: '$', decimals: 2 };
+export const SUPPORTED_CURRENCIES: Record<string, CurrencyConfig> = {
+  USD: { symbol: '$', decimals: 2 },
+  EUR: { symbol: '€', decimals: 2 },
+  GBP: { symbol: '£', decimals: 2 },
+  JPY: { symbol: '¥', decimals: 0 },
+  EGP: { symbol: 'E£', decimals: 2 },
+  CAD: { symbol: 'C$', decimals: 2 },
+  AUD: { symbol: 'A$', decimals: 2 },
+};
 
+// Default base currency config used throughout the app for totals.
+export const DEFAULT_CURRENCY: CurrencyConfig = SUPPORTED_CURRENCIES['EGP'];
 export function minorFromDigits(digits: string): Minor {
   if (digits === '' || digits === '.' || digits === '-') {
     return 0 as Minor;

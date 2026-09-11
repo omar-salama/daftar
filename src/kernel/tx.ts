@@ -7,6 +7,7 @@ export type TxType = 'expense' | 'income' | 'transfer';
 export interface TxLine {
   categoryId: string;
   amountMinor: Minor;
+  mainCurrencyAmountMinor?: Minor;
 }
 
 export interface TxVersion {
@@ -23,6 +24,9 @@ export interface TxVersion {
   note?: string;
   lines: TxLine[];
   totalMinor: Minor;
+  exchangeRate?: number; // exchange rate at the time of transaction
+  transferAmountMinor?: Minor; // for cross-currency transfers, the amount in destination account currency
+  transferExchangeRate?: number; // actual rate for cross-currency transfers
 }
 
 export interface BuildTxVersionInput {
@@ -37,6 +41,9 @@ export interface BuildTxVersionInput {
   payee?: string;
   note?: string;
   lines: TxLine[];
+  exchangeRate?: number;
+  transferAmountMinor?: Minor;
+  transferExchangeRate?: number;
 }
 
 export function buildTxVersion(input: BuildTxVersionInput, versionString: string): TxVersion {
@@ -66,6 +73,9 @@ export function buildTxVersion(input: BuildTxVersionInput, versionString: string
     note: input.note,
     lines: input.lines,
     totalMinor,
+    exchangeRate: input.exchangeRate,
+    transferAmountMinor: input.transferAmountMinor,
+    transferExchangeRate: input.transferExchangeRate,
   };
 }
 

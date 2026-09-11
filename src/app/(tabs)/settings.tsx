@@ -11,6 +11,10 @@ export default function SettingsTab() {
       <ScrollView className="flex-1">
         <View className="border-surface-container">
           <SettingRow 
+            label="Main Currency" 
+            href="/settings/main-currency" 
+          />
+          <SettingRow 
             label="Expense Categories" 
             href="/settings/categories?type=expense" 
           />

@@ -1,14 +1,19 @@
 import { Minor } from '@/kernel';
-import { formatMinor, DEFAULT_CURRENCY } from '@/kernel/money';
+import { formatMinor, DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/kernel/money';
+import { useMainCurrency } from '@/features/settings/hooks/useSettings';
 import { Text, View } from 'react-native';
 
 interface LedgerDailyHeaderProps {
   date: string;
   incomeTotalMinor: Minor;
   expenseTotalMinor: Minor;
+  accountCurrency?: string;
 }
 
-export function LedgerDailyHeader({ date, incomeTotalMinor, expenseTotalMinor }: LedgerDailyHeaderProps) {
+export function LedgerDailyHeader({ date, incomeTotalMinor, expenseTotalMinor, accountCurrency }: LedgerDailyHeaderProps) {
+  const { data: mainCurrency = 'EGP' } = useMainCurrency();
+  const currencyConfig = accountCurrency ? (SUPPORTED_CURRENCIES[accountCurrency] || DEFAULT_CURRENCY) : (SUPPORTED_CURRENCIES[mainCurrency] || DEFAULT_CURRENCY);
+  
   const hasIncome = incomeTotalMinor > 0;
   const hasExpense = expenseTotalMinor > 0;
 
@@ -30,14 +35,14 @@ export function LedgerDailyHeader({ date, incomeTotalMinor, expenseTotalMinor }:
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          {formatMinor(incomeTotalMinor, DEFAULT_CURRENCY)}
+          {formatMinor(incomeTotalMinor, currencyConfig)}
         </Text>
         <Text
           className={`w-24 text-right font-medium text-sm pl-2 ${hasExpense ? 'text-error' : 'text-on-surface-variant'}`} 
           numberOfLines={1} 
           adjustsFontSizeToFit
         >
-          {formatMinor(expenseTotalMinor, DEFAULT_CURRENCY)}
+          {formatMinor(expenseTotalMinor, currencyConfig)}
         </Text>
       </View>
     </View>

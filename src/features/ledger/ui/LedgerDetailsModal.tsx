@@ -1,7 +1,7 @@
 import { AccountVersion } from '@/features/accounts/model';
 import { CategoryVersion } from '@/features/categories/model';
 import { DEFAULT_CURRENCY, TxVersion } from '@/kernel';
-import { formatMinor } from '@/kernel/money';
+import { formatMinor, SUPPORTED_CURRENCIES } from '@/kernel/money';
 import { Modal, Pressable, Text, View } from 'react-native';
 
 interface LedgerDetailsModalProps {
@@ -33,8 +33,11 @@ export function LedgerDetailsModal({
     return { name: cat.name, icon: cat.icon };
   };
 
-  const accountName = accounts.find(a => a.accountId === selectedTx.accountId)?.name || selectedTx.accountId;
+  const account = accounts.find(a => a.accountId === selectedTx.accountId);
+  const accountName = account?.name || selectedTx.accountId;
   const transferAccountName = accounts.find(a => a.accountId === selectedTx.transferAccountId)?.name || selectedTx.transferAccountId;
+  
+  const accountCurrency = account ? (SUPPORTED_CURRENCIES[account.currency] || DEFAULT_CURRENCY) : DEFAULT_CURRENCY;
 
   const subtitle = selectedTx.type === 'transfer'
     ? `${accountName} → ${transferAccountName}`
@@ -60,19 +63,37 @@ export function LedgerDetailsModal({
           </View>
 
           <Text className="text-on-surface text-xl font-semibold mb-1 text-center font-mono">
-            {selectedTx.type === 'income' ? '+' : ''}{formatMinor(selectedTx.totalMinor, DEFAULT_CURRENCY)}
+            {selectedTx.type === 'income' ? '+' : ''}{formatMinor(selectedTx.totalMinor, accountCurrency)}
           </Text>
+
+          {selectedTx.type === 'transfer' && selectedTx.transferAmountMinor && (
+            <Text className="text-secondary text-sm font-semibold mb-2 text-center font-mono">
+              → {formatMinor(selectedTx.transferAmountMinor, (accounts.find(a => a.accountId === selectedTx.transferAccountId)?.currency ? SUPPORTED_CURRENCIES[accounts.find(a => a.accountId === selectedTx.transferAccountId)!.currency!] : DEFAULT_CURRENCY) || DEFAULT_CURRENCY)}
+            </Text>
+          )}
           
           <Text className="text-on-surface-variant text-sm mb-6 text-center font-sans">
             {subtitle}
           </Text>
 
-          {(selectedTx.payee || selectedTx.note || selectedTx.lines.length > 1) && (
+          {(selectedTx.payee || selectedTx.note || selectedTx.lines.length > 1 || selectedTx.exchangeRate !== undefined || selectedTx.transferExchangeRate !== undefined) && (
             <View className="mb-6 w-full bg-surface rounded-xl p-4 gap-4 border border-surface-variant">
               {selectedTx.payee && (
                 <View>
                   <Text className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Payee</Text>
                   <Text className="text-on-surface text-base font-medium">{selectedTx.payee}</Text>
+                </View>
+              )}
+              {selectedTx.exchangeRate !== undefined && (
+                <View>
+                  <Text className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Applied Rate</Text>
+                  <Text className="text-on-surface text-base font-medium">{selectedTx.exchangeRate > 1 ? selectedTx.exchangeRate.toFixed(2) : selectedTx.exchangeRate.toPrecision(3)}</Text>
+                </View>
+              )}
+              {selectedTx.transferExchangeRate !== undefined && selectedTx.type === 'transfer' && (
+                <View>
+                  <Text className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Exchange Rate</Text>
+                  <Text className="text-on-surface text-base font-medium">{selectedTx.transferExchangeRate > 1 ? selectedTx.transferExchangeRate.toFixed(2) : selectedTx.transferExchangeRate.toPrecision(3)}</Text>
                 </View>
               )}
               {selectedTx.note && (
@@ -90,7 +111,7 @@ export function LedgerDetailsModal({
                       return (
                         <View key={i} className="flex-row justify-between items-center bg-surface-container p-2 rounded-lg">
                           <Text className="text-on-surface font-medium">{catDetails.icon} {catDetails.name}</Text>
-                          <Text className="text-on-surface font-mono font-medium text-sm">{formatMinor(l.amountMinor, DEFAULT_CURRENCY)}</Text>
+                          <Text className="text-on-surface font-mono font-medium text-sm">{formatMinor(l.amountMinor, accountCurrency)}</Text>
                         </View>
                       );
                     })}

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Minor, minorFromDigits } from '@/kernel/money';
+import { Minor, minorFromDigits, SUPPORTED_CURRENCIES } from '@/kernel/money';
 import { useAccountBalances } from '../hooks/useAccountBalances';
 import { useAccounts, useSaveAccount } from '../hooks/useAccounts';
 import { AccountType } from '../model';
@@ -27,6 +27,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
 
   const [name, setName] = useState('');
   const [type, setType] = useState<AccountType>('');
+  const [currency, setCurrency] = useState('USD');
   const [note, setNote] = useState('');
   const [balanceInput, setBalanceInput] = useState('');
   const [creditLimit, setCreditLimit] = useState('');
@@ -37,6 +38,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
     if (existingAccount) {
       setName(existingAccount.name);
       setType(existingAccount.type);
+      setCurrency(existingAccount.currency || 'USD');
       setNote(existingAccount.note || '');
       setCreditLimit(existingAccount.creditLimit ? (existingAccount.creditLimit / 100).toString() : '');
       setBillingCycleStartDay(existingAccount.billingCycleStartDay ? String(existingAccount.billingCycleStartDay) : '');
@@ -74,6 +76,7 @@ export function AccountForm({ accountId }: AccountFormProps) {
       existingAccount,
       name: name.trim(),
       type,
+      currency,
       note: note.trim() || undefined,
       initialBalance,
       maxOrder,
@@ -84,6 +87,8 @@ export function AccountForm({ accountId }: AccountFormProps) {
       onSuccess: () => router.back()
     });
   };
+
+  const currencyCodes = Object.keys(SUPPORTED_CURRENCIES);
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
@@ -124,6 +129,29 @@ export function AccountForm({ accountId }: AccountFormProps) {
             onChangeText={setBalanceInput}
             keyboardType="numbers-and-punctuation"
           />
+        </View>
+        
+        <View className="mb-6">
+          <Text className="text-sm font-medium text-on-surface-variant mb-2">Currency</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {currencyCodes.map((code) => (
+              <Pressable
+                key={code}
+                onPress={() => setCurrency(code)}
+                className={`px-4 py-2 rounded-lg border ${
+                  currency === code 
+                    ? 'bg-primary border-primary' 
+                    : 'bg-surface-container border-surface-variant'
+                }`}
+              >
+                <Text className={`font-medium ${
+                  currency === code ? 'text-surface' : 'text-on-surface'
+                }`}>
+                  {SUPPORTED_CURRENCIES[code].symbol}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
 
         <View className="mb-6">

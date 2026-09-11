@@ -5,10 +5,11 @@ import { Text, View } from 'react-native';
 interface AmountDisplayProps {
   amount: Minor;
   txType?: TxType;
+  currencyConfig?: typeof DEFAULT_CURRENCY;
 }
 
-export function AmountDisplay({ amount, txType = 'expense' }: AmountDisplayProps) {
-  const formatted = formatMinor(amount, DEFAULT_CURRENCY);
+export function AmountDisplay({ amount, txType = 'expense', currencyConfig = DEFAULT_CURRENCY }: AmountDisplayProps) {
+  const formatted = formatMinor(amount, currencyConfig);
   const isZero = amount === 0;
 
   const colorClass = isZero

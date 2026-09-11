@@ -1,14 +1,15 @@
 import { useAccounts } from '@/features/accounts/hooks/useAccounts';
-import { useAppendTx, createTxVersion, useLedger } from '@/features/ledger/hooks/useLedger';
+import { exchangeRateService } from '@/features/exchange-rates/ExchangeRateService';
+import { useMainCurrency } from '@/features/settings/hooks/useSettings';
+import { createTxVersion, useAppendTx, useLedger } from '@/features/ledger/hooks/useLedger';
 import type { TxId, TxLine, TxType, TxVersion } from '@/kernel';
-import { minorFromDigits, appendDigit } from '@/kernel/money';
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { generateUuid } from '@/lib/storage';
+import { appendDigit, minorFromDigits, Minor, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/kernel/money';
+
 
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Alert, TextInput, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AccountPickerModal } from './AccountPickerModal';
 import { AmountDisplay } from './AmountDisplay';
@@ -42,9 +43,10 @@ function EntryForm({
 }: {
   editingTx?: TxVersion;
   editingTxId?: string;
-  accounts: NonNullable<ReturnType<typeof useAccounts>['data']>
+  accounts: NonNullable<ReturnType<typeof useAccounts>['data']>;
 }) {
   const router = useRouter();
+  const { data: mainCurrency = 'EGP' } = useMainCurrency();
 
   const [digits, setDigits] = useState(() => {
     if (!editingTx) return '';
@@ -63,6 +65,16 @@ function EntryForm({
   const [showDetails, setShowDetails] = useState(() => !!(editingTx?.payee || editingTx?.note));
   const [payee, setPayee] = useState(() => editingTx?.payee || '');
   const [note, setNote] = useState(() => editingTx?.note || '');
+  const [exchangeRateOverrideDigits, setExchangeRateOverrideDigits] = useState(() => editingTx?.exchangeRate ? editingTx.exchangeRate.toString() : '');
+  
+  // Cross-currency transfer
+  const [transferDigits, setTransferDigits] = useState(() => {
+    if (editingTx?.transferAmountMinor) {
+      const isWhole = editingTx.transferAmountMinor % 100 === 0;
+      return isWhole ? (editingTx.transferAmountMinor / 100).toString() : (editingTx.transferAmountMinor / 100).toFixed(2);
+    }
+    return '';
+  });
 
   // Select default account if none is set
   useEffect(() => {
@@ -72,8 +84,15 @@ function EntryForm({
   }, [accounts, accountId]);
 
   const amountMinor = minorFromDigits(digits);
-
   const appendTx = useAppendTx();
+
+  const account = accounts.find(a => a.accountId === accountId);
+  const transferAccount = accounts.find(a => a.accountId === transferAccountId);
+  
+  const fromCurrency = account?.currency || 'EGP';
+  const currencyConfig = SUPPORTED_CURRENCIES[fromCurrency] || DEFAULT_CURRENCY;
+  const toCurrency = transferAccount?.currency || fromCurrency;
+  const isCrossCurrencyTransfer = txType === 'transfer' && fromCurrency !== toCurrency;
 
   const handleDigit = (d: string) => {
     setDigits(prev => appendDigit(prev, d));
@@ -83,26 +102,71 @@ function EntryForm({
     setDigits(prev => prev.slice(0, -1));
   };
 
-  const saveLines = (lines: TxLine[]) => {
+  const saveLines = async (lines: TxLine[]) => {
     if (amountMinor === 0) return;
+    
+    if (isCrossCurrencyTransfer && !transferDigits) {
+      Alert.alert('Missing amount', `Please enter the destination amount in ${toCurrency}`);
+      return;
+    }
+
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    const uuidStr = generateUuid();
+    let exchangeRate: number | undefined;
+    if (fromCurrency !== mainCurrency) {
+      if (exchangeRateOverrideDigits && !isNaN(Number(exchangeRateOverrideDigits))) {
+        exchangeRate = Number(exchangeRateOverrideDigits);
+      } else {
+        try {
+          exchangeRate = await exchangeRateService.getRate(fromCurrency, mainCurrency, date);
+        } catch {
+          Alert.alert('Network Error', `Could not fetch exchange rate for ${fromCurrency} to ${mainCurrency}. Please enter a manual rate.`);
+          return;
+        }
+      }
+    }
+
+    const processedLines = lines.map(line => {
+      const mainMinor = exchangeRate 
+        ? Math.round(line.amountMinor * exchangeRate) as Minor 
+        : line.amountMinor;
+      return {
+        ...line,
+        mainCurrencyAmountMinor: mainMinor
+      };
+    });
+
+    let transferAmountMinor: Minor | undefined;
+    let transferExchangeRate: number | undefined;
+    
+    if (txType === 'transfer' && transferAccountId) {
+      if (isCrossCurrencyTransfer) {
+        transferAmountMinor = minorFromDigits(transferDigits);
+        transferExchangeRate = transferAmountMinor / amountMinor;
+      } else {
+        transferAmountMinor = amountMinor;
+        transferExchangeRate = 1;
+      }
+    }
 
     const tx = createTxVersion({
-      txId: (editingTxId || uuidStr) as TxId,
+      txId: editingTxId ? (editingTxId as TxId) : undefined,
       type: txType,
       occurredAt: date,
       accountId,
       transferAccountId: txType === 'transfer' ? transferAccountId : undefined,
       payee: payee || undefined,
       note: note || undefined,
-      lines,
+      lines: processedLines,
+      exchangeRate,
+      transferAmountMinor,
+      transferExchangeRate,
     });
 
     appendTx.mutate(tx, {
       onSuccess: () => {
         setDigits('');
+        setTransferDigits('');
         setPayee('');
         setNote('');
         setIsSplit(false);
@@ -119,7 +183,7 @@ function EntryForm({
 
   const handleSaveTransfer = () => {
     if (!transferAccountId) {
-      alert('Please select a transfer destination account');
+      Alert.alert('Missing account', 'Please select a transfer destination account');
       return;
     }
     saveLines([{ categoryId: 'transfer', amountMinor }]);
@@ -142,7 +206,35 @@ function EntryForm({
       <View className="flex-1 bg-surface gap-6">
         <TxTypeToggle txType={txType} onChangeType={handleToggleType} />
         <View className='px-6 gap-6'>
-          <AmountDisplay amount={amountMinor} txType={txType} />
+          <AmountDisplay amount={amountMinor} txType={txType} currencyConfig={currencyConfig} />
+          
+          {isCrossCurrencyTransfer && (
+            <View className="bg-surface-container rounded-xl p-3 border border-surface-variant flex-row justify-between items-center">
+              <Text className="text-on-surface-variant font-medium">To {toCurrency}:</Text>
+              <TextInput
+                className="text-on-surface text-lg text-right flex-1 ml-4"
+                placeholder="0.00"
+                placeholderTextColor="#71717a"
+                value={transferDigits}
+                onChangeText={setTransferDigits}
+                keyboardType="decimal-pad"
+              />
+            </View>
+          )}
+
+          {fromCurrency !== mainCurrency && txType !== 'transfer' && (
+            <View className="bg-surface-container rounded-xl p-3 border border-surface-variant flex-row justify-between items-center">
+              <Text className="text-on-surface-variant font-medium">Rate ({fromCurrency} to {mainCurrency}):</Text>
+              <TextInput
+                className="text-on-surface text-lg text-right flex-1 ml-4"
+                placeholder="Auto-fetch"
+                placeholderTextColor="#71717a"
+                value={exchangeRateOverrideDigits}
+                onChangeText={setExchangeRateOverrideDigits}
+                keyboardType="decimal-pad"
+              />
+            </View>
+          )}
 
           <TxControls
             txType={txType}

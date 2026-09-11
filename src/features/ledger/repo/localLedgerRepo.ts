@@ -1,13 +1,16 @@
 import { getJSON, setJSON, outboxAppend, nextVersion, generateUuid } from '@/lib/storage';
-import { TxVersion, resolveCurrent, buildTxVersion, BuildTxVersionInput, RowId } from '@/kernel';
+import { TxVersion, TxId, resolveCurrent, buildTxVersion, BuildTxVersionInput, RowId } from '@/kernel';
 import { LedgerRepo } from '../model';
 
-export function createTxVersion(input: Omit<BuildTxVersionInput, 'deviceId' | 'rowId'>): TxVersion {
+export function createTxVersion(input: Omit<BuildTxVersionInput, 'deviceId' | 'rowId' | 'txId'> & { txId?: TxId }): TxVersion {
   const { version, deviceId } = nextVersion();
   const rowId = generateUuid() as RowId;
+  const { txId: inputTxId, ...rest } = input;
+  const txId = inputTxId ?? (generateUuid() as TxId);
 
   return buildTxVersion({
-    ...input,
+    ...rest,
+    txId,
     deviceId,
     rowId
   }, version);

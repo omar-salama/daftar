@@ -74,8 +74,8 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
           };
         }
         currentDate = tx.occurredAt;
-        currentExpenseTotal = isIncome ? (0 as Minor) : tx.totalMinor;
-        currentIncomeTotal = isIncome ? tx.totalMinor : (0 as Minor);
+        currentExpenseTotal = 0 as Minor;
+        currentIncomeTotal = 0 as Minor;
         currentDayStartIndex = items.length;
         items.push({
           type: 'header',
@@ -83,11 +83,30 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
           expenseTotalMinor: 0 as Minor,
           incomeTotalMinor: 0 as Minor,
         });
-      } else {
-        if (isIncome) {
+      }
+
+      // Add to daily totals
+      if (tx.type === 'income') {
+        if (accountId) {
           currentIncomeTotal = (currentIncomeTotal + tx.totalMinor) as Minor;
-        } else if (tx.type === 'expense') {
+        } else {
+          const mainMinor = tx.lines.reduce((s, l) => s + (l.mainCurrencyAmountMinor ?? l.amountMinor), 0);
+          currentIncomeTotal = (currentIncomeTotal + mainMinor) as Minor;
+        }
+      } else if (tx.type === 'expense') {
+        if (accountId) {
           currentExpenseTotal = (currentExpenseTotal + tx.totalMinor) as Minor;
+        } else {
+          const mainMinor = tx.lines.reduce((s, l) => s + (l.mainCurrencyAmountMinor ?? l.amountMinor), 0);
+          currentExpenseTotal = (currentExpenseTotal + mainMinor) as Minor;
+        }
+      } else if (tx.type === 'transfer') {
+        if (accountId) {
+          if (tx.accountId === accountId) {
+            currentExpenseTotal = (currentExpenseTotal + tx.totalMinor) as Minor;
+          } else if (tx.transferAccountId === accountId) {
+            currentIncomeTotal = (currentIncomeTotal + (tx.transferAmountMinor ?? tx.totalMinor)) as Minor;
+          }
         }
       }
 
@@ -159,6 +178,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
           date={item.date}
           incomeTotalMinor={item.incomeTotalMinor}
           expenseTotalMinor={item.expenseTotalMinor}
+          accountCurrency={account?.currency}
         />
       );
     }
@@ -171,6 +191,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
         accounts={accounts}
         categories={categories}
         onPress={setSelectedTx}
+        viewContextAccountId={accountId}
       />
     );
   };
@@ -194,7 +215,7 @@ export function LedgerList({ accountId }: { accountId?: string } = {}) {
           monthIncome={monthIncome}
           monthExpense={monthExpense}
           monthTotal={monthTotal}
-          isSpecificAccount={!!accountId}
+          accountCurrency={account?.currency}
         />
       </View>
 

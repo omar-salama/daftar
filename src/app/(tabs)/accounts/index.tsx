@@ -3,6 +3,9 @@ import { useAccountBalances } from '@/features/accounts/hooks/useAccountBalances
 import { useAccounts, useReorderAccounts } from '@/features/accounts/hooks/useAccounts';
 import { AccountVersion } from '@/features/accounts/model';
 import { AccountListItem, AccountsSummaryHeader } from '@/features/accounts/ui';
+import { exchangeRateService } from '@/features/exchange-rates/ExchangeRateService';
+import { useMainCurrency } from '@/features/settings/hooks/useSettings';
+import { getTodayString } from '@/kernel/date';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -13,9 +16,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function AccountsTab() {
   const { data: accounts = [] } = useAccounts();
   const { data: accountTypes = [] } = useAccountTypes();
-  const { balances, dueAmounts, totalAssets, totalLiabilities, netWorth } = useAccountBalances();
+  const { balances, dueAmounts, assetsByCurrency, liabilitiesByCurrency } = useAccountBalances();
   const reorderAccounts = useReorderAccounts();
   const router = useRouter();
+  const { data: mainCurrency = 'EGP' } = useMainCurrency();
+
+  const [totalAssets, setTotalAssets] = useState(0);
+  const [totalLiabilities, setTotalLiabilities] = useState(0);
+  const [netWorth, setNetWorth] = useState(0);
 
   // Local state for dragging
   const [data, setData] = useState(accounts);
@@ -24,6 +32,46 @@ export default function AccountsTab() {
   useEffect(() => {
     setData([...accounts].sort((a, b) => a.order - b.order));
   }, [accounts]);
+
+  // Compute converted totals
+  useEffect(() => {
+    async function computeConvertedTotals() {
+      let assets = 0;
+      let liabilities = 0;
+      const today = getTodayString();
+
+      for (const [currency, amount] of Object.entries(assetsByCurrency)) {
+        if (currency === mainCurrency) {
+          assets += amount;
+        } else {
+          try {
+            const rate = await exchangeRateService.getRate(currency, mainCurrency, today);
+            assets += amount * rate;
+          } catch (e) {
+            assets += amount; // Fallback to 1:1 if network fails and no cache
+          }
+        }
+      }
+
+      for (const [currency, amount] of Object.entries(liabilitiesByCurrency)) {
+        if (currency === mainCurrency) {
+          liabilities += amount;
+        } else {
+          try {
+            const rate = await exchangeRateService.getRate(currency, mainCurrency, today);
+            liabilities += amount * rate;
+          } catch (e) {
+            liabilities += amount; // Fallback to 1:1 if network fails and no cache
+          }
+        }
+      }
+
+      setTotalAssets(assets);
+      setTotalLiabilities(liabilities);
+      setNetWorth(assets - liabilities);
+    }
+    computeConvertedTotals();
+  }, [assetsByCurrency, liabilitiesByCurrency, mainCurrency]);
 
   const handleDragEnd = ({ data: newData }: { data: AccountVersion[] }) => {
     setData(newData);
@@ -59,6 +107,7 @@ export default function AccountsTab() {
           netWorth={netWorth}
           totalAssets={totalAssets}
           totalLiabilities={totalLiabilities}
+          mainCurrency={mainCurrency}
         />
 
         <View className="flex-row justify-between items-center px-4 mb-2">

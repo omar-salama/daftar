@@ -2,7 +2,7 @@ import { useAccountTypes } from '@/features/account-types/hooks';
 import { useAccountBalances } from '@/features/accounts/hooks/useAccountBalances';
 import { useAccounts } from '@/features/accounts/hooks/useAccounts';
 import { LedgerList } from '@/features/ledger/ui/LedgerList';
-import { DEFAULT_CURRENCY, formatMinor, Minor } from '@/kernel/money';
+import { DEFAULT_CURRENCY, formatMinor, Minor, SUPPORTED_CURRENCIES } from '@/kernel/money';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,6 +21,8 @@ export default function AccountDetailsScreen() {
   const accountTypeInfo = accountTypes.find(t => t.accountTypeId === account?.type);
   const accountTypeName = accountTypeInfo?.name || account?.type;
   const isLiability = accountTypeInfo?.isLiability || false;
+
+  const accountCurrency = account ? (SUPPORTED_CURRENCIES[account.currency] || DEFAULT_CURRENCY) : DEFAULT_CURRENCY;
 
   if (!account) {
     return (
@@ -59,7 +61,7 @@ export default function AccountDetailsScreen() {
           {isLiability ? 'OUTSTANDING BALANCE' : 'BALANCE'}
         </Text>
         <Text className={`text-4xl font-bold ${isLiability && balance < 0 ? 'text-error' : 'text-on-surface'}`}>
-          {formatMinor(isLiability ? Math.abs(balance as number) as Minor : balance as Minor, DEFAULT_CURRENCY)}
+          {formatMinor(isLiability ? Math.abs(balance as number) as Minor : balance as Minor, accountCurrency)}
         </Text>
       </View>
 

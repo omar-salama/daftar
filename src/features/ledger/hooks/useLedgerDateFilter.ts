@@ -64,16 +64,26 @@ export function useLedgerDateFilter(currentTxs: TxVersion[], accountId?: string,
     let exp = 0;
     for (const tx of filteredTxs) {
       if (tx.type === 'income') {
-        inc += tx.totalMinor;
-      } else if (tx.type === 'expense') {
-        exp += tx.totalMinor;
-        // for a specific account ledger, we calculate all money in & money out
-      } else if (tx.type === 'transfer' && accountId) {
-        if (tx.accountId === accountId) {
-          exp += tx.totalMinor;
-        } else if (tx.transferAccountId === accountId) {
+        if (accountId) {
           inc += tx.totalMinor;
+        } else {
+          inc += tx.lines.reduce((s, l) => s + (l.mainCurrencyAmountMinor ?? l.amountMinor), 0);
         }
+      } else if (tx.type === 'expense') {
+        if (accountId) {
+          exp += tx.totalMinor;
+        } else {
+          exp += tx.lines.reduce((s, l) => s + (l.mainCurrencyAmountMinor ?? l.amountMinor), 0);
+        }
+      } else if (tx.type === 'transfer') {
+        if (accountId) {
+          if (tx.accountId === accountId) {
+            exp += tx.totalMinor;
+          } else if (tx.transferAccountId === accountId) {
+            inc += tx.transferAmountMinor ?? tx.totalMinor;
+          }
+        }
+        // Transfers do not affect global income/expense totals
       }
     }
     return {

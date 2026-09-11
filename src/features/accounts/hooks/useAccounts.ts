@@ -55,6 +55,7 @@ export function useSaveAccount() {
       existingAccount?: AccountVersion;
       name: string;
       type: AccountType;
+      currency?: string;
       note?: string;
       initialBalance?: Minor;
       maxOrder: number;
@@ -70,6 +71,7 @@ export function useSaveAccount() {
             ...data.existingAccount,
             name: data.name,
             type: data.type,
+            currency: data.currency ?? data.existingAccount.currency,
             note: data.note,
             initialBalance: data.initialBalance ?? data.existingAccount.initialBalance,
             creditLimit: data.creditLimit ?? data.existingAccount.creditLimit,
@@ -86,7 +88,7 @@ export function useSaveAccount() {
             name: data.name,
             type: data.type,
             order: data.maxOrder + 1,
-            currency: 'USD',
+            currency: data.currency ?? 'USD',
             note: data.note,
             initialBalance: data.initialBalance ?? 0,
             createdAt: new Date(now).toISOString(),

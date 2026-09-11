@@ -1,7 +1,7 @@
 import { AccountVersion } from '@/features/accounts/model';
 import { CategoryVersion } from '@/features/categories/model';
 import { TxVersion } from '@/kernel';
-import { DEFAULT_CURRENCY, formatMinor } from '@/kernel/money';
+import { DEFAULT_CURRENCY, formatMinor, SUPPORTED_CURRENCIES } from '@/kernel/money';
 import { Pressable, Text, View } from 'react-native';
 
 interface LedgerRowProps {
@@ -11,23 +11,35 @@ interface LedgerRowProps {
   accounts: AccountVersion[];
   categories: CategoryVersion[];
   onPress: (tx: TxVersion) => void;
+  viewContextAccountId?: string;
 }
 
-export function LedgerRow({ tx, versionCount, lineIndex, accounts, categories, onPress }: LedgerRowProps) {
+export function LedgerRow({ tx, versionCount, lineIndex, accounts, categories, onPress, viewContextAccountId }: LedgerRowProps) {
   const isTransfer = tx.type === 'transfer';
   const line = lineIndex !== undefined ? tx.lines[lineIndex] : tx.lines[0];
   const catObj = categories.find(c => c.categoryId === line?.categoryId);
   const parentObj = catObj?.parentId ? categories.find(c => c.categoryId === catObj.parentId) : null;
   const categoryName = isTransfer ? 'Transfer' : 
     (catObj ? (parentObj ? `${parentObj.name} - ${catObj.name}` : catObj.name) : (line?.categoryId || 'Unknown'));
-  const isExpense = tx.type === 'expense';
   
-  const displayMinor = lineIndex !== undefined ? line.amountMinor : tx.totalMinor;
+  // Determine if this is an incoming transfer from the perspective of the viewed account
+  const isIncomingTransfer = isTransfer && viewContextAccountId && tx.transferAccountId === viewContextAccountId;
+  
+  const isExpense = tx.type === 'expense' || (isTransfer && !isIncomingTransfer);
+  
+  const displayMinor = isIncomingTransfer 
+    ? (tx.transferAmountMinor ?? tx.totalMinor)
+    : (lineIndex !== undefined ? line.amountMinor : tx.totalMinor);
 
-  const accountName = accounts.find(a => a.accountId === tx.accountId)?.name || tx.accountId;
-  const transferAccountName = isTransfer && tx.transferAccountId
-    ? (accounts.find(a => a.accountId === tx.transferAccountId)?.name || tx.transferAccountId)
+  const account = accounts.find(a => a.accountId === tx.accountId);
+  const accountName = account?.name || tx.accountId;
+  const transferAccount = accounts.find(a => a.accountId === tx.transferAccountId);
+  const transferAccountName = isTransfer && transferAccount
+    ? (transferAccount.name || tx.transferAccountId)
     : undefined;
+
+  const relevantAccount = isIncomingTransfer ? transferAccount : account;
+  const accountCurrency = relevantAccount ? (SUPPORTED_CURRENCIES[relevantAccount.currency] || DEFAULT_CURRENCY) : DEFAULT_CURRENCY;
     
   const isPartOfSplit = tx.lines.length > 1 && lineIndex !== undefined;
   
@@ -66,7 +78,7 @@ export function LedgerRow({ tx, versionCount, lineIndex, accounts, categories, o
         </Text>
       </View>
       <Text className={`text-base font-mono ${isExpense ? 'text-error' : isTransfer ? 'text-on-surface' : 'text-secondary'}`}>
-        {formatMinor(displayMinor, DEFAULT_CURRENCY)}
+        {formatMinor(displayMinor, accountCurrency)}
       </Text>
     </Pressable>
   );
