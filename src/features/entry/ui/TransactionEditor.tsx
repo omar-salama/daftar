@@ -10,7 +10,7 @@ interface TransactionEditorProps {
   initialSplitCategoryIds: string[];
   amountMinor: Minor;
   transferAccountId: string;
-  editingTx?: TxVersion;
+  initialLines?: readonly TxLine[];
   onSaveTransfer: () => void;
   onSaveLines: (lines: TxLine[]) => void;
   onSetIsSplit: (isSplit: boolean, categoryIds?: string[]) => void;
@@ -23,7 +23,7 @@ export function TransactionEditor({
   initialSplitCategoryIds,
   amountMinor,
   transferAccountId,
-  editingTx,
+  initialLines,
   onSaveTransfer,
   onSaveLines,
   onSetIsSplit,
@@ -51,7 +51,7 @@ export function TransactionEditor({
       <SplitEditor
         totalMinor={amountMinor}
         initialCategoryIds={initialSplitCategoryIds}
-        editingTx={editingTx}
+        initialLines={initialLines}
         onSave={onSaveLines}
         onCancel={() => onSetIsSplit(false, [])}
       />
@@ -61,7 +61,7 @@ export function TransactionEditor({
   return (
     <CategoryGrid
       txType={txType}
-      selectedCategoryId={!isSplit && editingTx?.lines?.length === 1 ? editingTx.lines[0].categoryId : undefined}
+      selectedCategoryId={!isSplit && initialLines?.length === 1 ? initialLines[0].categoryId : undefined}
       onSelectCategory={onSaveCategory}
       onSplit={(categories) => {
         if (amountMinor <= 0) {

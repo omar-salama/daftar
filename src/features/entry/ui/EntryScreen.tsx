@@ -155,7 +155,7 @@ function EntryForm({
             initialSplitCategoryIds={state.splitCategoryIds}
             amountMinor={amountMinor}
             transferAccountId={state.transferAccountId}
-            editingTx={editingTx}
+            initialLines={editingTx?.lines ?? editingRule?.lines}
             onSaveTransfer={handleSaveTransfer}
             onSaveLines={saveLines}
             onSetIsSplit={(split, ids) => {

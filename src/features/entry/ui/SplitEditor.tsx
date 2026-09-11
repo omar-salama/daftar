@@ -1,4 +1,4 @@
-import { TxLine, TxVersion } from '@/kernel';
+import { TxLine } from '@/kernel';
 import { Minor, formatMinor, DEFAULT_CURRENCY } from '@/kernel/money';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { useCategories } from '../../categories/hooks';
@@ -10,7 +10,7 @@ import { useSplitEditor } from '../hooks/useSplitEditor';
 interface SplitEditorProps {
   totalMinor: Minor;
   initialCategoryIds?: string[];
-  editingTx?: TxVersion;
+  initialLines?: readonly TxLine[];
   onSave: (lines: TxLine[]) => void;
   onCancel: () => void;
 }

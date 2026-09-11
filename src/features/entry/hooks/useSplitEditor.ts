@@ -1,4 +1,4 @@
-import { TxLine, TxVersion } from '@/kernel';
+import { TxLine } from '@/kernel';
 import { Minor, minorFromDigits, appendDigit, digitsFromMinor } from '@/kernel/money';
 import { useState, useMemo, useEffect } from 'react';
 
@@ -12,7 +12,7 @@ export type EditorLine = {
 export interface UseSplitEditorProps {
   totalMinor: Minor;
   initialCategoryIds?: string[];
-  editingTx?: TxVersion;
+  initialLines?: readonly TxLine[];
   onSave: (lines: TxLine[]) => void;
 }
 
@@ -48,7 +48,7 @@ export function applyPristineDistribution(lines: EditorLine[], totalMinor: Minor
   });
 }
 
-export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSave }: UseSplitEditorProps) {
+export function useSplitEditor({ totalMinor, initialCategoryIds, initialLines, onSave }: UseSplitEditorProps) {
   const [lines, setLines] = useState<EditorLine[]>([]);
   const [activeLineId, setActiveLineId] = useState<string | null>(null);
   const [justFocusedLineId, setJustFocusedLineId] = useState<string | null>(null);
@@ -59,8 +59,8 @@ export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSa
   useEffect(() => {
     if (isInitialized) return;
 
-    if (editingTx && editingTx.lines.length > 1) {
-      const initialLines = editingTx.lines.map((l, i) => {
+    if (initialLines && initialLines.length > 1) {
+      const initLines = initialLines.map((l, i) => {
         return {
           id: `line-${i}`,
           categoryId: l.categoryId,
@@ -68,10 +68,10 @@ export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSa
           isPristine: false,
         };
       });
-      setLines(initialLines);
-      if (initialLines.length > 0) {
-        setActiveLineId(initialLines[0].id);
-        setJustFocusedLineId(initialLines[0].id);
+      setLines(initLines);
+      if (initLines.length > 0) {
+        setActiveLineId(initLines[0].id);
+        setJustFocusedLineId(initLines[0].id);
       }
       setIsInitialized(true);
     } else if (initialCategoryIds && initialCategoryIds.length > 0) {
@@ -91,7 +91,7 @@ export function useSplitEditor({ totalMinor, initialCategoryIds, editingTx, onSa
       setIsAddingCategory(true);
       setIsInitialized(true);
     }
-  }, [editingTx, initialCategoryIds, isInitialized, totalMinor]);
+  }, [initialLines, initialCategoryIds, isInitialized, totalMinor]);
 
   const allocatedMinor = useMemo(() => {
     return lines.reduce((sum, line) => sum + (minorFromDigits(line.digits) || 0), 0) as Minor;
